@@ -1,6 +1,10 @@
 # Claude configuration (local uniquement)
 .claude/
 
+# Documentation (local uniquement, sauf README)
+*.md
+!README.md
+
 # Dependencies
 node_modules/
 target/
@@ -84,4 +88,3 @@ temp/
 
 # Redis dump
 dump.rdb
-
