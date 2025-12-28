@@ -1,28 +1,40 @@
-# Claude configuration (local uniquement)
-.claude/
-
-# Documentation (local uniquement, sauf README)
-*.md
-!README.md
-
-# Dependencies
-node_modules/
-target/
-vendor/
-
-# Build outputs
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+*.egg-info/
 dist/
 build/
-bin/
-*.exe
-*.wasm
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Node.js / Frontend
+node_modules/
+.next/
+out/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.turbo
 
 # Environment variables
 .env
 .env.local
-.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# IDE & Editors
+# IDEs
 .vscode/
 .idea/
 *.swp
@@ -30,61 +42,30 @@ bin/
 *~
 .DS_Store
 
-# OS files
-Thumbs.db
-.DS_Store
-
-# Logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-logs/
+# Docker
+docker-compose.override.yml
 
 # Database
 *.db
 *.sqlite
 *.sqlite3
+pgdata/
+postgres-data/
 
-# Go
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-*.test
-*.out
-go.work
+# Power BI
+*.pbix.temp
 
-# Rust
-**/target/
-**/*.rs.bk
-Cargo.lock
+# Logs
+logs/
+*.log
 
-# Node/React
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-.pnpm-store/
-dist/
-dist-ssr/
-*.local
-.cache/
+# OS
+Thumbs.db
+.DS_Store
 
 # Testing
 coverage/
 .nyc_output/
 
-# Temporary files
-tmp/
-temp/
-*.tmp
-*.bak
-
-# Docker
-.dockerignore
-
-# Redis dump
-dump.rdb
+# Alembic
+alembic/versions/*.pyc
