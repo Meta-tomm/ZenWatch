@@ -1,0 +1,78 @@
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import type { Theme } from '@/types';
+
+interface UIState {
+  sidebarCollapsed: boolean;
+  theme: Theme;
+  activeFilters: {
+    search: string;
+    categories: string[];
+    sources: string[];
+    sort: 'score' | 'date' | 'popularity';
+  };
+
+  toggleSidebar: () => void;
+  setSidebarCollapsed: (collapsed: boolean) => void;
+  setTheme: (theme: Theme) => void;
+  setFilters: (filters: Partial<UIState['activeFilters']>) => void;
+  clearFilters: () => void;
+}
+
+export const useUIStore = create<UIState>()(
+  persist(
+    (set) => ({
+      sidebarCollapsed: false,
+      theme: 'light',
+      activeFilters: {
+        search: '',
+        categories: [],
+        sources: [],
+        sort: 'score',
+      },
+
+      toggleSidebar: () =>
+        set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
+
+      setSidebarCollapsed: (collapsed) =>
+        set({ sidebarCollapsed: collapsed }),
+
+      setTheme: (theme) => {
+        set({ theme });
+        // Update DOM
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+          document.documentElement.removeAttribute('data-theme');
+        } else if (theme === 'techwatch') {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.setAttribute('data-theme', 'techwatch');
+        } else {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.removeAttribute('data-theme');
+        }
+      },
+
+      setFilters: (filters) =>
+        set((state) => ({
+          activeFilters: { ...state.activeFilters, ...filters },
+        })),
+
+      clearFilters: () =>
+        set({
+          activeFilters: {
+            search: '',
+            categories: [],
+            sources: [],
+            sort: 'score',
+          },
+        }),
+    }),
+    {
+      name: 'techwatch-ui-store',
+      partialize: (state) => ({
+        sidebarCollapsed: state.sidebarCollapsed,
+        theme: state.theme,
+      }),
+    }
+  )
+);
