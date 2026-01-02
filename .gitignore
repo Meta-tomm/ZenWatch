@@ -69,3 +69,4 @@ coverage/
 
 # Alembic
 alembic/versions/*.pyc
+.claude/
