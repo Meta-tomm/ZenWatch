@@ -9,7 +9,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Sun, Moon, Palette } from 'lucide-react';
-import type { Theme } from '@/types';
 
 export const ThemeToggle = () => {
   const theme = useUIStore((s) => s.theme);
