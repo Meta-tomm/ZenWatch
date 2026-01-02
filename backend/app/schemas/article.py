@@ -28,9 +28,26 @@ class ArticleCreate(BaseModel):
 
 class ArticleResponse(ArticleCreate):
     id: int
-    source_type: str
+    source_id: Optional[int] = None
+    source_type: Optional[str] = None
+    external_id: Optional[str] = None
     score: Optional[float] = None
+    category: Optional[str] = None
+    summary: Optional[str] = None
+    scraped_at: Optional[datetime] = None
+    is_read: bool = False
+    is_favorite: bool = False
+    is_archived: bool = False
     created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
+
+
+class PaginatedArticlesResponse(BaseModel):
+    data: List[ArticleResponse]
+    total: int
+    hasMore: bool
+    offset: int
+    limit: int

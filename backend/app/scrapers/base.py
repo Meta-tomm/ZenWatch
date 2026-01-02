@@ -49,8 +49,10 @@ class ScraperPlugin(ABC):
             keywords: Liste des mots-clés
 
         Returns:
-            True si au moins un keyword est présent
+            True si au moins un keyword est présent (ou si pas de keywords)
         """
+        if not keywords:
+            return True  # Pas de filtrage si pas de mots-clés
         title_lower = title.lower()
         return any(kw.lower() in title_lower for kw in keywords)
 

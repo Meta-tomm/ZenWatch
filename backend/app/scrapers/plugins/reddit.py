@@ -99,7 +99,7 @@ class RedditScraper(ScraperPlugin):
                     posts.append({
                         'title': data['title'],
                         'url': data['url'],
-                        'id': data['id'],
+                        'external_id': data['id'],
                         'published_at': datetime.fromtimestamp(data['created_utc']),
                         'upvotes': data['ups'],
                         'comments_count': data['num_comments'],

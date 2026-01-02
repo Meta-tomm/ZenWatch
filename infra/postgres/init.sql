@@ -18,6 +18,21 @@ CREATE TABLE IF NOT EXISTS sources (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Table: scraping_runs
+CREATE TABLE IF NOT EXISTS scraping_runs (
+    id SERIAL PRIMARY KEY,
+    task_id VARCHAR(255) UNIQUE,
+    source_type VARCHAR(50) NOT NULL,
+    started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    completed_at TIMESTAMP,
+    status VARCHAR(20) NOT NULL,
+    articles_scraped INTEGER DEFAULT 0,
+    articles_saved INTEGER DEFAULT 0,
+    error_message TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_scraping_runs_task_id ON scraping_runs(task_id);
+
 -- Table: keywords
 CREATE TABLE IF NOT EXISTS keywords (
     id SERIAL PRIMARY KEY,
