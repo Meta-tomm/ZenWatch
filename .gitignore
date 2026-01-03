@@ -69,4 +69,9 @@ coverage/
 
 # Alembic
 alembic/versions/*.pyc
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
 .claude/
