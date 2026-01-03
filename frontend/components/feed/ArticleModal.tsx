@@ -7,6 +7,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -33,20 +34,22 @@ export const ArticleModal = () => {
   return (
     <Dialog open={articleModal.open} onOpenChange={closeArticleModal}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-2xl leading-tight pr-8">
+            {isLoading ? 'Chargement...' : article?.title || 'Article'}
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            Détails de l'article sélectionné
+          </DialogDescription>
+        </DialogHeader>
+
         {isLoading ? (
           <div className="space-y-4">
-            <Skeleton className="h-8 w-3/4" />
             <Skeleton className="h-4 w-1/2" />
             <Skeleton className="h-64 w-full" />
           </div>
         ) : article ? (
           <>
-            <DialogHeader>
-              <DialogTitle className="text-2xl leading-tight pr-8">
-                {article.title}
-              </DialogTitle>
-            </DialogHeader>
-
             {/* Metadata */}
             <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
               <span className="capitalize">{article.source_type}</span>

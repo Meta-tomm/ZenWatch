@@ -19,6 +19,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import { KeywordForm } from './KeywordForm';
 import { Plus, Pencil, Trash2, AlertCircle } from 'lucide-react';
@@ -148,6 +149,11 @@ export const KeywordManager = () => {
                 ? 'Nouveau mot-clé'
                 : 'Modifier le mot-clé'}
             </DialogTitle>
+            <DialogDescription>
+              {keywordModal.mode === 'create'
+                ? 'Ajoutez un nouveau mot-clé pour personnaliser votre veille technologique'
+                : 'Modifiez les paramètres de ce mot-clé'}
+            </DialogDescription>
           </DialogHeader>
           <KeywordForm
             keyword={selectedKeyword}

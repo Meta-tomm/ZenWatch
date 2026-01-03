@@ -50,7 +50,7 @@ export const articlesApi = {
 export const keywordsApi = {
   getKeywords: async (): Promise<Keyword[]> => {
     const response = await apiClient.get('/keywords');
-    return response.data;
+    return response.data.keywords;
   },
 
   createKeyword: async (data: Partial<Keyword>): Promise<Keyword> => {
