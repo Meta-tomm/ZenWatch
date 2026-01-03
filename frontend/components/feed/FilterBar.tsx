@@ -22,6 +22,12 @@ const CATEGORIES = [
   'security',
 ];
 
+const SOURCES = [
+  { id: 'hackernews', name: 'HackerNews' },
+  { id: 'devto', name: 'Dev.to' },
+  { id: 'reddit', name: 'Reddit' },
+];
+
 export const FilterBar = () => {
   const { activeFilters, setFilters, clearFilters } = useUIStore();
 
@@ -58,25 +64,53 @@ export const FilterBar = () => {
       </div>
 
       {/* Category Pills */}
-      <div className="flex flex-wrap gap-2 mb-2">
-        {CATEGORIES.map((cat) => {
-          const isActive = activeFilters.categories.includes(cat);
-          return (
-            <Badge
-              key={cat}
-              variant={isActive ? 'default' : 'outline'}
-              className="cursor-pointer hover:bg-primary/10"
-              onClick={() => {
-                const newCategories = isActive
-                  ? activeFilters.categories.filter((c) => c !== cat)
-                  : [...activeFilters.categories, cat];
-                setFilters({ categories: newCategories });
-              }}
-            >
-              {cat}
-            </Badge>
-          );
-        })}
+      <div className="space-y-2">
+        <div className="text-xs text-muted-foreground font-medium">Catégories</div>
+        <div className="flex flex-wrap gap-2">
+          {CATEGORIES.map((cat) => {
+            const isActive = activeFilters.categories.includes(cat);
+            return (
+              <Badge
+                key={cat}
+                variant={isActive ? 'default' : 'outline'}
+                className="cursor-pointer hover:bg-primary/10"
+                onClick={() => {
+                  const newCategories = isActive
+                    ? activeFilters.categories.filter((c) => c !== cat)
+                    : [...activeFilters.categories, cat];
+                  setFilters({ categories: newCategories });
+                }}
+              >
+                {cat}
+              </Badge>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Source Pills */}
+      <div className="space-y-2 mt-3">
+        <div className="text-xs text-muted-foreground font-medium">Sources</div>
+        <div className="flex flex-wrap gap-2">
+          {SOURCES.map((source) => {
+            const isActive = activeFilters.sources.includes(source.id);
+            return (
+              <Badge
+                key={source.id}
+                variant={isActive ? 'default' : 'outline'}
+                className="cursor-pointer hover:bg-primary/10"
+                onClick={() => {
+                  const newSources = isActive
+                    ? activeFilters.sources.filter((s) => s !== source.id)
+                    : [...activeFilters.sources, source.id];
+                  setFilters({ sources: newSources });
+                }}
+              >
+                {source.name}
+              </Badge>
+            );
+          })}
+        </div>
       </div>
 
       {/* Active Filters */}
