@@ -1,13 +1,16 @@
 from typing import List, Dict, Optional
 from datetime import datetime
 from sqlalchemy.orm import Session
+import redis.asyncio as redis
 from app.tasks.celery_app import celery_app
 from app.database import get_db
 from app.models.source import Source
+from app.models.keyword import Keyword
 from app.models.scraping_run import ScrapingRun
 from app.scrapers.registry import ScraperRegistry
 from app.scrapers.storage import save_articles
 from app.utils.logger import get_logger
+from app.config import settings
 
 # Import scrapers to trigger plugin registration
 import app.scrapers
@@ -25,22 +28,30 @@ async def scrape_all_sources_async(
 
     Args:
         db: Database session
-        keywords: List of keywords to filter articles (optional)
+        keywords: List of keywords to filter articles (optional, fetched from DB if None)
         task_id: Task ID for tracking (optional)
 
     Returns:
         Dictionary with scraping results and statistics
 
     This function:
-    1. Fetches all active sources from database
-    2. For each source, gets the appropriate scraper from registry
-    3. Runs scraper with configured keywords
-    4. Saves articles to database with deduplication
-    5. Logs results to scraping_runs table
+    1. Fetches active keywords from database (if not provided)
+    2. Fetches all active sources from database
+    3. For each source, gets the appropriate scraper from registry
+    4. Runs scraper with Redis caching enabled
+    5. Saves articles to database with deduplication
+    6. Logs results to scraping_runs table
     """
-    # Use default keywords if none provided
+    # Get keywords from database if not provided
     if keywords is None:
-        keywords = ["python", "AI", "machine learning", "blockchain"]
+        active_keywords = db.query(Keyword).filter_by(is_active=True).all()
+        if active_keywords:
+            keywords = [kw.keyword for kw in active_keywords]
+            logger.info(f"Using {len(keywords)} active keywords from database")
+        else:
+            # Fallback to default keywords
+            keywords = ["python", "AI", "rust", "javascript", "kubernetes"]
+            logger.warning(f"No active keywords found, using defaults: {keywords}")
 
     logger.info(f"Starting scraping task {task_id} with keywords: {keywords}")
 
@@ -56,10 +67,19 @@ async def scrape_all_sources_async(
     db.commit()
 
     registry = ScraperRegistry()
-    total_articles = 0
+    total_articles_scraped = 0
+    total_articles_saved = 0
     sources_scraped = 0
     errors_count = 0
     results = []
+
+    # Initialize Redis client for caching
+    redis_client = None
+    try:
+        redis_client = await redis.from_url(settings.REDIS_URL)
+        logger.info("Redis client initialized for caching")
+    except Exception as e:
+        logger.warning(f"Failed to initialize Redis client: {e}. Caching disabled.")
 
     try:
         # Get all active sources
@@ -67,6 +87,8 @@ async def scrape_all_sources_async(
         logger.info(f"Found {len(active_sources)} active sources")
 
         for source in active_sources:
+            source_start_time = datetime.utcnow()
+
             try:
                 logger.info(f"Scraping source: {source.name} ({source.type})")
 
@@ -74,24 +96,44 @@ async def scrape_all_sources_async(
                 scraper = registry.get(source.type)
                 if not scraper:
                     logger.warning(f"No scraper found for source type: {source.type}")
+                    errors_count += 1
+                    results.append({
+                        'source': source.name,
+                        'status': 'error',
+                        'error': 'Scraper not found'
+                    })
                     continue
+
+                # Inject Redis client for caching
+                if redis_client:
+                    scraper.redis = redis_client
 
                 # Validate config
                 if not scraper.validate_config(source.config):
                     logger.error(f"Invalid config for source {source.name}")
+                    errors_count += 1
+                    results.append({
+                        'source': source.name,
+                        'status': 'error',
+                        'error': 'Invalid configuration'
+                    })
                     continue
 
-                # Scrape articles (async with context manager for HTTP client)
+                # Scrape articles with caching
                 async with scraper:
-                    articles = await scraper.scrape(source.config, keywords)
+                    # Use scrape_with_cache to leverage Redis caching
+                    articles = await scraper.scrape_with_cache(source.config, keywords)
 
-                logger.info(f"Scraped {len(articles)} articles from {source.name}")
+                scraped_count = len(articles)
+                total_articles_scraped += scraped_count
+                logger.info(f"Scraped {scraped_count} articles from {source.name}")
 
                 # Save articles to database
+                saved_count = 0
                 if articles:
                     saved_count = await save_articles(articles, source.type, db)
-                    total_articles += saved_count
-                    logger.info(f"Saved {saved_count} articles from {source.name}")
+                    total_articles_saved += saved_count
+                    logger.info(f"Saved {saved_count} articles from {source.name} ({scraped_count - saved_count} duplicates)")
 
                 sources_scraped += 1
 
@@ -99,11 +141,16 @@ async def scrape_all_sources_async(
                 source.last_scraped_at = datetime.utcnow()
                 db.commit()
 
+                # Calculate duration
+                duration_seconds = (datetime.utcnow() - source_start_time).total_seconds()
+
                 results.append({
                     'source': source.name,
                     'status': 'success',
-                    'articles': len(articles),
-                    'saved': saved_count if articles else 0
+                    'articles_scraped': scraped_count,
+                    'articles_saved': saved_count,
+                    'duplicates': scraped_count - saved_count,
+                    'duration_seconds': round(duration_seconds, 2)
                 })
 
             except Exception as e:
@@ -126,8 +173,8 @@ async def scrape_all_sources_async(
 
         # Update scraping run
         scraping_run.status = status
-        scraping_run.articles_scraped = total_articles
-        scraping_run.articles_saved = total_articles
+        scraping_run.articles_scraped = total_articles_scraped
+        scraping_run.articles_saved = total_articles_saved
         scraping_run.completed_at = datetime.utcnow()
 
         if errors_count > 0:
@@ -137,16 +184,23 @@ async def scrape_all_sources_async(
 
         logger.info(
             f"Scraping task {task_id} completed: "
-            f"{sources_scraped} sources, {total_articles} articles, "
+            f"{sources_scraped}/{len(active_sources)} sources successful, "
+            f"{total_articles_scraped} articles scraped, "
+            f"{total_articles_saved} saved, "
+            f"{total_articles_scraped - total_articles_saved} duplicates, "
             f"{errors_count} errors"
         )
 
         return {
             'task_id': task_id,
             'status': status,
+            'sources_total': len(active_sources),
             'sources_scraped': sources_scraped,
-            'total_articles': total_articles,
+            'articles_scraped': total_articles_scraped,
+            'articles_saved': total_articles_saved,
+            'duplicates': total_articles_scraped - total_articles_saved,
             'errors': errors_count,
+            'keywords_used': keywords,
             'results': results
         }
 
@@ -161,6 +215,15 @@ async def scrape_all_sources_async(
 
         raise
 
+    finally:
+        # Close Redis client
+        if redis_client:
+            try:
+                await redis_client.aclose()
+                logger.debug("Redis client closed")
+            except Exception as e:
+                logger.warning(f"Error closing Redis client: {e}")
+
 
 @celery_app.task(bind=True, name='scrape_all_sources')
 def scrape_all_sources(self, keywords: List[str] = None) -> Dict:
@@ -168,10 +231,18 @@ def scrape_all_sources(self, keywords: List[str] = None) -> Dict:
     Celery task wrapper for scraping all sources
 
     Args:
-        keywords: List of keywords to filter articles
+        keywords: List of keywords to filter articles (optional)
 
     Returns:
         Dictionary with scraping results
+
+    Example:
+        # Trigger manually
+        result = scrape_all_sources.delay()
+        result = scrape_all_sources.delay(['python', 'rust'])
+
+        # Or apply async
+        task = scrape_all_sources.apply_async(kwargs={'keywords': ['AI', 'blockchain']})
     """
     import asyncio
 
