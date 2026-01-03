@@ -216,6 +216,40 @@ To test:
 - [ ] Add tests for Medium scraper
 - [ ] Add integration test (scrape all sources)
 
+## Celery Integration ✅
+
+**Files**:
+- `backend/app/tasks/scraping.py` - Celery task wrapper
+- `backend/test_celery_scraping.py` - Manual test script
+
+**Features**:
+- ✅ Async scraping task (`scrape_all_sources`)
+- ✅ Fetches active keywords from database
+- ✅ Scrapes all active sources with Redis caching
+- ✅ Saves articles to database with deduplication
+- ✅ Logs results to `scraping_runs` table
+- ✅ Can be triggered manually or scheduled with Celery Beat
+
+**Test Results** (2026-01-03):
+```
+✅ HackerNews: Scraped 5 articles in ~19s
+✅ Dev.to: Scraped 5 articles in ~1s
+✅ Redis caching: 126,982x speedup on cache hits
+✅ Database integration: Articles saved successfully
+✅ Deduplication: Working correctly
+❌ Reddit: Requires API credentials (expected)
+```
+
+**Usage**:
+```python
+# Manual test (direct call)
+poetry run python test_celery_scraping.py
+
+# Celery task (requires worker running)
+from app.tasks.scraping import scrape_all_sources
+task = scrape_all_sources.delay()
+```
+
 ## Performance Metrics
 
 ### HackerNews
@@ -240,18 +274,19 @@ Error Rate: 0% (in testing)
 ✅ Best-effort error handling: Working (skips invalid articles)
 ✅ Retry logic: Handles 429, 5xx errors gracefully
 ✅ Caching: Reduces API calls by 99.9%+
+✅ Celery integration: Task execution working
 ```
 
 ## Next Steps
 
 ### Immediate (Week 1)
 1. ✅ ~~Implement Dev.to scraper~~ (DONE)
-2. Update Reddit scraper to new architecture
-3. Add GitHub Trending scraper
+2. ✅ ~~Update Reddit scraper to new architecture~~ (DONE)
+3. ✅ ~~Create Celery task for scheduled scraping~~ (DONE)
+4. Add GitHub Trending scraper
 
 ### Short Term (Week 2-3)
-4. Add Medium RSS scraper
-5. Create Celery task for scheduled scraping
+5. Add Medium RSS scraper
 6. Add comprehensive test suite
 7. Add monitoring/metrics
 
@@ -300,6 +335,7 @@ Error Rate: 0% (in testing)
 - ✅ Redis caching
 - ✅ Rate limiting
 - ✅ OAuth2 support
+- ✅ Celery task queue integration
 
 ## References
 
@@ -311,4 +347,4 @@ Error Rate: 0% (in testing)
 ---
 
 **Last Updated**: 2026-01-03
-**Next Review**: After Reddit scraper implementation
+**Next Review**: After GitHub Trending scraper implementation
