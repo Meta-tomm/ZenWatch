@@ -179,10 +179,99 @@ async def test_devto_scraper():
             traceback.print_exc()
 
 
+async def test_reddit_scraper():
+    """Test Reddit scraper (requires credentials)"""
+    print("\n=== Testing Reddit Scraper ===\n")
+
+    import os
+    from dotenv import load_dotenv
+
+    load_dotenv()
+
+    # Check if Reddit credentials are available
+    client_id = os.getenv('REDDIT_CLIENT_ID')
+    client_secret = os.getenv('REDDIT_CLIENT_SECRET')
+
+    if not client_id or not client_secret:
+        print("⚠️  Reddit credentials not found in .env")
+        print("Skipping Reddit test (set REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET to test)")
+        print("\nTo get credentials:")
+        print("1. Go to https://www.reddit.com/prefs/apps")
+        print("2. Create an app (script type)")
+        print("3. Add credentials to .env file")
+        return
+
+    # Get scraper from registry
+    registry = ScraperRegistry()
+    scraper = registry.get('reddit')
+
+    if not scraper:
+        print("ERROR: Reddit scraper not registered")
+        return
+
+    print(f"Scraper: {scraper.display_name} v{scraper.version}")
+    print(f"Rate Limit: {scraper.rate_limiter.rate} req/min")
+    print(f"Cache TTL: {scraper.CACHE_TTL}s")
+    print(f"Max Retries: {scraper.MAX_RETRIES}\n")
+
+    # Test configuration
+    config = {
+        'client_id': client_id,
+        'client_secret': client_secret,
+        'subreddits': ['programming', 'python', 'rust'],
+        'max_articles': 5
+    }
+
+    keywords = ['python', 'rust', 'api']
+
+    print(f"Subreddits: {config['subreddits']}")
+    print(f"Keywords: {keywords}")
+    print(f"Max articles: {config['max_articles']}\n")
+
+    # Scrape articles
+    print("Scraping (this may take 10-20s due to rate limiting)...")
+    async with scraper:
+        try:
+            articles = await scraper.scrape(config, keywords)
+
+            print(f"\n✅ Successfully scraped {len(articles)} articles\n")
+
+            # Display results
+            for i, article in enumerate(articles, 1):
+                print(f"{i}. {article.title}")
+                print(f"   URL: {article.url}")
+                print(f"   Author: u/{article.author}")
+                print(f"   Upvotes: {article.upvotes} | Comments: {article.comments_count}")
+                print(f"   Published: {article.published_at}")
+                print(f"   Subreddit: r/{article.tags[0] if article.tags else 'unknown'}")
+                print()
+
+            # Validate Pydantic models
+            print("=== Pydantic Validation ===")
+            for article in articles:
+                assert isinstance(article, ScrapedArticle), "Not a ScrapedArticle instance"
+                assert article.title, "Missing title"
+                assert article.url, "Missing URL"
+                assert article.source_type == 'reddit', "Wrong source_type"
+
+            print("✅ All Pydantic validations passed")
+
+            # Test OAuth token caching
+            print("\n=== Testing OAuth Token Caching ===")
+            print(f"Token cached: {scraper._access_token is not None}")
+            print(f"Token expires at: {scraper._token_expires_at}")
+
+        except Exception as e:
+            print(f"\n❌ Error during scraping: {e}")
+            import traceback
+            traceback.print_exc()
+
+
 async def main():
     """Run all tests"""
     await test_hackernews_scraper()
     await test_devto_scraper()
+    await test_reddit_scraper()
     await test_caching()
 
 
