@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     REDDIT_CLIENT_SECRET: Optional[str] = None
     REDDIT_USER_AGENT: str = "TechWatch/1.0"
 
+    # Dev.to API
+    DEVTO_API_KEY: Optional[str] = None
+
     # Email SMTP
     SMTP_HOST: str = "smtp.gmail.com"
     SMTP_PORT: int = 587
