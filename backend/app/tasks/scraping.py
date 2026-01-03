@@ -9,6 +9,9 @@ from app.scrapers.registry import ScraperRegistry
 from app.scrapers.storage import save_articles
 from app.utils.logger import get_logger
 
+# Import scrapers to trigger plugin registration
+import app.scrapers
+
 logger = get_logger(__name__)
 
 
@@ -78,8 +81,9 @@ async def scrape_all_sources_async(
                     logger.error(f"Invalid config for source {source.name}")
                     continue
 
-                # Scrape articles (async)
-                articles = await scraper.scrape(source.config, keywords)
+                # Scrape articles (async with context manager for HTTP client)
+                async with scraper:
+                    articles = await scraper.scrape(source.config, keywords)
 
                 logger.info(f"Scraped {len(articles)} articles from {source.name}")
 
