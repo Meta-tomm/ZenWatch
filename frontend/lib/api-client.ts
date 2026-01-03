@@ -21,7 +21,21 @@ apiClient.interceptors.response.use(
 // Articles API
 export const articlesApi = {
   getArticles: async (params: ArticleFilters): Promise<PaginatedResponse<Article>> => {
-    const response = await apiClient.get('/articles', { params });
+    // Convert arrays to comma-separated strings for backend
+    const queryParams: Record<string, any> = {
+      ...params,
+      categories: params.categories?.length ? params.categories.join(',') : undefined,
+      sources: params.sources?.length ? params.sources.join(',') : undefined,
+    };
+
+    // Remove undefined values
+    Object.keys(queryParams).forEach(key => {
+      if (queryParams[key] === undefined) {
+        delete queryParams[key];
+      }
+    });
+
+    const response = await apiClient.get('/articles', { params: queryParams });
     return response.data;
   },
 

@@ -65,7 +65,7 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
           <Badge variant="secondary" className="text-xs">
             {article.category}
           </Badge>
-          {article.tags.slice(0, 3).map((tag) => (
+          {(article.tags || []).slice(0, 3).map((tag) => (
             <Badge key={tag} variant="outline" className="text-xs">
               {tag}
             </Badge>
@@ -88,11 +88,11 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
         <div className="flex items-center gap-4 mb-3 text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             <TrendingUp className="w-3 h-3" />
-            {article.upvotes}
+            {article.upvotes || 0}
           </div>
           <div className="flex items-center gap-1">
             <MessageSquare className="w-3 h-3" />
-            {article.comments_count}
+            {article.comments_count || 0}
           </div>
         </div>
 

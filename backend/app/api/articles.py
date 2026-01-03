@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-from sqlalchemy import func
-from typing import Optional
+from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import func, or_
+from typing import Optional, List
 from app.database import get_db
-from app.models import Article
+from app.models import Article, Source
 from app.schemas.article import ArticleResponse, PaginatedArticlesResponse
 from app.utils.logger import get_logger
 
@@ -13,41 +13,62 @@ router = APIRouter()
 
 @router.get("/articles", response_model=PaginatedArticlesResponse)
 async def get_articles(
-    category: Optional[str] = None,
-    source_type: Optional[str] = None,
-    min_score: float = Query(0.0, ge=0.0, le=100.0),
+    categories: Optional[str] = Query(None, description="Comma-separated categories"),
+    sources: Optional[str] = Query(None, description="Comma-separated source types"),
+    search: Optional[str] = Query(None, description="Search in title, content, author"),
+    sort: str = Query("score", pattern="^(score|date|popularity)$"),
+    minScore: float = Query(0.0, ge=0.0, le=100.0),
     is_read: Optional[bool] = None,
     is_favorite: Optional[bool] = None,
     is_archived: bool = False,
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
-    sort_by: str = Query("score", pattern="^(score|published_at|created_at)$"),
     db: Session = Depends(get_db)
 ):
     """
     Récupère les articles avec filtres et pagination
 
-    - **category**: Filtrer par catégorie (healthtech, web3, dev, etc.)
-    - **source_type**: Filtrer par source (reddit, hackernews, etc.)
-    - **min_score**: Score minimum (0-100)
+    - **categories**: Filtrer par catégories (comma-separated: healthtech,web3,dev)
+    - **sources**: Filtrer par sources (comma-separated: hackernews,devto)
+    - **search**: Recherche dans titre, contenu, auteur, tags
+    - **sort**: Trier par (score, date, popularity)
+    - **minScore**: Score minimum (0-100)
     - **is_read**: Filtrer par statut lu/non-lu
     - **is_favorite**: Filtrer par favoris
     - **is_archived**: Inclure les articles archivés (False par défaut)
     - **limit**: Nombre max de résultats (1-200)
     - **offset**: Offset pour pagination
-    - **sort_by**: Trier par (score, published_at, created_at)
     """
-    query = db.query(Article).filter(
+    # Eagerly load source relationship to populate source_type
+    query = db.query(Article).options(joinedload(Article.source)).filter(
         Article.is_archived == is_archived,
-        Article.score >= min_score
+        Article.score >= minScore
     )
 
-    if category:
-        query = query.filter(Article.category == category)
+    # Filter by categories (multiple)
+    if categories:
+        category_list = [c.strip() for c in categories.split(',') if c.strip()]
+        if category_list:
+            query = query.filter(Article.category.in_(category_list))
 
-    if source_type:
-        query = query.filter(Article.source_type == source_type)
+    # Filter by sources (multiple) - requires join
+    if sources:
+        source_list = [s.strip() for s in sources.split(',') if s.strip()]
+        if source_list:
+            query = query.join(Article.source).filter(Source.type.in_(source_list))
 
+    # Search functionality
+    if search:
+        search_term = f"%{search}%"
+        query = query.filter(
+            or_(
+                Article.title.ilike(search_term),
+                Article.content.ilike(search_term),
+                Article.author.ilike(search_term)
+            )
+        )
+
+    # Other filters
     if is_read is not None:
         query = query.filter(Article.is_read == is_read)
 
@@ -57,20 +78,33 @@ async def get_articles(
     # Get total count
     total = query.count()
 
-    # Sorting
-    if sort_by == "score":
+    # Sorting - map frontend values to backend fields
+    if sort == "score":
         query = query.order_by(Article.score.desc())
-    elif sort_by == "published_at":
+    elif sort == "date":
         query = query.order_by(Article.published_at.desc())
-    else:  # created_at
-        query = query.order_by(Article.created_at.desc())
+    elif sort == "popularity":
+        # Popularity = upvotes + comments
+        query = query.order_by((Article.upvotes + Article.comments_count).desc())
 
     articles = query.limit(limit).offset(offset).all()
 
-    logger.info(f"Retrieved {len(articles)} articles (filters: category={category}, source={source_type})")
+    # Populate source_type from relationship
+    articles_data = []
+    for article in articles:
+        article_dict = {
+            **article.__dict__,
+            'source_type': article.source.type if article.source else None
+        }
+        articles_data.append(ArticleResponse.model_validate(article_dict))
+
+    logger.info(
+        f"Retrieved {len(articles)} articles "
+        f"(filters: categories={categories}, sources={sources}, search={search})"
+    )
 
     return PaginatedArticlesResponse(
-        data=articles,
+        data=articles_data,
         total=total,
         hasMore=offset + len(articles) < total,
         offset=offset,
