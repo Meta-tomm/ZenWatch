@@ -73,6 +73,8 @@ export interface PaginatedResponse<T> {
   data: T[];
   total: number;
   hasMore: boolean;
+  offset?: number;
+  limit?: number;
 }
 
 export type Theme = 'light' | 'dark' | 'techwatch';

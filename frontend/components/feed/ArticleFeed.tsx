@@ -19,6 +19,7 @@ export const ArticleFeed = () => {
     isFetchingNextPage,
     isLoading,
     isError,
+    error,
   } = useArticles({
     search: activeFilters.search,
     categories: activeFilters.categories,
@@ -27,6 +28,12 @@ export const ArticleFeed = () => {
   });
 
   const allArticles = data?.pages.flatMap((page) => page.data) ?? [];
+
+  // Debug logging
+  if (typeof window !== 'undefined' && data) {
+    console.log('[ArticleFeed] Articles loaded:', allArticles.length);
+    console.log('[ArticleFeed] First article:', allArticles[0]);
+  }
 
   if (isLoading) {
     return (
@@ -39,13 +46,19 @@ export const ArticleFeed = () => {
   }
 
   if (isError) {
+    console.error('[ArticleFeed] Error loading articles:', error);
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-8">
         <AlertCircle className="w-12 h-12 text-destructive mb-4" />
         <h2 className="text-lg font-semibold mb-2">Erreur de chargement</h2>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground mb-2">
           Impossible de charger les articles. Veuillez réessayer.
         </p>
+        {error && (
+          <p className="text-xs text-muted-foreground font-mono">
+            {String(error)}
+          </p>
+        )}
       </div>
     );
   }

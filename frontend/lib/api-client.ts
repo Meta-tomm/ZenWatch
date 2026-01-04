@@ -36,7 +36,18 @@ export const articlesApi = {
     });
 
     const response = await apiClient.get('/articles', { params: queryParams });
-    return response.data;
+
+    // Transform backend response to match frontend types
+    const data = response.data;
+    return {
+      data: data.data.map((article: any) => ({
+        ...article,
+        id: String(article.id), // Convert ID to string
+        tags: article.tags || [], // Ensure tags is always an array
+      })),
+      total: data.total,
+      hasMore: data.hasMore,
+    };
   },
 
   toggleFavorite: async (id: string): Promise<Article> => {
