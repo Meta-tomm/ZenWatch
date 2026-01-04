@@ -32,30 +32,30 @@
   }
 
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --background: 210 11% 6%;           /* #0D0D0D */
+    --foreground: 0 0% 96%;             /* #F5F5F7 */
+    --card: 210 11% 10%;                /* #1A1A1D */
+    --card-foreground: 0 0% 96%;        /* #F5F5F7 */
+    --popover: 210 11% 10%;             /* #1A1A1D */
+    --popover-foreground: 0 0% 96%;     /* #F5F5F7 */
+    --primary: 266 91% 65%;             /* #8B5CF6 violet */
+    --primary-foreground: 0 0% 6%;      /* #0D0D0D */
+    --secondary: 210 11% 15%;           /* #25252A */
+    --secondary-foreground: 0 0% 96%;   /* #F5F5F7 */
+    --muted: 210 11% 15%;               /* #25252A */
+    --muted-foreground: 0 0% 63%;       /* #A1A1AA */
+    --accent: 291 76% 60%;              /* #D946EF magenta */
+    --accent-foreground: 0 0% 6%;       /* #0D0D0D */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 96%;
+    --border: 210 11% 18%;              /* #2D2D32 */
+    --input: 210 11% 15%;               /* #25252A */
+    --ring: 266 91% 65%;                /* #8B5CF6 violet */
+    --chart-1: 266 91% 65%;
+    --chart-2: 291 76% 60%;
+    --chart-3: 262 83% 58%;
+    --chart-4: 270 95% 75%;
+    --chart-5: 280 89% 65%;
   }
 
   [data-theme="techwatch"] {
@@ -90,8 +90,43 @@
   }
 }
 
-/* Black & Gold Minimalist Theme */
+/* Violet/Magenta 3D Theme */
 @layer utilities {
+  /* Gradient backgrounds */
+  .bg-gradient-violet-magenta {
+    background: linear-gradient(135deg, #8B5CF6 0%, #D946EF 100%);
+  }
+
+  .bg-gradient-subtle {
+    background: linear-gradient(180deg, rgba(139, 92, 246, 0.1) 0%, rgba(217, 70, 239, 0.05) 100%);
+  }
+
+  .bg-gradient-glow {
+    background: radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.3), transparent 70%);
+  }
+
+  /* Text gradients */
+  .text-gradient-violet {
+    background: linear-gradient(135deg, #8B5CF6 0%, #D946EF 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* 3D transform utilities */
+  .transform-3d {
+    transform-style: preserve-3d;
+    perspective: 1000px;
+  }
+
+  .card-3d-hover {
+    transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .card-3d-hover:hover {
+    transform: perspective(1000px) rotateX(-5deg) rotateY(5deg) translateZ(20px);
+  }
+
   /* Subtle fade in animation */
   @keyframes fade-in {
     0% { opacity: 0; }
@@ -125,12 +160,12 @@
   }
 }
 
-/* Black & Gold Base Styles */
+/* Violet/Magenta Scrollbar Styles */
 @layer base {
   /* Firefox scrollbar support */
   * {
     scrollbar-width: thin;
-    scrollbar-color: #FFD700 #0F0F0F;
+    scrollbar-color: #8B5CF6 #0D0D0D;
   }
 
   /* Webkit scrollbar (Chrome, Safari, Edge) */
@@ -140,20 +175,20 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: #0F0F0F;
+    background: #0D0D0D;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #B8860B;
+    background: #7C3AED;
     border-radius: 4px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #FFD700;
+    background: #8B5CF6;
   }
 
   ::selection {
-    background: #FFD700;
-    color: #0F0F0F;
+    background: #8B5CF6;
+    color: #0D0D0D;
   }
 }
