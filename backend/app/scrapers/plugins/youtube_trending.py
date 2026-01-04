@@ -1,8 +1,10 @@
+import time
 from datetime import datetime
 from typing import Any
 
 import isodate
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 
 from app.config import settings
 from app.schemas.scraped_article import ScrapedYouTubeVideo
@@ -161,10 +163,6 @@ class YouTubeTrendingScraper(ScraperPlugin):
             List of raw video data dicts from YouTube API
             Returns empty list on error (never raises)
         """
-        import time
-
-        from googleapiclient.errors import HttpError
-
         if not self.youtube:
             self.logger.error("YouTube client not initialized (API key missing)")
             return []
@@ -348,8 +346,11 @@ class YouTubeTrendingScraper(ScraperPlugin):
             video_category=video_category
         )
 
-        # Record quota usage AFTER successful API call (100 units per call)
-        if self.quota_manager:
+        # Record quota usage if API call was attempted
+        # Only record when youtube client exists (API key configured)
+        # YouTube API charges quota even for failed requests (403, 429)
+        # Note: raw_videos will be empty [] if no API key, so check self.youtube instead
+        if self.quota_manager and self.youtube:
             await self.quota_manager.record_usage(100)
 
         # Parse raw video data into ScrapedYouTubeVideo objects
@@ -360,14 +361,13 @@ class YouTubeTrendingScraper(ScraperPlugin):
             if (parsed_video := self._parse_trending_video(raw_video)) is not None
         ]
 
-        self.logger.info(f"Parsed {len(videos)} videos from {len(raw_videos)} raw items")
-
         # Filter by keywords and calculate relevance scores
         filtered_videos = self._filter_by_keywords(videos, keywords, config)
 
         self.logger.info(
-            f"Scraped {len(filtered_videos)} relevant trending videos "
-            f"from {len(videos)} total (region={region_code})"
+            f"YouTube scrape complete: {len(raw_videos)} fetched → "
+            f"{len(videos)} parsed → {len(filtered_videos)} filtered "
+            f"(region={region_code}, category={video_category})"
         )
 
         return filtered_videos

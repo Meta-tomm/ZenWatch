@@ -565,6 +565,9 @@ async def test_scrape_full_workflow():
 
     scraper = YouTubeTrendingScraper()
 
+    # Mock YouTube client (simulate API key configured)
+    scraper.youtube = Mock()
+
     # Mock quota manager to allow scraping
     scraper.quota_manager = Mock()
     scraper.quota_manager.check_quota = AsyncMock(return_value=True)
