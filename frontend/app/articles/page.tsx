@@ -14,7 +14,7 @@ export default function ArticlesPage() {
       {/* Matrix Rain Background */}
       <MatrixRain className="fixed inset-0 -z-10" color="#00FF41" speed={33} />
 
-      <main className="min-h-screen relative">
+      <main className="min-h-screen relative z-10">
         <ScanLine>
           {/* Header with back button */}
           <div className="sticky top-0 z-40 border-b bg-cyber-black/95 backdrop-blur supports-[backdrop-filter]:bg-cyber-black/80">
