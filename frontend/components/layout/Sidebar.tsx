@@ -20,12 +20,12 @@ export const Sidebar = () => {
   return (
     <aside
       className={cn(
-        'hidden md:flex flex-col border-r border-charcoal-700/30 bg-charcoal-950 transition-all duration-300',
+        'hidden md:flex flex-col border-r border-violet-500/20 bg-anthracite-950 transition-all duration-300',
         collapsed ? 'w-16' : 'w-64'
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-charcoal-700/30">
+      <div className="flex items-center justify-between p-4 border-b border-violet-500/20">
         {!collapsed && (
           <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             TechWatch
@@ -61,7 +61,7 @@ export const Sidebar = () => {
 
       {/* Footer */}
       {!collapsed && (
-        <div className="p-4 border-t border-charcoal-700/30 text-xs text-muted-foreground">
+        <div className="p-4 border-t border-violet-500/20 text-xs text-muted-foreground">
           TechWatch v1.0.0
         </div>
       )}

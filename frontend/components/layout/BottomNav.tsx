@@ -16,7 +16,7 @@ export const BottomNav = () => {
   const pathname = usePathname();
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-charcoal-950 border-t border-charcoal-700/30">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-anthracite-950 border-t border-violet-500/20">
       <div className="flex items-center justify-around h-16">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
@@ -29,8 +29,8 @@ export const BottomNav = () => {
               className={cn(
                 'flex flex-col items-center justify-center gap-1 flex-1 h-full transition-colors',
                 isActive
-                  ? 'text-primary'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'text-violet-400'
+                  : 'text-muted-foreground hover:text-violet-300'
               )}
             >
               <Icon className="w-5 h-5" />
