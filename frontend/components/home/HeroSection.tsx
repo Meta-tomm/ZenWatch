@@ -3,6 +3,9 @@
 import { MatrixRain, ScanLine } from '@/components/cyberpunk';
 import { AnimatedTitle } from './AnimatedTitle';
 import { LiveMetrics } from './LiveMetrics';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 
 interface HeroSectionProps {
   className?: string;
@@ -38,6 +41,19 @@ export const HeroSection = ({ className = '' }: HeroSectionProps) => {
             subtitle="Your AI-Powered Tech Intelligence Platform"
             className="text-center mb-16"
           />
+
+          {/* CTA Button */}
+          <div className="flex justify-center mb-12">
+            <Link href="/articles">
+              <Button
+                size="lg"
+                className="bg-cyber-green text-cyber-black hover:bg-cyber-green/90 font-bold text-lg px-8 py-6 shadow-lg shadow-cyber-green/50 transition-all hover:shadow-xl hover:shadow-cyber-green/70"
+              >
+                Explore Articles
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+            </Link>
+          </div>
 
           {/* Live Metrics */}
           <LiveMetrics metrics={metrics} className="mt-12" />
