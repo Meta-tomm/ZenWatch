@@ -43,47 +43,64 @@ export const MatrixRain = ({
 
     // Characters to use
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()';
-    const columns = Math.floor(canvas.width / fontSize);
-    const drops: number[] = Array(columns).fill(1);
+    let columns = Math.floor(canvas.width / fontSize);
+    let drops: number[] = Array(columns).fill(1);
 
-    // Animation function
-    const draw = () => {
-      // Fade effect
-      ctx.fillStyle = 'rgba(10, 14, 39, 0.05)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    let lastFrameTime = 0;
+    let animationId: number;
 
-      // Draw characters
-      ctx.fillStyle = color;
-      ctx.font = `${fontSize}px monospace`;
+    // Animation function using requestAnimationFrame
+    // Time parameter ensures consistent animation speed regardless of frame rate
+    const draw = (currentTime: number) => {
+      const deltaTime = currentTime - lastFrameTime;
 
-      for (let i = 0; i < drops.length; i++) {
-        const char = chars[Math.floor(Math.random() * chars.length)];
-        const x = i * fontSize;
-        const y = drops[i] * fontSize;
+      // Only draw at specified speed interval
+      if (deltaTime >= speed) {
+        lastFrameTime = currentTime;
 
-        ctx.fillText(char, x, y);
+        // Fade effect
+        ctx.fillStyle = 'rgba(10, 14, 39, 0.05)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Reset drop to top randomly
-        if (y > canvas.height && Math.random() > 0.975) {
-          drops[i] = 0;
+        // Draw characters
+        ctx.fillStyle = color;
+        ctx.font = `${fontSize}px monospace`;
+
+        for (let i = 0; i < drops.length; i++) {
+          const char = chars[Math.floor(Math.random() * chars.length)];
+          const x = i * fontSize;
+          const y = drops[i] * fontSize;
+
+          ctx.fillText(char, x, y);
+
+          // Reset drop to top randomly
+          if (y > canvas.height && Math.random() > 0.975) {
+            drops[i] = 0;
+          }
+          drops[i]++;
         }
-        drops[i]++;
       }
+
+      animationId = requestAnimationFrame(draw);
     };
 
     // Start animation
-    const interval = setInterval(draw, speed);
+    animationId = requestAnimationFrame(draw);
 
-    // Handle resize
+    // Handle resize - recalculate drops array to prevent memory leak
     const handleResize = () => {
+      if (!canvas) return;
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      const newColumns = Math.floor(canvas.width / fontSize);
+      columns = newColumns;
+      drops = Array(newColumns).fill(1);
     };
     window.addEventListener('resize', handleResize);
 
     // Cleanup
     return () => {
-      clearInterval(interval);
+      cancelAnimationFrame(animationId);
       window.removeEventListener('resize', handleResize);
     };
   }, [color, fontSize, speed]);
