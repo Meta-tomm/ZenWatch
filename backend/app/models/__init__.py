@@ -5,6 +5,7 @@ from app.models.keyword import Keyword
 from app.models.article_keyword import ArticleKeyword
 from app.models.trend import Trend
 from app.models.user_config import UserConfig
+from app.models.youtube_channel import YouTubeChannel
 
 __all__ = [
     "Article",
@@ -14,4 +15,5 @@ __all__ = [
     "ArticleKeyword",
     "Trend",
     "UserConfig",
+    "YouTubeChannel",
 ]
