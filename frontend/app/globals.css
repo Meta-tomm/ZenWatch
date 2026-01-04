@@ -170,6 +170,22 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
+
+    /* Disable 3D transforms */
+    .card-3d-hover,
+    .card-3d-hover:hover {
+      transform: none !important;
+    }
+
+    .transform-3d {
+      transform-style: flat !important;
+      perspective: none !important;
+    }
+
+    /* Disable parallax */
+    [data-parallax] {
+      transform: none !important;
+    }
   }
 }
 
