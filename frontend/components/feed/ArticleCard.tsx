@@ -1,12 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Star, ExternalLink, MessageSquare, TrendingUp, BookmarkPlus } from 'lucide-react';
+import { CornerBrackets } from '@/components/cyberpunk';
 import { useToggleFavorite } from '@/hooks/use-toggle-favorite';
 import { formatRelativeDate } from '@/lib/date-utils';
+import { fadeInScale } from '@/lib/animations';
 import { cn } from '@/lib/utils';
 import type { Article } from '@/types';
 
@@ -21,19 +23,27 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
 
   const scoreColor = article.score >= 70 ? 'text-green-500' : article.score >= 50 ? 'text-yellow-500' : 'text-muted-foreground';
 
+  // Determine CornerBrackets color based on score
+  const bracketColor = article.score >= 70 ? 'blue' : article.score >= 50 ? 'yellow' : 'green';
+
   return (
-    <Card
-      className={cn(
-        'transition-all hover:shadow-md',
-        article.is_read && 'opacity-60'
-      )}
-    >
-      <CardContent className="p-4">
+    <motion.div variants={fadeInScale} initial="hidden" animate="visible">
+      <CornerBrackets color={bracketColor}>
+        <div
+          className={cn(
+            'p-4 bg-cyber-black/50 border border-cyber-blue/30 backdrop-blur-sm',
+            'hover:bg-cyber-black/70 hover:border-cyber-blue/50 transition-all',
+            article.is_read && 'opacity-60'
+          )}
+        >
         {/* Header */}
         <div className="flex items-start justify-between gap-3 mb-2">
           <div className="flex-1 min-w-0">
             <h3
-              className="font-semibold leading-tight mb-1 cursor-pointer hover:text-primary line-clamp-2"
+              className={cn(
+                'font-semibold leading-tight mb-1 cursor-pointer hover:text-primary line-clamp-2',
+                article.score >= 70 && 'glow-text'
+              )}
               onClick={() => onOpenModal?.(article.id)}
             >
               {article.title}
@@ -137,7 +147,8 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
             </Button>
           </div>
         </div>
-      </CardContent>
-    </Card>
+        </div>
+      </CornerBrackets>
+    </motion.div>
   );
 };
