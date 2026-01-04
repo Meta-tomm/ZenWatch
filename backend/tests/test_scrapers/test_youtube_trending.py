@@ -395,3 +395,164 @@ def test_filter_by_keywords_none_view_count():
     filtered = scraper._filter_by_keywords(videos, keywords)
     assert len(filtered) == 1
     assert filtered[0].video_id == "vid1"
+
+
+def test_fetch_trending_videos():
+    """Test successful YouTube API call with mocked response"""
+    scraper = YouTubeTrendingScraper()
+
+    # Mock YouTube API client
+    mock_response = {
+        "items": [
+            {
+                "id": "video_id_1",
+                "snippet": {
+                    "publishedAt": "2024-01-01T10:00:00Z",
+                    "channelId": "channel_1",
+                    "title": "Rust Tutorial for Beginners",
+                    "description": "Learn Rust programming language from scratch",
+                    "channelTitle": "Tech Channel",
+                    "tags": ["rust", "programming", "tutorial"],
+                    "thumbnails": {
+                        "high": {"url": "https://i.ytimg.com/vi/video_id_1/hqdefault.jpg"}
+                    }
+                },
+                "contentDetails": {
+                    "duration": "PT10M30S"
+                },
+                "statistics": {
+                    "viewCount": "100000",
+                    "likeCount": "5000",
+                    "commentCount": "500"
+                }
+            },
+            {
+                "id": "video_id_2",
+                "snippet": {
+                    "publishedAt": "2024-01-02T15:30:00Z",
+                    "channelId": "channel_2",
+                    "title": "Python Machine Learning 2024",
+                    "description": "Build ML models with Python",
+                    "channelTitle": "AI Academy",
+                    "tags": ["python", "ml"],
+                    "thumbnails": {
+                        "high": {"url": "https://i.ytimg.com/vi/video_id_2/hqdefault.jpg"}
+                    }
+                },
+                "contentDetails": {
+                    "duration": "PT15M"
+                },
+                "statistics": {
+                    "viewCount": "50000",
+                    "likeCount": "2000",
+                    "commentCount": "200"
+                }
+            }
+        ],
+        "pageInfo": {
+            "totalResults": 50,
+            "resultsPerPage": 50
+        }
+    }
+
+    # Mock the YouTube API call chain (synchronous, not async)
+    mock_execute = Mock(return_value=mock_response)
+    mock_list = Mock(return_value=Mock(execute=mock_execute))
+    mock_videos = Mock(return_value=Mock(list=mock_list))
+    scraper.youtube = Mock(videos=mock_videos)
+
+    # Call the method
+    result = scraper._fetch_trending_videos(region_code="US", max_results=50, video_category="28")
+
+    # Verify API was called with correct parameters
+    mock_videos.assert_called_once()
+    mock_list.assert_called_once_with(
+        part='snippet,contentDetails,statistics',
+        chart='mostPopular',
+        videoCategoryId='28',
+        regionCode='US',
+        maxResults=50
+    )
+    mock_execute.assert_called_once()
+
+    # Verify response
+    assert len(result) == 2
+    assert result[0]["id"] == "video_id_1"
+    assert result[1]["id"] == "video_id_2"
+
+
+def test_fetch_trending_videos_api_error():
+    """Test API error handling (403, 429, network errors)"""
+    from unittest.mock import patch
+
+    from googleapiclient.errors import HttpError
+
+    scraper = YouTubeTrendingScraper()
+
+    # Test 403 Forbidden error
+    mock_execute = Mock(side_effect=HttpError(
+        resp=Mock(status=403),
+        content=b'Forbidden'
+    ))
+    mock_list = Mock(return_value=Mock(execute=mock_execute))
+    mock_videos = Mock(return_value=Mock(list=mock_list))
+    scraper.youtube = Mock(videos=mock_videos)
+
+    result = scraper._fetch_trending_videos()
+
+    # Should return empty list on error
+    assert result == []
+
+    # Test network error
+    mock_execute = Mock(side_effect=Exception("Network error"))
+    mock_list = Mock(return_value=Mock(execute=mock_execute))
+    mock_videos = Mock(return_value=Mock(list=mock_list))
+    scraper.youtube = Mock(videos=mock_videos)
+
+    result = scraper._fetch_trending_videos()
+
+    # Should return empty list on error
+    assert result == []
+
+    # Test 429 Rate Limiting with exponential backoff
+    with patch('time.sleep') as mock_sleep:
+        # Fail twice with 429, then succeed
+        mock_response = {
+            "items": [
+                {
+                    "id": "video_id_1",
+                    "snippet": {
+                        "publishedAt": "2024-01-01T10:00:00Z",
+                        "channelId": "channel_1",
+                        "title": "Test Video",
+                        "description": "Test description",
+                        "channelTitle": "Test Channel",
+                        "thumbnails": {"high": {"url": "https://example.com/thumb.jpg"}}
+                    },
+                    "contentDetails": {"duration": "PT5M"},
+                    "statistics": {"viewCount": "1000", "likeCount": "100", "commentCount": "10"}
+                }
+            ]
+        }
+
+        mock_execute = Mock(side_effect=[
+            HttpError(resp=Mock(status=429), content=b'Rate limit exceeded'),
+            HttpError(resp=Mock(status=429), content=b'Rate limit exceeded'),
+            mock_response  # Success on third try
+        ])
+        mock_list = Mock(return_value=Mock(execute=mock_execute))
+        mock_videos = Mock(return_value=Mock(list=mock_list))
+        scraper.youtube = Mock(videos=mock_videos)
+
+        result = scraper._fetch_trending_videos()
+
+        # Should retry with exponential backoff
+        assert mock_execute.call_count == 3
+        assert mock_sleep.call_count == 2
+        # Verify backoff delays: 2s, 4s
+        mock_sleep.assert_any_call(2)
+        mock_sleep.assert_any_call(4)
+
+        # Should return data after retries
+        assert len(result) == 1
+        assert result[0]["id"] == "video_id_1"

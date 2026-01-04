@@ -143,6 +143,90 @@ class YouTubeTrendingScraper(ScraperPlugin):
             self.logger.warning(f"Failed to parse trending video: {e}")
             return None
 
+    def _fetch_trending_videos(
+        self,
+        region_code: str = "US",
+        max_results: int = 50,
+        video_category: str = "28"
+    ) -> list[dict[str, Any]]:
+        """
+        Fetch trending videos from YouTube Data API v3.
+
+        Args:
+            region_code: Geographic region code (e.g., "US", "FR")
+            max_results: Maximum number of results (1-50)
+            video_category: Category ID ("28" for Science & Technology)
+
+        Returns:
+            List of raw video data dicts from YouTube API
+            Returns empty list on error (never raises)
+        """
+        import time
+
+        from googleapiclient.errors import HttpError
+
+        if not self.youtube:
+            self.logger.error("YouTube client not initialized (API key missing)")
+            return []
+
+        retry_count = 0
+
+        while retry_count <= self.MAX_RETRIES:
+            try:
+                # Call YouTube Data API v3 videos.list endpoint
+                response = self.youtube.videos().list(
+                    part='snippet,contentDetails,statistics',
+                    chart='mostPopular',
+                    videoCategoryId=video_category,
+                    regionCode=region_code,
+                    maxResults=max_results
+                ).execute()
+
+                # Extract items from response
+                items = response.get("items", [])
+                self.logger.info(
+                    f"Fetched {len(items)} trending videos from YouTube API "
+                    f"(region={region_code}, category={video_category})"
+                )
+                return items
+
+            except HttpError as e:
+                # Handle rate limiting (429) with exponential backoff
+                if e.resp.status == 429:
+                    if retry_count < self.MAX_RETRIES:
+                        # Exponential backoff: 2^(retry_count + 1) seconds
+                        delay = 2 ** (retry_count + 1)
+                        self.logger.warning(
+                            f"Rate limit hit (429), retrying in {delay}s "
+                            f"(attempt {retry_count + 1}/{self.MAX_RETRIES})"
+                        )
+                        time.sleep(delay)
+                        retry_count += 1
+                        continue
+                    else:
+                        self.logger.error(
+                            f"Rate limit exceeded after {self.MAX_RETRIES} retries, giving up"
+                        )
+                        return []
+
+                # Handle forbidden (403) - API key invalid or quota exceeded
+                elif e.resp.status == 403:
+                    self.logger.error(f"YouTube API forbidden (403): {e}")
+                    return []
+
+                # Other HTTP errors
+                else:
+                    self.logger.error(f"YouTube API HTTP error ({e.resp.status}): {e}")
+                    return []
+
+            except Exception as e:
+                # Catch-all for network errors, timeouts, etc.
+                self.logger.error(f"Unexpected error fetching trending videos: {e}")
+                return []
+
+        # Should never reach here, but return empty list as safety
+        return []
+
     def _filter_by_keywords(
         self,
         videos: list[ScrapedYouTubeVideo],
