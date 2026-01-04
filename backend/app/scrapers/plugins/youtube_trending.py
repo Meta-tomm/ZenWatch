@@ -141,6 +141,85 @@ class YouTubeTrendingScraper(ScraperPlugin):
             self.logger.warning(f"Failed to parse trending video: {e}")
             return None
 
+    def _filter_by_keywords(
+        self,
+        videos: list[ScrapedYouTubeVideo],
+        keywords: list[dict],
+        config: dict | None = None
+    ) -> list[ScrapedYouTubeVideo]:
+        """
+        Filter videos by keywords and calculate relevance scores.
+
+        Args:
+            videos: List of scraped YouTube videos
+            keywords: List of keyword dicts with structure:
+                [{"keyword": "rust", "weight": 5.0, "category": "programming"}, ...]
+            config: Optional configuration dict:
+                {
+                    "min_keyword_matches": 1,  # Minimum keywords required to match
+                    "include_shorts": False,   # Exclude videos < 60 seconds
+                    "min_view_count": 1000     # Minimum views threshold
+                }
+
+        Returns:
+            Filtered list of videos with updated scores, sorted by score (highest first)
+        """
+        if not videos or not keywords:
+            return []
+
+        # Parse config with defaults
+        config = config or {}
+        min_keyword_matches = config.get("min_keyword_matches", 1)
+        include_shorts = config.get("include_shorts", True)
+        min_view_count = config.get("min_view_count", 0)
+
+        filtered_videos = []
+
+        for video in videos:
+            # Build searchable text: title + description + tags (case-insensitive)
+            searchable_text = (
+                f"{video.title} {video.content or ''} {' '.join(video.tags or [])}"
+            ).lower()
+
+            # Calculate relevance score by matching keywords
+            relevance_score = 0.0
+            matched_keywords = 0
+
+            for keyword_data in keywords:
+                keyword = keyword_data.get("keyword", "").lower()
+                weight = keyword_data.get("weight", 1.0)
+
+                # Case-insensitive substring match
+                if keyword and keyword in searchable_text:
+                    relevance_score += weight
+                    matched_keywords += 1
+
+            # Skip if below minimum keyword matches threshold
+            if matched_keywords < min_keyword_matches:
+                continue
+
+            # Skip if below view count threshold
+            if video.view_count < min_view_count:
+                continue
+
+            # Skip shorts if include_shorts=False
+            if not include_shorts and video.duration_seconds and video.duration_seconds < 60:
+                continue
+
+            # Store score in raw_data and attach as dynamic attribute
+            # Pydantic allows setting arbitrary attributes if not in __fields__
+            updated_raw_data = {**video.raw_data, "relevance_score": relevance_score}
+            video_copy = video.model_copy(update={"raw_data": updated_raw_data})
+
+            # Use object.__setattr__ to bypass Pydantic's validation for dynamic attribute
+            object.__setattr__(video_copy, 'score', relevance_score)
+            filtered_videos.append(video_copy)
+
+        # Sort by score (highest first)
+        filtered_videos.sort(key=lambda v: v.score, reverse=True)
+
+        return filtered_videos
+
     async def scrape(self, config: dict, keywords: list[str]) -> list[ScrapedYouTubeVideo]:
         """
         Fetch trending videos from tech categories
