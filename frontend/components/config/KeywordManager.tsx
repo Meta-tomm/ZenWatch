@@ -52,10 +52,10 @@ export const KeywordManager = () => {
 
   if (isError) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center">
-        <AlertCircle className="w-12 h-12 text-destructive mb-4" />
-        <h3 className="text-lg font-semibold mb-2">Erreur de chargement</h3>
-        <p className="text-sm text-muted-foreground">
+      <div className="flex flex-col items-center justify-center p-8 text-center bg-cyber-black/50 backdrop-blur-sm border border-red-500/30 rounded-lg">
+        <AlertCircle className="w-12 h-12 text-red-400 mb-4" />
+        <h3 className="text-lg font-semibold mb-2 text-red-400">Erreur de chargement</h3>
+        <p className="text-sm text-cyber-blue/70">
           Impossible de charger les mots-clés
         </p>
       </div>
@@ -67,37 +67,50 @@ export const KeywordManager = () => {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold">Mots-clés</h2>
-          <p className="text-sm text-muted-foreground">
+          <h2 className="text-2xl font-bold text-cyber-blue">Mots-clés</h2>
+          <p className="text-sm text-cyber-blue/70">
             Gérez les mots-clés qui définissent vos intérêts
           </p>
         </div>
-        <Button onClick={() => openKeywordModal('create')}>
+        <Button
+          onClick={() => openKeywordModal('create')}
+          className="bg-cyber-blue/20 border border-cyber-blue/50 text-cyber-blue hover:bg-cyber-blue/30"
+        >
           <Plus className="w-4 h-4 mr-2" />
           Nouveau mot-clé
         </Button>
       </div>
 
       {/* Table */}
-      <div className="border rounded-lg">
+      <div className="bg-cyber-black/50 backdrop-blur-sm border border-cyber-blue/30 rounded-lg overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Mot-clé</TableHead>
-              <TableHead>Catégorie</TableHead>
-              <TableHead>Importance</TableHead>
-              <TableHead>Statut</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+            <TableRow className="border-cyber-blue/30 hover:bg-cyber-blue/10">
+              <TableHead className="text-cyber-blue">Mot-clé</TableHead>
+              <TableHead className="text-cyber-blue">Catégorie</TableHead>
+              <TableHead className="text-cyber-blue">Importance</TableHead>
+              <TableHead className="text-cyber-blue">Statut</TableHead>
+              <TableHead className="text-right text-cyber-blue">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {keywords?.map((keyword) => (
-              <TableRow key={keyword.id}>
-                <TableCell className="font-medium">{keyword.keyword}</TableCell>
+              <TableRow
+                key={keyword.id}
+                className="border-cyber-blue/20 hover:bg-cyber-blue/5"
+              >
+                <TableCell className="font-medium text-cyber-blue/90">
+                  {keyword.keyword}
+                </TableCell>
                 <TableCell>
-                  <Badge variant="secondary">{keyword.category}</Badge>
+                  <Badge
+                    variant="secondary"
+                    className="bg-cyber-gray/50 text-cyber-blue border-cyber-blue/30"
+                  >
+                    {keyword.category}
+                  </Badge>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
@@ -105,14 +118,23 @@ export const KeywordManager = () => {
                       <div
                         key={i}
                         className={`w-2 h-2 rounded-full ${
-                          i < keyword.weight ? 'bg-primary' : 'bg-muted'
+                          i < keyword.weight
+                            ? 'bg-cyber-yellow shadow-[0_0_5px_rgba(255,230,0,0.5)]'
+                            : 'bg-cyber-gray/30'
                         }`}
                       />
                     ))}
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={keyword.is_active ? 'default' : 'outline'}>
+                  <Badge
+                    variant={keyword.is_active ? 'default' : 'outline'}
+                    className={
+                      keyword.is_active
+                        ? 'bg-cyber-green/20 text-cyber-green border-cyber-green/50'
+                        : 'bg-cyber-gray/20 text-cyber-blue/50 border-cyber-blue/30'
+                    }
+                  >
                     {keyword.is_active ? 'Actif' : 'Inactif'}
                   </Badge>
                 </TableCell>
@@ -122,6 +144,7 @@ export const KeywordManager = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => openKeywordModal('edit', keyword.id)}
+                      className="hover:bg-cyber-blue/20 hover:text-cyber-blue"
                     >
                       <Pencil className="w-4 h-4" />
                     </Button>
@@ -129,8 +152,9 @@ export const KeywordManager = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => setDeleteId(keyword.id)}
+                      className="hover:bg-red-500/20 hover:text-red-400"
                     >
-                      <Trash2 className="w-4 h-4 text-destructive" />
+                      <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
                 </TableCell>
@@ -142,14 +166,14 @@ export const KeywordManager = () => {
 
       {/* Create/Edit Modal */}
       <Dialog open={keywordModal.open} onOpenChange={closeKeywordModal}>
-        <DialogContent>
+        <DialogContent className="bg-cyber-black/95 backdrop-blur-sm border-cyber-blue/30">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-cyber-blue glow-text">
               {keywordModal.mode === 'create'
                 ? 'Nouveau mot-clé'
                 : 'Modifier le mot-clé'}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-cyber-blue/70">
               {keywordModal.mode === 'create'
                 ? 'Ajoutez un nouveau mot-clé pour personnaliser votre veille technologique'
                 : 'Modifiez les paramètres de ce mot-clé'}
@@ -164,16 +188,20 @@ export const KeywordManager = () => {
 
       {/* Delete Confirmation */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-cyber-black/95 backdrop-blur-sm border-red-500/30">
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-red-400">
+              Confirmer la suppression
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-cyber-blue/70">
               Êtes-vous sûr de vouloir supprimer ce mot-clé ? Cette action est
               irréversible.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogCancel className="bg-cyber-gray/50 border-cyber-blue/30 text-cyber-blue hover:bg-cyber-gray/70">
+              Annuler
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 if (deleteId) {
@@ -181,7 +209,7 @@ export const KeywordManager = () => {
                   setDeleteId(null);
                 }
               }}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-red-500/20 border border-red-500/50 text-red-400 hover:bg-red-500/30"
             >
               Supprimer
             </AlertDialogAction>
