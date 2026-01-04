@@ -3,6 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from app.database import Base
+import fakeredis.aioredis
 
 
 @pytest.fixture(scope="function")
@@ -45,3 +46,20 @@ def db_session():
     session.close()
     Base.metadata.drop_all(engine)
     engine.dispose()
+
+
+@pytest.fixture(scope="function")
+async def redis_client():
+    """
+    Create fake Redis client for testing
+
+    Uses fakeredis to avoid needing actual Redis instance
+    Scope: function - creates fresh Redis for each test
+    """
+    client = fakeredis.aioredis.FakeRedis(decode_responses=True)
+
+    yield client
+
+    # Cleanup
+    await client.flushall()
+    await client.aclose()
