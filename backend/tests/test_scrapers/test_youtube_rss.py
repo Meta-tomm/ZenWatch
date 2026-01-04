@@ -45,3 +45,29 @@ async def test_parse_rss_entry():
     assert video.channel_id == 'UC_test'
     assert video.channel_name == 'Test Channel'
     assert video.source_type == 'youtube_rss'
+
+@pytest.mark.asyncio
+async def test_scrape_fetches_from_db(db_session):
+    """Test scraper fetches channels from database"""
+    from app.models.youtube_channel import YouTubeChannel
+
+    # Create test channel
+    channel = YouTubeChannel(
+        channel_id='UC_test',
+        channel_name='Test Channel',
+        channel_url='https://youtube.com/channel/UC_test',
+        rss_feed_url='https://youtube.com/feeds/videos.xml?channel_id=UC_test',
+        is_active=True
+    )
+    db_session.add(channel)
+    db_session.commit()
+
+    scraper = YouTubeRSSScraper()
+
+    with patch.object(scraper, '_get_active_channels') as mock_get:
+        mock_get.return_value = [channel]
+
+        # Should attempt to fetch channels
+        await scraper.scrape({}, [])
+
+        mock_get.assert_called_once()

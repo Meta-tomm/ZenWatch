@@ -19,11 +19,21 @@ def db_session():
         poolclass=StaticPool  # Use static pool for thread safety
     )
 
-    # Import all models to ensure they're registered
-    from app.models import source, scraping_run, article
+    # Import models needed for tests
+    # Note: user_config excluded due to SQLite incompatibility with ARRAY types
+    from app.models import source, scraping_run, article, youtube_channel
 
-    # Create all tables
-    Base.metadata.create_all(engine)
+    # Create only the tables we need (exclude user_config)
+    tables_to_create = [
+        Base.metadata.tables['sources'],
+        Base.metadata.tables['scraping_runs'],
+        Base.metadata.tables['articles'],
+        Base.metadata.tables['article_keywords'],
+        Base.metadata.tables['youtube_channels'],
+    ]
+
+    for table in tables_to_create:
+        table.create(engine, checkfirst=True)
 
     # Create session
     Session = sessionmaker(bind=engine)
