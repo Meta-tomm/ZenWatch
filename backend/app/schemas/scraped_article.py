@@ -58,3 +58,44 @@ class ScrapedArticle(BaseModel):
                 "raw_data": {}
             }
         }
+
+
+class ScrapedYouTubeVideo(ScrapedArticle):
+    """
+    YouTube video extension of ScrapedArticle.
+
+    Adds YouTube-specific fields for video metadata including channel information,
+    thumbnail, duration, and view count.
+    """
+
+    video_id: str = Field(..., description="YouTube video ID (e.g., 'dQw4w9WgXcQ')")
+    channel_id: str = Field(..., description="YouTube channel ID (e.g., 'UC_x5XG1OV2P6uZZ5FSM9Ttw')")
+    channel_name: str = Field(..., description="Channel display name")
+    thumbnail_url: Optional[HttpUrl] = Field(None, description="Video thumbnail URL")
+    duration_seconds: Optional[int] = Field(None, ge=0, description="Video duration in seconds")
+    view_count: Optional[int] = Field(None, ge=0, description="View count at scrape time")
+
+    @field_validator('video_id', 'channel_id', 'channel_name')
+    @classmethod
+    def validate_not_empty(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError('Field cannot be empty')
+        return v.strip()
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "title": "Building a REST API with FastAPI",
+                "url": "https://youtube.com/watch?v=dQw4w9WgXcQ",
+                "source_type": "youtube_rss",
+                "external_id": "dQw4w9WgXcQ",
+                "author": "Tech Channel",
+                "published_at": "2024-01-15T10:30:00",
+                "video_id": "dQw4w9WgXcQ",
+                "channel_id": "UC_x5XG1OV2P6uZZ5FSM9Ttw",
+                "channel_name": "Tech Channel",
+                "thumbnail_url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
+                "duration_seconds": 1200,
+                "view_count": 50000
+            }
+        }

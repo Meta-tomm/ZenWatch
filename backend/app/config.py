@@ -29,6 +29,12 @@ class Settings(BaseSettings):
     # Dev.to API
     DEVTO_API_KEY: Optional[str] = None
 
+    # YouTube API
+    YOUTUBE_API_KEY: Optional[str] = None
+
+    # Gemini API
+    GEMINI_API_KEY: Optional[str] = None
+
     # Email SMTP
     SMTP_HOST: str = "smtp.gmail.com"
     SMTP_PORT: int = 587

@@ -57,6 +57,11 @@ class Article(Base):
     is_read = Column(Boolean, default=False)
     is_favorite = Column(Boolean, default=False)
     is_archived = Column(Boolean, default=False)
+    video_id = Column(String(255), nullable=True)
+    thumbnail_url = Column(Text, nullable=True)
+    duration_seconds = Column(Integer, nullable=True)
+    view_count = Column(Integer, nullable=True)
+    is_video = Column(Boolean, default=False)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
