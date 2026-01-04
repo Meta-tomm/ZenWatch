@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 
 export default function ArticlesPage() {
   return (
-    <main className="min-h-screen bg-charcoal-950">
+    <main className="min-h-screen bg-anthracite-950">
       {/* Header with back button */}
       <div className="sticky top-0 z-40 border-b border-gold-dark/20 bg-charcoal-900/95 backdrop-blur supports-[backdrop-filter]:bg-charcoal-900/80">
         <div className="container mx-auto px-4 py-4">
