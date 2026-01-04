@@ -3,11 +3,12 @@
 import { useUIStore } from '@/store/ui-store';
 import { Button } from '@/components/ui/button';
 import { NavLink } from './NavLink';
-import { Home, Settings, BarChart3, ChevronLeft } from 'lucide-react';
+import { Home, Settings, BarChart3, ChevronLeft, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/', icon: Home, label: 'Feed' },
+  { href: '/articles', icon: FileText, label: 'Articles' },
   { href: '/config', icon: Settings, label: 'Configuration' },
   { href: '/analytics', icon: BarChart3, label: 'Analytics' },
 ];
