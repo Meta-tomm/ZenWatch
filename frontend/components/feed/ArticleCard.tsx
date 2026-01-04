@@ -5,11 +5,10 @@ import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Star, ExternalLink, MessageSquare, TrendingUp, BookmarkPlus } from 'lucide-react';
-import { CornerBrackets } from '@/components/cyberpunk';
 import { LikeDislikeButtons } from './LikeDislikeButtons';
 import { useToggleFavorite } from '@/hooks/use-toggle-favorite';
 import { formatRelativeDate } from '@/lib/date-utils';
-import { fadeInScale } from '@/lib/animations';
+import { minimalFadeIn } from '@/lib/animations-3d';
 import { cn } from '@/lib/utils';
 import { articlesApi } from '@/lib/api-client';
 import type { Article } from '@/types';
@@ -42,28 +41,24 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
     }
   };
 
-  const scoreColor = localArticle.score >= 70 ? 'text-gold' : localArticle.score >= 50 ? 'text-gold-light' : 'text-muted-foreground';
-
-  // Determine CornerBrackets color based on score
-  const bracketColor = localArticle.score >= 70 ? 'gold' : localArticle.score >= 50 ? 'gold-light' : 'gold-dark';
+  const scoreColor = localArticle.score >= 70 ? 'text-violet-400' : localArticle.score >= 50 ? 'text-violet-300' : 'text-muted-foreground';
 
   return (
-    <motion.div variants={fadeInScale} initial="hidden" animate="visible">
-      <CornerBrackets color={bracketColor}>
-        <div
-          className={cn(
-            'p-4 bg-black/50 border border-gold/30 backdrop-blur-sm',
-            'hover:bg-black/70 hover:border-gold/50 transition-all',
-            localArticle.is_read && 'opacity-60'
-          )}
-        >
+    <motion.div variants={minimalFadeIn} initial="hidden" animate="visible">
+      <div
+        className={cn(
+          'p-4 bg-anthracite-900/90 border border-violet-500/20 rounded-lg',
+          'hover:bg-anthracite-800/90 hover:border-violet-400/40 transition-all duration-300',
+          localArticle.is_read && 'opacity-60'
+        )}
+      >
         {/* Header */}
         <div className="flex items-start justify-between gap-3 mb-2">
           <div className="flex-1 min-w-0">
             <h3
               className={cn(
-                'font-semibold leading-tight mb-1 cursor-pointer hover:text-primary line-clamp-2',
-                localArticle.score >= 70 && 'glow-text'
+                'font-semibold leading-tight mb-1 cursor-pointer hover:text-violet-400 line-clamp-2 transition-colors',
+                localArticle.score >= 70 && 'text-violet-300'
               )}
               onClick={() => onOpenModal?.(localArticle.id)}
             >
@@ -149,7 +144,7 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
               <Star
                 className={cn(
                   'w-4 h-4',
-                  localArticle.is_favorite && 'fill-gold text-gold'
+                  localArticle.is_favorite && 'fill-violet-400 text-violet-400'
                 )}
               />
             </Button>
@@ -179,8 +174,7 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
             </Button>
           </div>
         </div>
-        </div>
-      </CornerBrackets>
+      </div>
     </motion.div>
   );
 };
