@@ -96,11 +96,14 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
           <Badge variant="secondary" className="text-xs">
             {localArticle.category}
           </Badge>
-          {(localArticle.tags || []).slice(0, 3).map((tag) => (
-            <Badge key={tag} variant="outline" className="text-xs">
-              {tag}
-            </Badge>
-          ))}
+          {(localArticle.tags || [])
+            .filter(tag => tag && tag.trim())
+            .slice(0, 3)
+            .map((tag) => (
+              <Badge key={tag} variant="outline" className="text-xs">
+                {tag}
+              </Badge>
+            ))}
         </div>
 
         {/* Summary */}
