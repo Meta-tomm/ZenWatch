@@ -92,6 +92,20 @@
 
 /* Cyberpunk Utilities */
 @layer utilities {
+  /* Keyframes for animations */
+  @keyframes scan {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(100vh); }
+  }
+
+  @keyframes glitch {
+    0%, 100% { transform: translate(0); }
+    20% { transform: translate(-2px, 2px); }
+    40% { transform: translate(-2px, -2px); }
+    60% { transform: translate(2px, 2px); }
+    80% { transform: translate(2px, -2px); }
+  }
+
   .scan-line {
     position: relative;
     overflow: hidden;
@@ -107,6 +121,7 @@
     background: linear-gradient(90deg, transparent, #00D9FF, transparent);
     animation: scan 8s linear infinite;
     pointer-events: none;
+    will-change: transform;
   }
 
   .glitch-text {
@@ -122,14 +137,29 @@
   }
 
   .terminal-text {
-    font-family: 'Courier New', monospace;
+    font-family: 'Courier New', 'Courier', 'Lucida Console', monospace;
     color: #00FF41;
     text-shadow: 0 0 5px rgba(0, 255, 65, 0.5);
+  }
+
+  /* Accessibility: Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .scan-line::after,
+    .glitch-text {
+      animation: none;
+    }
   }
 }
 
 /* Cyberpunk Base Styles */
 @layer base {
+  /* Firefox scrollbar support */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #00D9FF #0A0E27;
+  }
+
+  /* Webkit scrollbar (Chrome, Safari, Edge) */
   ::-webkit-scrollbar {
     width: 10px;
   }
