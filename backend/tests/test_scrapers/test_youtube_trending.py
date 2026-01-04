@@ -1,7 +1,10 @@
+from unittest.mock import AsyncMock, Mock
+
 import pytest
-from unittest.mock import Mock, AsyncMock, patch
+
 from app.scrapers.plugins.youtube_trending import YouTubeTrendingScraper
 from app.scrapers.registry import ScraperRegistry
+
 
 def test_youtube_trending_registered():
     """Test scraper is registered"""
@@ -138,3 +141,42 @@ def test_parse_trending_video_missing_optional_fields():
     assert result.tags == []
     assert str(result.thumbnail_url) == "https://i.ytimg.com/vi/abc123/hqdefault.jpg"  # Fallback to high
     assert result.duration_seconds == 300  # 5 minutes
+    assert result.raw_data == video_data  # Raw data included
+
+
+def test_parse_trending_video_invalid_data():
+    """Test parsing returns None for invalid data without crashing"""
+    scraper = YouTubeTrendingScraper()
+
+    # Test missing required field (id)
+    invalid_data_no_id = {
+        "snippet": {
+            "title": "Test",
+            "publishedAt": "2024-01-15T10:30:00Z"
+        }
+    }
+    result = scraper._parse_trending_video(invalid_data_no_id)
+    assert result is None
+
+    # Test invalid ISO timestamp
+    invalid_data_bad_timestamp = {
+        "id": "test123",
+        "snippet": {
+            "publishedAt": "invalid-timestamp",
+            "title": "Test"
+        }
+    }
+    result = scraper._parse_trending_video(invalid_data_bad_timestamp)
+    assert result is None
+
+    # Test None input
+    result = scraper._parse_trending_video(None)
+    assert result is None
+
+    # Test empty dict
+    result = scraper._parse_trending_video({})
+    assert result is None
+
+    # Test invalid input type
+    result = scraper._parse_trending_video("not a dict")
+    assert result is None
