@@ -66,6 +66,13 @@ const config = {
   				'3': 'hsl(var(--chart-3))',
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
+  			},
+  			cyber: {
+  				blue: '#00D9FF',
+  				yellow: '#FFE600',
+  				black: '#0A0E27',
+  				gray: '#1A1F3A',
+  				green: '#00FF41'
   			}
   		},
   		borderRadius: {
@@ -89,11 +96,32 @@ const config = {
   				to: {
   					height: '0'
   				}
+  			},
+  			glitch: {
+  				'0%, 100%': { transform: 'translate(0)' },
+  				'33%': { transform: 'translate(-2px, 2px)' },
+  				'66%': { transform: 'translate(2px, -2px)' }
+  			},
+  			scan: {
+  				'0%': { transform: 'translateY(-100%)' },
+  				'100%': { transform: 'translateY(100vh)' }
+  			},
+  			'pulse-glow': {
+  				'0%, 100%': { opacity: '1', boxShadow: '0 0 20px rgba(0, 217, 255, 0.5)' },
+  				'50%': { opacity: '0.8', boxShadow: '0 0 30px rgba(0, 217, 255, 0.8)' }
+  			},
+  			typing: {
+  				'0%': { width: '0' },
+  				'100%': { width: '100%' }
   			}
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out'
+  			'accordion-up': 'accordion-up 0.2s ease-out',
+  			'glitch': 'glitch 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite',
+  			'scan': 'scan 8s linear infinite',
+  			'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+  			'typing': 'typing 2s steps(20) forwards'
   		}
   	}
   },
