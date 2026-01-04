@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Any
 from datetime import datetime
 import feedparser
 from app.scrapers.base import ScraperPlugin
@@ -41,3 +41,31 @@ class YouTubeRSSScraper(ScraperPlugin):
         """
         # Implementation in next task
         return []
+
+    def _parse_rss_entry(self, entry: Any, channel: Any) -> ScrapedYouTubeVideo:
+        """
+        Parse RSS entry to ScrapedYouTubeVideo
+
+        Args:
+            entry: feedparser entry object
+            channel: YouTubeChannel model instance
+
+        Returns:
+            ScrapedYouTubeVideo object
+        """
+        video_id = entry.yt_videoid
+
+        return ScrapedYouTubeVideo(
+            title=entry.title,
+            url=entry.link,
+            source_type='youtube_rss',
+            external_id=video_id,
+            content=entry.get('summary', ''),
+            author=channel.channel_name,
+            published_at=datetime(*entry.published_parsed[:6]),
+            tags=[channel.channel_name],
+            video_id=video_id,
+            channel_id=channel.channel_id,
+            channel_name=channel.channel_name,
+            thumbnail_url=entry.media_thumbnail[0]['url'] if hasattr(entry, 'media_thumbnail') and entry.media_thumbnail else None,
+        )
