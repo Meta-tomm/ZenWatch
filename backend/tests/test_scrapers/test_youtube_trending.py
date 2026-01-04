@@ -187,8 +187,9 @@ def test_filter_by_keywords():
     scraper = YouTubeTrendingScraper()
 
     # Create mock videos with different keyword matches
-    from app.schemas.scraped_article import ScrapedYouTubeVideo
     from datetime import datetime
+
+    from app.schemas.scraped_article import ScrapedYouTubeVideo
 
     videos = [
         ScrapedYouTubeVideo(
@@ -269,8 +270,9 @@ def test_filter_by_keywords_minimum_threshold():
     """Test minimum keyword match requirement filters correctly"""
     scraper = YouTubeTrendingScraper()
 
-    from app.schemas.scraped_article import ScrapedYouTubeVideo
     from datetime import datetime
+
+    from app.schemas.scraped_article import ScrapedYouTubeVideo
 
     videos = [
         ScrapedYouTubeVideo(
@@ -347,5 +349,49 @@ def test_filter_by_keywords_minimum_threshold():
     # Test combined filters
     config = {"include_shorts": False, "min_view_count": 1000}
     filtered = scraper._filter_by_keywords(videos, keywords, config)
+    assert len(filtered) == 1
+    assert filtered[0].video_id == "vid1"
+
+
+def test_filter_by_keywords_none_view_count():
+    """Test filtering handles None view_count without crashing"""
+    scraper = YouTubeTrendingScraper()
+
+    from datetime import datetime
+
+    from app.schemas.scraped_article import ScrapedYouTubeVideo
+
+    # Create video with view_count=None (edge case that should be handled)
+    videos = [
+        ScrapedYouTubeVideo(
+            video_id="vid1",
+            title="Rust Tutorial with No Views",
+            url="https://youtube.com/watch?v=vid1",
+            source_type="youtube_trending",
+            external_id="vid1",
+            content="Learn Rust programming",
+            author="New Channel",
+            published_at=datetime.now(),
+            channel_id="channel1",
+            channel_name="New Channel",
+            thumbnail_url="https://example.com/thumb1.jpg",
+            duration_seconds=600,
+            view_count=None,  # Critical: None should not crash
+            tags=["rust"],
+        ),
+    ]
+
+    keywords = [
+        {"keyword": "rust", "weight": 5.0},
+    ]
+
+    # Test with min_view_count threshold - None should be treated as 0
+    config = {"min_view_count": 1000}
+    filtered = scraper._filter_by_keywords(videos, keywords, config)
+    # Video should be filtered out (None treated as 0 < 1000)
+    assert len(filtered) == 0
+
+    # Test with no threshold - video should pass
+    filtered = scraper._filter_by_keywords(videos, keywords)
     assert len(filtered) == 1
     assert filtered[0].video_id == "vid1"

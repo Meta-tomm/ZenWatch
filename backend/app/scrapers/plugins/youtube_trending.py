@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 
 import isodate
 from googleapiclient.discovery import build
@@ -27,6 +28,7 @@ class YouTubeTrendingScraper(ScraperPlugin):
 
     CACHE_TTL = 21600  # 6 hours
     MAX_RETRIES = 2
+    SHORTS_THRESHOLD_SECONDS = 60  # Videos under this duration are considered YouTube Shorts
 
     def __init__(self, redis_client=None):
         super().__init__(redis_client)
@@ -60,7 +62,7 @@ class YouTubeTrendingScraper(ScraperPlugin):
             self.logger.warning(f"Failed to parse duration '{iso_duration}': {e}")
             return None
 
-    def _parse_trending_video(self, video_data: dict) -> ScrapedYouTubeVideo | None:
+    def _parse_trending_video(self, video_data: dict[str, Any]) -> ScrapedYouTubeVideo | None:
         """
         Parse YouTube API video response into ScrapedYouTubeVideo object.
 
@@ -144,8 +146,8 @@ class YouTubeTrendingScraper(ScraperPlugin):
     def _filter_by_keywords(
         self,
         videos: list[ScrapedYouTubeVideo],
-        keywords: list[dict],
-        config: dict | None = None
+        keywords: list[dict[str, Any]],
+        config: dict[str, Any] | None = None
     ) -> list[ScrapedYouTubeVideo]:
         """
         Filter videos by keywords and calculate relevance scores.
@@ -186,7 +188,12 @@ class YouTubeTrendingScraper(ScraperPlugin):
             matched_keywords = 0
 
             for keyword_data in keywords:
-                keyword = keyword_data.get("keyword", "").lower()
+                keyword = keyword_data.get("keyword", "")
+                if not isinstance(keyword, str):
+                    self.logger.warning(f"Invalid keyword type: {type(keyword)}, skipping")
+                    continue
+
+                keyword = keyword.lower()
                 weight = keyword_data.get("weight", 1.0)
 
                 # Case-insensitive substring match
@@ -198,12 +205,12 @@ class YouTubeTrendingScraper(ScraperPlugin):
             if matched_keywords < min_keyword_matches:
                 continue
 
-            # Skip if below view count threshold
-            if video.view_count < min_view_count:
+            # Skip if below view count threshold (treat None as 0)
+            if (video.view_count or 0) < min_view_count:
                 continue
 
             # Skip shorts if include_shorts=False
-            if not include_shorts and video.duration_seconds and video.duration_seconds < 60:
+            if not include_shorts and video.duration_seconds and video.duration_seconds < self.SHORTS_THRESHOLD_SECONDS:
                 continue
 
             # Store score in raw_data and attach as dynamic attribute
@@ -218,9 +225,14 @@ class YouTubeTrendingScraper(ScraperPlugin):
         # Sort by score (highest first)
         filtered_videos.sort(key=lambda v: v.score, reverse=True)
 
+        self.logger.info(
+            f"Filtered {len(videos)} videos to {len(filtered_videos)} "
+            f"(matched {len(filtered_videos)} with keywords)"
+        )
+
         return filtered_videos
 
-    async def scrape(self, config: dict, keywords: list[str]) -> list[ScrapedYouTubeVideo]:
+    async def scrape(self, config: dict[str, Any], keywords: list[str]) -> list[ScrapedYouTubeVideo]:
         """
         Fetch trending videos from tech categories
 
