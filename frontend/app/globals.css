@@ -127,7 +127,20 @@
     transform: perspective(1000px) rotateX(-5deg) rotateY(5deg) translateZ(20px);
   }
 
-  /* Subtle fade in animation */
+  /* Animations */
+  @keyframes gridPulse {
+    0%, 100% {
+      opacity: 0.1;
+    }
+    50% {
+      opacity: 0.2;
+    }
+  }
+
+  .animate-gridPulse {
+    animation: gridPulse 3s ease-in-out infinite;
+  }
+
   @keyframes fade-in {
     0% { opacity: 0; }
     100% { opacity: 1; }
