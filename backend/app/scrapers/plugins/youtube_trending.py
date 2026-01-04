@@ -1,6 +1,7 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
 from googleapiclient.discovery import build
+import isodate
 from app.scrapers.base import ScraperPlugin
 from app.scrapers.registry import scraper_plugin
 from app.schemas.scraped_article import ScrapedYouTubeVideo
@@ -37,6 +38,26 @@ class YouTubeTrendingScraper(ScraperPlugin):
     def validate_config(self, config: Dict) -> bool:
         """Validate API key is configured"""
         return settings.YOUTUBE_API_KEY is not None
+
+    def _parse_duration(self, iso_duration: Optional[str]) -> Optional[int]:
+        """
+        Parse ISO 8601 duration to seconds.
+
+        Args:
+            iso_duration: ISO 8601 duration string (e.g., "PT4M13S")
+
+        Returns:
+            Duration in seconds, or None if parsing fails
+        """
+        if not iso_duration:
+            return None
+
+        try:
+            duration = isodate.parse_duration(iso_duration)
+            return int(duration.total_seconds())
+        except Exception as e:
+            self.logger.warning(f"Failed to parse duration '{iso_duration}': {e}")
+            return None
 
     async def scrape(self, config: Dict, keywords: List[str]) -> List[ScrapedYouTubeVideo]:
         """
