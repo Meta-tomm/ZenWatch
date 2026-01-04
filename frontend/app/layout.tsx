@@ -20,7 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr" suppressHydrationWarning className="dark">
-      <body className={`${inter.className} bg-cyber-black text-cyber-blue`}>
+      <body className={`${inter.className} bg-charcoal-950 text-gold`}>
         <QueryProvider>
           <ThemeProvider>
             <MainLayout>{children}</MainLayout>

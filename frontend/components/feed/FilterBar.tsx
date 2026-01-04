@@ -32,16 +32,16 @@ export const FilterBar = () => {
   const { activeFilters, setFilters, clearFilters } = useUIStore();
 
   return (
-    <div className="sticky top-0 z-30 bg-cyber-black/50 backdrop-blur-sm border-b border-cyber-blue/30 p-4">
+    <div className="sticky top-0 z-30 bg-charcoal-900/50 backdrop-blur-sm border-b border-gold/30 p-4">
       {/* Search */}
       <div className="flex items-center gap-2 mb-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyber-blue/70" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gold/70" />
           <Input
             placeholder="Rechercher..."
             value={activeFilters.search}
             onChange={(e) => setFilters({ search: e.target.value })}
-            className="pl-9 bg-cyber-black/70 border-cyber-blue/50 text-cyber-blue placeholder:text-cyber-blue/50 focus:border-cyber-blue focus:ring-cyber-blue/30"
+            className="pl-9 bg-charcoal-800/70 border-gold/50 text-gold placeholder:text-gold/50 focus:border-gold focus:ring-gold/30"
           />
         </div>
 
@@ -52,20 +52,20 @@ export const FilterBar = () => {
             setFilters({ sort: value as 'score' | 'date' | 'popularity' })
           }
         >
-          <SelectTrigger className="w-32 bg-cyber-black/70 border-cyber-blue/50 text-cyber-blue focus:border-cyber-blue focus:ring-cyber-blue/30">
+          <SelectTrigger className="w-32 bg-charcoal-800/70 border-gold/50 text-gold focus:border-gold focus:ring-gold/30">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="bg-cyber-black/95 border-cyber-blue/50">
-            <SelectItem value="score" className="text-cyber-blue hover:bg-cyber-blue/20 focus:bg-cyber-blue/20">Score</SelectItem>
-            <SelectItem value="date" className="text-cyber-blue hover:bg-cyber-blue/20 focus:bg-cyber-blue/20">Date</SelectItem>
-            <SelectItem value="popularity" className="text-cyber-blue hover:bg-cyber-blue/20 focus:bg-cyber-blue/20">Popularité</SelectItem>
+          <SelectContent className="bg-charcoal-900/95 border-gold/50">
+            <SelectItem value="score" className="text-gold hover:bg-gold/20 focus:bg-gold/20">Score</SelectItem>
+            <SelectItem value="date" className="text-gold hover:bg-gold/20 focus:bg-gold/20">Date</SelectItem>
+            <SelectItem value="popularity" className="text-gold hover:bg-gold/20 focus:bg-gold/20">Popularité</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {/* Category Pills */}
       <div className="space-y-2">
-        <div className="text-xs text-cyber-blue/70 font-medium">Catégories</div>
+        <div className="text-xs text-gold/70 font-medium">Catégories</div>
         <div className="flex flex-wrap gap-2">
           {CATEGORIES.map((cat) => {
             const isActive = activeFilters.categories.includes(cat);
@@ -75,8 +75,8 @@ export const FilterBar = () => {
                 variant={isActive ? 'default' : 'outline'}
                 className={`cursor-pointer transition-all ${
                   isActive
-                    ? 'bg-cyber-blue/30 text-cyber-blue border-cyber-blue/70 shadow-[0_0_10px_rgba(0,255,255,0.3)]'
-                    : 'bg-cyber-black/50 text-cyber-blue/70 border-cyber-blue/30 hover:bg-cyber-blue/10 hover:border-cyber-blue/50'
+                    ? 'bg-gold/30 text-gold border-gold/70 shadow-[0_0_10px_rgba(0,255,255,0.3)]'
+                    : 'bg-charcoal-800/50 text-gold/70 border-gold/30 hover:bg-gold/10 hover:border-gold/50'
                 }`}
                 onClick={() => {
                   const newCategories = isActive
@@ -94,7 +94,7 @@ export const FilterBar = () => {
 
       {/* Source Pills */}
       <div className="space-y-2 mt-3">
-        <div className="text-xs text-cyber-blue/70 font-medium">Sources</div>
+        <div className="text-xs text-gold/70 font-medium">Sources</div>
         <div className="flex flex-wrap gap-2">
           {SOURCES.map((source) => {
             const isActive = activeFilters.sources.includes(source.id);
@@ -104,8 +104,8 @@ export const FilterBar = () => {
                 variant={isActive ? 'default' : 'outline'}
                 className={`cursor-pointer transition-all ${
                   isActive
-                    ? 'bg-cyber-blue/30 text-cyber-blue border-cyber-blue/70 shadow-[0_0_10px_rgba(0,255,255,0.3)]'
-                    : 'bg-cyber-black/50 text-cyber-blue/70 border-cyber-blue/30 hover:bg-cyber-blue/10 hover:border-cyber-blue/50'
+                    ? 'bg-gold/30 text-gold border-gold/70 shadow-[0_0_10px_rgba(0,255,255,0.3)]'
+                    : 'bg-charcoal-800/50 text-gold/70 border-gold/30 hover:bg-gold/10 hover:border-gold/50'
                 }`}
                 onClick={() => {
                   const newSources = isActive
@@ -125,13 +125,13 @@ export const FilterBar = () => {
       {(activeFilters.search ||
         activeFilters.categories.length > 0 ||
         activeFilters.sources.length > 0) && (
-        <div className="flex items-center gap-2 pt-2 mt-3 border-t border-cyber-blue/30">
-          <span className="text-sm text-cyber-blue/70">Filtres actifs:</span>
+        <div className="flex items-center gap-2 pt-2 mt-3 border-t border-gold/30">
+          <span className="text-sm text-gold/70">Filtres actifs:</span>
           <Button
             variant="ghost"
             size="sm"
             onClick={clearFilters}
-            className="h-7 bg-cyber-black/50 text-cyber-blue border border-cyber-blue/30 hover:bg-cyber-blue/20 hover:border-cyber-blue/50"
+            className="h-7 bg-charcoal-800/50 text-gold border border-gold/30 hover:bg-gold/20 hover:border-gold/50"
           >
             <X className="w-3 h-3 mr-1" />
             Effacer

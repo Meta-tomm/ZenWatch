@@ -113,7 +113,7 @@ export const ArticleModal = () => {
               >
                 <Star
                   className={
-                    article.is_favorite ? 'fill-yellow-500 text-yellow-500' : ''
+                    article.is_favorite ? 'fill-gold text-gold-light' : ''
                   }
                 />
                 {article.is_favorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}

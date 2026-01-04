@@ -67,12 +67,17 @@ const config = {
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
   			},
-  			cyber: {
-  				blue: '#00D9FF',
-  				yellow: '#FFE600',
-  				black: '#0A0E27',
-  				gray: '#1A1F3A',
-  				green: '#00FF41'
+  			gold: {
+  				DEFAULT: '#FFD700',
+  				light: '#F4C430',
+  				dark: '#B8860B',
+  				muted: 'rgba(255, 215, 0, 0.2)'
+  			},
+  			charcoal: {
+  				'950': '#0F0F0F',
+  				'900': '#1A1A1A',
+  				'800': '#242424',
+  				'700': '#2A2A2A',
   			}
   		},
   		borderRadius: {
@@ -97,31 +102,25 @@ const config = {
   					height: '0'
   				}
   			},
-  			glitch: {
-  				'0%, 100%': { transform: 'translate(0)' },
-  				'33%': { transform: 'translate(-2px, 2px)' },
-  				'66%': { transform: 'translate(2px, -2px)' }
+  			'fade-in': {
+  				'0%': { opacity: '0' },
+  				'100%': { opacity: '1' }
   			},
-  			scan: {
-  				'0%': { transform: 'translateY(-100%)' },
-  				'100%': { transform: 'translateY(100vh)' }
+  			'fade-in-up': {
+  				'0%': { opacity: '0', transform: 'translateY(10px)' },
+  				'100%': { opacity: '1', transform: 'translateY(0)' }
   			},
-  			'pulse-glow': {
-  				'0%, 100%': { opacity: '1', boxShadow: '0 0 20px rgba(0, 217, 255, 0.5)' },
-  				'50%': { opacity: '0.8', boxShadow: '0 0 30px rgba(0, 217, 255, 0.8)' }
-  			},
-  			typing: {
-  				'0%': { width: '0' },
-  				'100%': { width: '100%' }
+  			'subtle-glow': {
+  				'0%, 100%': { boxShadow: '0 0 10px rgba(255, 215, 0, 0.3)' },
+  				'50%': { boxShadow: '0 0 20px rgba(255, 215, 0, 0.5)' }
   			}
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out',
-  			'glitch': 'glitch 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite',
-  			'scan': 'scan 8s linear infinite',
-  			'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
-  			'typing': 'typing 2s steps(20) forwards'
+  			'fade-in': 'fade-in 0.3s ease-out',
+  			'fade-in-up': 'fade-in-up 0.4s ease-out',
+  			'subtle-glow': 'subtle-glow 3s ease-in-out infinite'
   		}
   	}
   },

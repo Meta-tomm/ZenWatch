@@ -16,11 +16,11 @@ interface MatrixRainProps {
  * Respects prefers-reduced-motion accessibility setting.
  *
  * @example
- * <MatrixRain className="fixed inset-0 -z-10" color="#00FF41" />
+ * <MatrixRain className="fixed inset-0 -z-10" color="#B8860B" />
  */
 export const MatrixRain = ({
   className,
-  color = '#00FF41',
+  color = '#B8860B',
   fontSize = 16,
   speed = 33,
 }: MatrixRainProps) => {

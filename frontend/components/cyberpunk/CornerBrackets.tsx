@@ -6,27 +6,27 @@ import { cn } from '@/lib/utils';
 interface CornerBracketsProps {
   children: React.ReactNode;
   className?: string;
-  color?: 'blue' | 'yellow' | 'green';
+  color?: 'gold' | 'gold-light' | 'gold-dark';
 }
 
 /**
- * Adds HUD-style corner brackets around content for cyberpunk aesthetic.
+ * Adds minimalist corner brackets around content with gold accents.
  * Creates decorative corner elements using CSS borders.
  *
  * @example
- * <CornerBrackets color="blue">
+ * <CornerBrackets color="gold">
  *   <div className="p-4">Content with corner brackets</div>
  * </CornerBrackets>
  */
 export const CornerBrackets = ({
   children,
   className,
-  color = 'blue'
+  color = 'gold'
 }: CornerBracketsProps) => {
   const colorMap = {
-    blue: 'border-cyber-blue',
-    yellow: 'border-cyber-yellow',
-    green: 'border-cyber-green',
+    'gold': 'border-gold',
+    'gold-light': 'border-gold-light',
+    'gold-dark': 'border-gold-dark',
   };
 
   return (

@@ -6,10 +6,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Star, ExternalLink, MessageSquare, TrendingUp, BookmarkPlus } from 'lucide-react';
 import { CornerBrackets } from '@/components/cyberpunk';
+import { LikeDislikeButtons } from './LikeDislikeButtons';
 import { useToggleFavorite } from '@/hooks/use-toggle-favorite';
 import { formatRelativeDate } from '@/lib/date-utils';
 import { fadeInScale } from '@/lib/animations';
 import { cn } from '@/lib/utils';
+import { articlesApi } from '@/lib/api-client';
 import type { Article } from '@/types';
 
 interface ArticleCardProps {
@@ -19,21 +21,40 @@ interface ArticleCardProps {
 
 export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [localArticle, setLocalArticle] = useState(article);
   const toggleFavorite = useToggleFavorite();
 
-  const scoreColor = article.score >= 70 ? 'text-green-500' : article.score >= 50 ? 'text-yellow-500' : 'text-muted-foreground';
+  const handleLike = async () => {
+    try {
+      const updated = await articlesApi.toggleLike(localArticle.id);
+      setLocalArticle(updated);
+    } catch (err) {
+      console.error('Failed to like article:', err);
+    }
+  };
+
+  const handleDislike = async () => {
+    try {
+      const updated = await articlesApi.toggleDislike(localArticle.id);
+      setLocalArticle(updated);
+    } catch (err) {
+      console.error('Failed to dislike article:', err);
+    }
+  };
+
+  const scoreColor = localArticle.score >= 70 ? 'text-gold' : localArticle.score >= 50 ? 'text-gold-light' : 'text-muted-foreground';
 
   // Determine CornerBrackets color based on score
-  const bracketColor = article.score >= 70 ? 'blue' : article.score >= 50 ? 'yellow' : 'green';
+  const bracketColor = localArticle.score >= 70 ? 'gold' : localArticle.score >= 50 ? 'gold-light' : 'gold-dark';
 
   return (
     <motion.div variants={fadeInScale} initial="hidden" animate="visible">
       <CornerBrackets color={bracketColor}>
         <div
           className={cn(
-            'p-4 bg-cyber-black/50 border border-cyber-blue/30 backdrop-blur-sm',
-            'hover:bg-cyber-black/70 hover:border-cyber-blue/50 transition-all',
-            article.is_read && 'opacity-60'
+            'p-4 bg-black/50 border border-gold/30 backdrop-blur-sm',
+            'hover:bg-black/70 hover:border-gold/50 transition-all',
+            localArticle.is_read && 'opacity-60'
           )}
         >
         {/* Header */}
@@ -42,20 +63,20 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
             <h3
               className={cn(
                 'font-semibold leading-tight mb-1 cursor-pointer hover:text-primary line-clamp-2',
-                article.score >= 70 && 'glow-text'
+                localArticle.score >= 70 && 'glow-text'
               )}
-              onClick={() => onOpenModal?.(article.id)}
+              onClick={() => onOpenModal?.(localArticle.id)}
             >
-              {article.title}
+              {localArticle.title}
             </h3>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="capitalize">{article.source_type}</span>
+              <span className="capitalize">{localArticle.source_type}</span>
               <span>•</span>
-              <span>{formatRelativeDate(article.published_at)}</span>
-              {article.read_time_minutes && (
+              <span>{formatRelativeDate(localArticle.published_at)}</span>
+              {localArticle.read_time_minutes && (
                 <>
                   <span>•</span>
-                  <span>{article.read_time_minutes} min</span>
+                  <span>{localArticle.read_time_minutes} min</span>
                 </>
               )}
             </div>
@@ -64,7 +85,7 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
           {/* Score */}
           <div className="flex flex-col items-center shrink-0">
             <div className={cn('text-2xl font-bold', scoreColor)}>
-              {article.score.toFixed(0)}
+              {localArticle.score.toFixed(0)}
             </div>
             <div className="text-xs text-muted-foreground">score</div>
           </div>
@@ -73,9 +94,9 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
         {/* Tags */}
         <div className="flex flex-wrap gap-1.5 mb-3">
           <Badge variant="secondary" className="text-xs">
-            {article.category}
+            {localArticle.category}
           </Badge>
-          {(article.tags || []).slice(0, 3).map((tag) => (
+          {(localArticle.tags || []).slice(0, 3).map((tag) => (
             <Badge key={tag} variant="outline" className="text-xs">
               {tag}
             </Badge>
@@ -83,14 +104,14 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
         </div>
 
         {/* Summary */}
-        {article.summary && (
+        {localArticle.summary && (
           <p
             className={cn(
               'text-sm text-muted-foreground leading-relaxed mb-3',
               !isExpanded && 'line-clamp-2'
             )}
           >
-            {article.summary}
+            {localArticle.summary}
           </p>
         )}
 
@@ -98,26 +119,34 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
         <div className="flex items-center gap-4 mb-3 text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             <TrendingUp className="w-3 h-3" />
-            {article.upvotes || 0}
+            {localArticle.upvotes || 0}
           </div>
           <div className="flex items-center gap-1">
             <MessageSquare className="w-3 h-3" />
-            {article.comments_count || 0}
+            {localArticle.comments_count || 0}
           </div>
         </div>
 
         {/* Actions */}
         <div className="flex items-center justify-between border-t pt-3">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
+            <LikeDislikeButtons
+              initialLikes={localArticle.likes}
+              initialDislikes={localArticle.dislikes}
+              userReaction={localArticle.user_reaction}
+              onLike={handleLike}
+              onDislike={handleDislike}
+              size="sm"
+            />
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => toggleFavorite.mutate(article.id)}
+              onClick={() => toggleFavorite.mutate(localArticle.id)}
             >
               <Star
                 className={cn(
                   'w-4 h-4',
-                  article.is_favorite && 'fill-yellow-500 text-yellow-500'
+                  localArticle.is_favorite && 'fill-gold text-gold'
                 )}
               />
             </Button>
@@ -127,7 +156,7 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
           </div>
 
           <div className="flex items-center gap-1">
-            {article.summary && (
+            {localArticle.summary && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -138,7 +167,7 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
             )}
             <Button variant="ghost" size="sm" asChild>
               <a
-                href={article.url}
+                href={localArticle.url}
                 target="_blank"
                 rel="noopener noreferrer"
               >

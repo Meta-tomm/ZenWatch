@@ -1,7 +1,6 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { GlitchText } from '@/components/cyberpunk';
 import { fadeInUp } from '@/lib/animations';
 
 interface AnimatedTitleProps {
@@ -11,8 +10,8 @@ interface AnimatedTitleProps {
 }
 
 /**
- * Animated hero title with glitch effect and fade-in animation.
- * Uses Framer Motion for entrance animation and GlitchText for cyberpunk effect.
+ * Minimalist animated hero title with subtle fade-in animation.
+ * Uses Framer Motion for smooth entrance animation with gold accent.
  *
  * @example
  * <AnimatedTitle
@@ -32,12 +31,9 @@ export const AnimatedTitle = ({
       initial="hidden"
       animate="visible"
     >
-      <GlitchText
-        as="h1"
-        className="text-6xl md:text-8xl font-bold text-cyber-blue glow-text tracking-tight"
-      >
+      <h1 className="text-6xl md:text-8xl font-bold text-gold glow-text tracking-tight">
         {title}
-      </GlitchText>
+      </h1>
       {subtitle && (
         <motion.p
           className="mt-4 text-xl md:text-2xl text-gray-400"

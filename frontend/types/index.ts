@@ -22,6 +22,34 @@ export interface Article {
   source_type: string;
   created_at: string;
   updated_at?: string;
+  likes?: number;
+  dislikes?: number;
+  user_reaction?: 'like' | 'dislike' | null;
+}
+
+export interface Video {
+  id: string;
+  title: string;
+  url: string;
+  video_url: string;
+  thumbnail_url?: string;
+  video_id?: string;
+  platform: 'youtube' | 'vimeo' | 'other';
+  summary?: string;
+  author?: string;
+  published_at: string;
+  score: number;
+  category: string;
+  tags: string[];
+  duration_minutes?: number;
+  views?: number;
+  likes?: number;
+  dislikes?: number;
+  is_favorite: boolean;
+  source_type: string;
+  created_at: string;
+  updated_at?: string;
+  user_reaction?: 'like' | 'dislike' | null;
 }
 
 export interface Keyword {

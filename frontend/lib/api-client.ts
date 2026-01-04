@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Article, Keyword, Source, UserConfig, ArticleFilters, PaginatedResponse } from '@/types';
+import type { Article, Video, Keyword, Source, UserConfig, ArticleFilters, PaginatedResponse } from '@/types';
 
 const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api',
@@ -67,6 +67,70 @@ export const articlesApi = {
 
   addNote: async (id: string, note: string): Promise<Article> => {
     const response = await apiClient.post(`/articles/${id}/notes`, { note });
+    return response.data;
+  },
+
+  getBestOfWeek: async (): Promise<Article | null> => {
+    const response = await apiClient.get('/articles/best-of-week');
+    return response.data;
+  },
+
+  toggleLike: async (id: string): Promise<Article> => {
+    const response = await apiClient.post(`/articles/${id}/like`);
+    return response.data;
+  },
+
+  toggleDislike: async (id: string): Promise<Article> => {
+    const response = await apiClient.post(`/articles/${id}/dislike`);
+    return response.data;
+  },
+};
+
+// Videos API
+export const videosApi = {
+  getVideos: async (params?: ArticleFilters): Promise<PaginatedResponse<Video>> => {
+    const queryParams: Record<string, any> = {
+      ...params,
+      categories: params?.categories?.length ? params.categories.join(',') : undefined,
+      sources: params?.sources?.length ? params.sources.join(',') : undefined,
+    };
+
+    Object.keys(queryParams).forEach(key => {
+      if (queryParams[key] === undefined) {
+        delete queryParams[key];
+      }
+    });
+
+    const response = await apiClient.get('/videos', { params: queryParams });
+    const data = response.data;
+    return {
+      data: data.data.map((video: any) => ({
+        ...video,
+        id: String(video.id),
+        tags: video.tags || [],
+      })),
+      total: data.total,
+      hasMore: data.hasMore,
+    };
+  },
+
+  getBestOfWeek: async (): Promise<Video | null> => {
+    const response = await apiClient.get('/videos/best-of-week');
+    return response.data;
+  },
+
+  toggleFavorite: async (id: string): Promise<Video> => {
+    const response = await apiClient.patch(`/videos/${id}/favorite`);
+    return response.data;
+  },
+
+  toggleLike: async (id: string): Promise<Video> => {
+    const response = await apiClient.post(`/videos/${id}/like`);
+    return response.data;
+  },
+
+  toggleDislike: async (id: string): Promise<Video> => {
+    const response = await apiClient.post(`/videos/${id}/dislike`);
     return response.data;
   },
 };

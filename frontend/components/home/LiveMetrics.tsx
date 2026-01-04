@@ -8,7 +8,7 @@ interface Metric {
   value: string | number;
   label: string;
   trend?: 'up' | 'down' | 'neutral';
-  color?: 'blue' | 'yellow' | 'green';
+  color?: 'gold' | 'gold-light' | 'gold-dark';
 }
 
 interface LiveMetricsProps {
@@ -22,8 +22,8 @@ interface LiveMetricsProps {
  *
  * @example
  * <LiveMetrics metrics={[
- *   { value: 127, label: 'Articles Today', trend: 'up', color: 'blue' },
- *   { value: '99%', label: 'Relevance Score', color: 'green' }
+ *   { value: 127, label: 'Articles Today', trend: 'up', color: 'gold' },
+ *   { value: '99%', label: 'Relevance Score', color: 'gold-dark' }
  * ]} />
  */
 export const LiveMetrics = ({ metrics, className = '' }: LiveMetricsProps) => {
