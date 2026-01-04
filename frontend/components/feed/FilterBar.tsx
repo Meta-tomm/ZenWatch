@@ -67,7 +67,7 @@ export const FilterBar = () => {
       <div className="space-y-2">
         <div className="text-xs text-gold/70 font-medium">Catégories</div>
         <div className="flex flex-wrap gap-2">
-          {CATEGORIES.map((cat) => {
+          {CATEGORIES.filter(cat => cat && cat.trim()).map((cat) => {
             const isActive = activeFilters.categories.includes(cat);
             return (
               <Badge
