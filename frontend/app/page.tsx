@@ -1,30 +1,65 @@
-import { BestArticleCard } from '@/components/home/BestArticleCard';
-import { BestVideoCard } from '@/components/home/BestVideoCard';
-import { StatsPlaceholder } from '@/components/home/StatsPlaceholder';
-import { AnimatedTitle } from '@/components/home/AnimatedTitle';
+'use client';
 
-export default function Home() {
+import { ParallaxGrid } from '@/components/home/ParallaxGrid';
+import { Hero3D } from '@/components/home/Hero3D';
+import { BestArticleCard3D } from '@/components/home/BestArticleCard3D';
+import { BestVideoCard3D } from '@/components/home/BestVideoCard3D';
+import { StatsPreview3D } from '@/components/home/StatsPreview3D';
+import { useArticles } from '@/hooks/use-articles';
+import { useMemo } from 'react';
+
+export default function HomePage() {
+  // Fetch all articles
+  const { data: articlesResponse, isLoading } = useArticles({
+    sort: 'score',
+  });
+
+  // Flatten pages from infinite query
+  const articles = useMemo(() => {
+    return articlesResponse?.pages?.flatMap(page => page.data) || [];
+  }, [articlesResponse]);
+
+  // Find best article of the week (highest score, not video)
+  const bestArticle = useMemo(() => {
+    return articles
+      .filter(a => a.source_type !== 'youtube')
+      .sort((a, b) => b.score - a.score)[0] || null;
+  }, [articles]);
+
+  // Find best video of the week (highest score, YouTube only)
+  const bestVideo = useMemo(() => {
+    return articles
+      .filter(a => a.source_type === 'youtube')
+      .sort((a, b) => b.score - a.score)[0] || null;
+  }, [articles]);
+
   return (
-    <main className="min-h-screen bg-charcoal-950">
-      <div className="container mx-auto px-4 py-8 space-y-8">
-        {/* Title */}
-        <div className="text-center mb-12">
-          <AnimatedTitle
-            title="ZENWATCH"
-            subtitle="Your intelligent tech watch platform"
-          />
-        </div>
+    <main className="relative min-h-screen bg-anthracite-950">
+      {/* Parallax background */}
+      <ParallaxGrid />
 
-        {/* Best of the Week Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <BestArticleCard />
-          <BestVideoCard />
-        </div>
+      {/* Content */}
+      <div className="relative z-10">
+        {/* Hero section */}
+        <Hero3D />
 
-        {/* Stats Placeholder */}
-        <div className="mt-12">
-          <StatsPlaceholder />
-        </div>
+        {/* Best content cards */}
+        <section className="max-w-7xl mx-auto px-4 py-16">
+          {isLoading ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="h-96 rounded-2xl bg-anthracite-800/50 animate-pulse" />
+              <div className="h-96 rounded-2xl bg-anthracite-800/50 animate-pulse" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <BestArticleCard3D article={bestArticle} />
+              <BestVideoCard3D video={bestVideo} />
+            </div>
+          )}
+        </section>
+
+        {/* Stats section */}
+        <StatsPreview3D />
       </div>
     </main>
   );
