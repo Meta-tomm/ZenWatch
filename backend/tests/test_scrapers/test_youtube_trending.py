@@ -556,3 +556,173 @@ def test_fetch_trending_videos_api_error():
         # Should return data after retries
         assert len(result) == 1
         assert result[0]["id"] == "video_id_1"
+
+
+@pytest.mark.asyncio
+async def test_scrape_full_workflow():
+    """Test complete scraping workflow with quota check and recording"""
+    from datetime import datetime
+
+    scraper = YouTubeTrendingScraper()
+
+    # Mock quota manager to allow scraping
+    scraper.quota_manager = Mock()
+    scraper.quota_manager.check_quota = AsyncMock(return_value=True)
+    scraper.quota_manager.record_usage = AsyncMock()
+
+    # Mock _fetch_trending_videos to return test data
+    mock_video_data = [
+        {
+            "id": "video_1",
+            "snippet": {
+                "publishedAt": "2024-01-01T10:00:00Z",
+                "channelId": "channel_1",
+                "title": "Rust Programming Tutorial 2024",
+                "description": "Learn Rust programming language from scratch",
+                "channelTitle": "Tech Channel",
+                "tags": ["rust", "programming", "tutorial"],
+                "thumbnails": {
+                    "high": {"url": "https://i.ytimg.com/vi/video_1/hqdefault.jpg"}
+                }
+            },
+            "contentDetails": {"duration": "PT10M"},
+            "statistics": {
+                "viewCount": "50000",
+                "likeCount": "2000",
+                "commentCount": "100"
+            }
+        },
+        {
+            "id": "video_2",
+            "snippet": {
+                "publishedAt": "2024-01-02T12:00:00Z",
+                "channelId": "channel_2",
+                "title": "Python Machine Learning Complete Guide",
+                "description": "Build ML models with Python",
+                "channelTitle": "AI Academy",
+                "tags": ["python", "ml"],
+                "thumbnails": {
+                    "high": {"url": "https://i.ytimg.com/vi/video_2/hqdefault.jpg"}
+                }
+            },
+            "contentDetails": {"duration": "PT15M"},
+            "statistics": {
+                "viewCount": "100000",
+                "likeCount": "5000",
+                "commentCount": "300"
+            }
+        },
+        {
+            "id": "video_3",
+            "snippet": {
+                "publishedAt": "2024-01-03T14:00:00Z",
+                "channelId": "channel_3",
+                "title": "JavaScript React Tutorial",
+                "description": "Learn React.js",
+                "channelTitle": "Web Dev",
+                "tags": ["javascript", "react"],
+                "thumbnails": {
+                    "high": {"url": "https://i.ytimg.com/vi/video_3/hqdefault.jpg"}
+                }
+            },
+            "contentDetails": {"duration": "PT20M"},
+            "statistics": {
+                "viewCount": "30000",
+                "likeCount": "1500",
+                "commentCount": "50"
+            }
+        }
+    ]
+
+    scraper._fetch_trending_videos = Mock(return_value=mock_video_data)
+
+    # Configuration
+    config = {
+        "region_code": "US",
+        "max_results": 50,
+        "video_category": "28",
+        "min_keyword_matches": 1,
+        "include_shorts": True,
+        "min_view_count": 0
+    }
+
+    # Keywords to filter by
+    keywords = [
+        {"keyword": "rust", "weight": 5.0, "category": "programming"},
+        {"keyword": "python", "weight": 4.0, "category": "programming"},
+    ]
+
+    # Execute scrape
+    result = await scraper.scrape(config, keywords)
+
+    # Verify quota check was called BEFORE fetch
+    scraper.quota_manager.check_quota.assert_called_once()
+
+    # Verify fetch was called with correct parameters
+    scraper._fetch_trending_videos.assert_called_once_with(
+        region_code="US",
+        max_results=50,
+        video_category="28"
+    )
+
+    # Verify quota usage was recorded AFTER fetch
+    scraper.quota_manager.record_usage.assert_called_once_with(100)
+
+    # Verify results are filtered correctly (only videos matching keywords)
+    assert len(result) == 2  # video_1 (rust) and video_2 (python)
+
+    # Verify videos are ScrapedYouTubeVideo instances
+    from app.schemas.scraped_article import ScrapedYouTubeVideo
+    assert all(isinstance(v, ScrapedYouTubeVideo) for v in result)
+
+    # Verify videos are sorted by score (highest first)
+    # video_1: rust match = 5.0
+    # video_2: python match = 4.0
+    assert result[0].video_id == "video_1"
+    assert result[0].score == 5.0
+    assert result[1].video_id == "video_2"
+    assert result[1].score == 4.0
+
+    # Verify video data was parsed correctly
+    assert result[0].title == "Rust Programming Tutorial 2024"
+    assert result[0].channel_name == "Tech Channel"
+    assert result[0].view_count == 50000
+
+
+@pytest.mark.asyncio
+async def test_scrape_quota_exhausted():
+    """Test behavior when quota is exhausted (returns empty list)"""
+    scraper = YouTubeTrendingScraper()
+
+    # Mock quota manager to return quota exhausted
+    scraper.quota_manager = Mock()
+    scraper.quota_manager.check_quota = AsyncMock(return_value=False)
+    scraper.quota_manager.record_usage = AsyncMock()
+
+    # Mock _fetch_trending_videos (should NOT be called)
+    scraper._fetch_trending_videos = Mock(return_value=[])
+
+    config = {
+        "region_code": "US",
+        "max_results": 50,
+        "video_category": "28"
+    }
+
+    keywords = [
+        {"keyword": "rust", "weight": 5.0}
+    ]
+
+    # Execute scrape
+    result = await scraper.scrape(config, keywords)
+
+    # Verify quota check was called
+    scraper.quota_manager.check_quota.assert_called_once()
+
+    # Verify _fetch_trending_videos was NOT called (quota exhausted)
+    scraper._fetch_trending_videos.assert_not_called()
+
+    # Verify quota usage was NOT recorded (no API call made)
+    scraper.quota_manager.record_usage.assert_not_called()
+
+    # Verify empty list returned
+    assert result == []

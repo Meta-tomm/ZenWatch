@@ -316,21 +316,58 @@ class YouTubeTrendingScraper(ScraperPlugin):
 
         return filtered_videos
 
-    async def scrape(self, config: dict[str, Any], keywords: list[str]) -> list[ScrapedYouTubeVideo]:
+    async def scrape(
+        self,
+        config: dict[str, Any],
+        keywords: list[dict[str, Any]]
+    ) -> list[ScrapedYouTubeVideo]:
         """
-        Fetch trending videos from tech categories
+        Scrape trending YouTube videos filtered by keywords
 
         Args:
-            config: {'category_ids': [28, 27], 'max_results': 50}
-            keywords: Filter by keywords in title/description
+            config: Scraper configuration (region_code, max_results, etc.)
+            keywords: List of keyword dicts with 'keyword', 'weight', 'category'
 
         Returns:
-            List of trending video articles
+            List of filtered ScrapedYouTubeVideo objects sorted by relevance
         """
-        # Check quota before proceeding
+        # Check quota availability BEFORE making API call
         if self.quota_manager and not await self.quota_manager.check_quota():
-            self.logger.warning("YouTube API quota exhausted, skipping trending")
+            self.logger.warning("YouTube API quota exhausted, skipping trending scrape")
             return []
 
-        # Implementation in next task
-        return []
+        # Extract config values with defaults
+        region_code = config.get("region_code", "US")
+        max_results = config.get("max_results", 50)
+        video_category = config.get("video_category", "28")
+
+        # Fetch trending videos from YouTube API
+        raw_videos = self._fetch_trending_videos(
+            region_code=region_code,
+            max_results=max_results,
+            video_category=video_category
+        )
+
+        # Record quota usage AFTER successful API call (100 units per call)
+        if self.quota_manager:
+            await self.quota_manager.record_usage(100)
+
+        # Parse raw video data into ScrapedYouTubeVideo objects
+        # Filter out parsing failures (None values)
+        videos = [
+            parsed_video
+            for raw_video in raw_videos
+            if (parsed_video := self._parse_trending_video(raw_video)) is not None
+        ]
+
+        self.logger.info(f"Parsed {len(videos)} videos from {len(raw_videos)} raw items")
+
+        # Filter by keywords and calculate relevance scores
+        filtered_videos = self._filter_by_keywords(videos, keywords, config)
+
+        self.logger.info(
+            f"Scraped {len(filtered_videos)} relevant trending videos "
+            f"from {len(videos)} total (region={region_code})"
+        )
+
+        return filtered_videos
