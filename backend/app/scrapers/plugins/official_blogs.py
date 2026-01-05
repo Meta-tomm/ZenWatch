@@ -85,5 +85,114 @@ class OfficialBlogsScraper(ScraperPlugin):
             return None
 
     async def scrape(self, config: Dict, keywords: List[str]) -> List[ScrapedArticle]:
-        """Scrape articles from configured RSS feeds"""
-        return []
+        """
+        Scrape articles from configured RSS feeds
+
+        Args:
+            config: Configuration with feeds list
+            keywords: Optional list of keywords for filtering
+
+        Returns:
+            List of ScrapedArticle objects
+        """
+        feeds = config.get('feeds', self._get_default_feeds())
+        max_per_feed = config.get('max_articles_per_feed', 20)
+
+        if not feeds:
+            self.logger.info("No feeds configured, returning empty list")
+            return []
+
+        articles = []
+        errors = 0
+
+        for feed_config in feeds:
+            feed_name = feed_config.get('name', 'Unknown')
+            feed_url = feed_config.get('url')
+
+            if not feed_url:
+                self.logger.warning(f"Skipping feed {feed_name}: no URL")
+                continue
+
+            try:
+                feed_articles = await self._fetch_feed(feed_url, feed_name, max_per_feed, keywords)
+                articles.extend(feed_articles)
+            except Exception as e:
+                errors += 1
+                self.logger.error(f"Failed to fetch feed {feed_name}: {e}")
+                continue
+
+        self.logger.info(
+            f"Scraped {len(articles)} articles from {len(feeds)} feeds "
+            f"({errors} errors)"
+        )
+
+        return articles
+
+    async def _fetch_feed(
+        self,
+        feed_url: str,
+        feed_name: str,
+        max_articles: int,
+        keywords: List[str]
+    ) -> List[ScrapedArticle]:
+        """
+        Fetch and parse a single RSS feed
+
+        Args:
+            feed_url: URL of the RSS feed
+            feed_name: Display name of the feed
+            max_articles: Maximum articles to return
+            keywords: Keywords for filtering
+
+        Returns:
+            List of ScrapedArticle objects
+        """
+        self.logger.info(f"Fetching feed: {feed_name} ({feed_url})")
+
+        feed = feedparser.parse(feed_url)
+
+        if feed.bozo:
+            self.logger.warning(f"Malformed RSS for {feed_name}: {feed.bozo_exception}")
+
+        articles = []
+        for entry in feed.entries[:max_articles]:
+            article = self._parse_rss_entry(entry, feed_name)
+            if article is None:
+                continue
+
+            # Keyword filtering
+            if keywords and not self._matches_keywords(article, keywords):
+                continue
+
+            articles.append(article)
+
+        return articles
+
+    def _matches_keywords(self, article: ScrapedArticle, keywords: List[str]) -> bool:
+        """
+        Check if article matches any keyword
+
+        Args:
+            article: ScrapedArticle to check
+            keywords: List of keywords
+
+        Returns:
+            True if matches any keyword or no keywords provided
+        """
+        if not keywords:
+            return True
+
+        text = f"{article.title} {article.content or ''}".lower()
+        return any(kw.lower() in text for kw in keywords)
+
+    def _get_default_feeds(self) -> List[Dict]:
+        """
+        Default AI blog feeds
+
+        Returns:
+            List of default feed configurations
+        """
+        return [
+            {"name": "OpenAI", "url": "https://openai.com/blog/rss.xml"},
+            {"name": "DeepMind", "url": "https://deepmind.google/blog/rss.xml"}
+        ]
