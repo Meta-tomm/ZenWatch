@@ -76,3 +76,16 @@ celerybeat.pid
 
 .claude/
 .worktrees/
+
+# Documentation plans (local only)
+docs/plans/
+backend/CELERY_SETUP.md
+
+# Root documentation (local only)
+COMPONENT_HIERARCHY.md
+FRONTEND_REDESIGN_SUMMARY.md
+PORTS_MANAGEMENT.md
+QUICKSTART.md
+SCRAPER_CONFIGURATION.md
+SCRAPER_SESSION_SUMMARY.md
+TESTING_GUIDE.md
