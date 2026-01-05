@@ -72,7 +72,7 @@ export const Hero3D = () => {
       >
         <a
           href="/articles"
-          className="px-6 py-3 bg-gradient-violet-magenta rounded-lg font-semibold text-white hover:opacity-90 transition-opacity"
+          className="px-6 py-3 bg-gradient-violet-magenta rounded-lg font-semibold text-violet-100 hover:opacity-90 transition-opacity"
         >
           Explore articles
         </a>
