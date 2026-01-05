@@ -12,17 +12,17 @@ export default function ArticlesPage() {
   return (
     <main className="min-h-screen bg-anthracite-950">
       {/* Header with back button */}
-      <div className="sticky top-0 z-40 border-b border-gold-dark/20 bg-charcoal-900/95 backdrop-blur supports-[backdrop-filter]:bg-charcoal-900/80">
+      <div className="sticky top-0 z-40 border-b border-violet-500/20 bg-anthracite-900/95 backdrop-blur supports-[backdrop-filter]:bg-anthracite-900/80">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link href="/">
-                <Button variant="ghost" size="sm" className="gap-2">
+                <Button variant="ghost" size="sm" className="gap-2 text-violet-300 hover:text-violet-200 hover:bg-violet-500/20">
                   <ArrowLeft className="w-4 h-4" />
                   Back to Home
                 </Button>
               </Link>
-              <h1 className="text-2xl font-bold text-gold-dark">
+              <h1 className="text-2xl font-bold text-gradient-violet">
                 Research Hub
               </h1>
             </div>
