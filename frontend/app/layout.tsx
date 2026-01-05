@@ -9,8 +9,8 @@ import { MainLayout } from "@/components/layout/MainLayout";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "TechWatch - Veille Technologique Intelligente",
-  description: "Plateforme de veille tech automatisée",
+  title: "ZenWatch - Smart Tech Intelligence",
+  description: "Automated tech watch platform",
 };
 
 export default function RootLayout({
@@ -19,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fr" suppressHydrationWarning className="dark">
+    <html lang="en" suppressHydrationWarning className="dark">
       <body className={`${inter.className} bg-charcoal-950 text-gold`}>
         <QueryProvider>
           <ThemeProvider>

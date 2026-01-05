@@ -160,7 +160,7 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
                 size="sm"
                 onClick={() => setIsExpanded(!isExpanded)}
               >
-                {isExpanded ? 'Réduire' : 'Voir plus'}
+                {isExpanded ? 'Less' : 'More'}
               </Button>
             )}
             <Button variant="ghost" size="sm" asChild>

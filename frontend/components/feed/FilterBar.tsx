@@ -38,7 +38,7 @@ export const FilterBar = () => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-violet-400/70" />
           <Input
-            placeholder="Rechercher..."
+            placeholder="Search..."
             value={activeFilters.search}
             onChange={(e) => setFilters({ search: e.target.value })}
             className="pl-9 bg-anthracite-800/70 border-violet-500/30 text-violet-100 placeholder:text-violet-400/50 focus:border-violet-400 focus:ring-violet-400/30"
@@ -58,14 +58,14 @@ export const FilterBar = () => {
           <SelectContent className="bg-anthracite-900/95 border-violet-500/30">
             <SelectItem value="score" className="text-violet-100 hover:bg-violet-500/20 focus:bg-violet-500/20">Score</SelectItem>
             <SelectItem value="date" className="text-violet-100 hover:bg-violet-500/20 focus:bg-violet-500/20">Date</SelectItem>
-            <SelectItem value="popularity" className="text-violet-100 hover:bg-violet-500/20 focus:bg-violet-500/20">Popularité</SelectItem>
+            <SelectItem value="popularity" className="text-violet-100 hover:bg-violet-500/20 focus:bg-violet-500/20">Popularity</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {/* Category Pills */}
       <div className="space-y-2">
-        <div className="text-xs text-violet-400/70 font-medium">Catégories</div>
+        <div className="text-xs text-violet-400/70 font-medium">Categories</div>
         <div className="flex flex-wrap gap-2">
           {CATEGORIES.filter(cat => cat && cat.trim()).map((cat) => {
             const isActive = activeFilters.categories.includes(cat);
@@ -126,7 +126,7 @@ export const FilterBar = () => {
         activeFilters.categories.length > 0 ||
         activeFilters.sources.length > 0) && (
         <div className="flex items-center gap-2 pt-2 mt-3 border-t border-violet-500/20">
-          <span className="text-sm text-violet-400/70">Filtres actifs:</span>
+          <span className="text-sm text-violet-400/70">Active filters:</span>
           <Button
             variant="ghost"
             size="sm"
@@ -134,7 +134,7 @@ export const FilterBar = () => {
             className="h-7 bg-anthracite-800/50 text-violet-100 border border-violet-500/30 hover:bg-violet-500/20 hover:border-violet-400/50"
           >
             <X className="w-3 h-3 mr-1" />
-            Effacer
+            Clear
           </Button>
         </div>
       )}

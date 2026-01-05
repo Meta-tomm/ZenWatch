@@ -18,7 +18,7 @@ export const BestArticleCard3D = ({ article }: BestArticleCard3DProps) => {
   if (!article) {
     return (
       <div className="w-full h-96 rounded-2xl bg-anthracite-800/50 border border-violet/20 flex items-center justify-center">
-        <p className="text-muted-foreground">Aucun article cette semaine</p>
+        <p className="text-muted-foreground">No article this week</p>
       </div>
     );
   }
@@ -48,7 +48,7 @@ export const BestArticleCard3D = ({ article }: BestArticleCard3DProps) => {
         <div className="relative z-10 h-full flex flex-col">
           <div className="flex items-center gap-2 mb-4">
             <span className="px-3 py-1 bg-violet/20 border border-violet/30 rounded-full text-xs font-semibold text-violet-light">
-              Article de la semaine
+              Article of the week
             </span>
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <TrendingUp className="w-4 h-4" />

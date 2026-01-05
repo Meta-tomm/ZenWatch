@@ -43,9 +43,9 @@ export const useUIStore = create<UIState>()(
         if (theme === 'dark') {
           document.documentElement.classList.add('dark');
           document.documentElement.removeAttribute('data-theme');
-        } else if (theme === 'techwatch') {
+        } else if (theme === 'zenwatch') {
           document.documentElement.classList.remove('dark');
-          document.documentElement.setAttribute('data-theme', 'techwatch');
+          document.documentElement.setAttribute('data-theme', 'zenwatch');
         } else {
           document.documentElement.classList.remove('dark');
           document.documentElement.removeAttribute('data-theme');
@@ -68,7 +68,7 @@ export const useUIStore = create<UIState>()(
         }),
     }),
     {
-      name: 'techwatch-ui-store',
+      name: 'zenwatch-ui-store',
       partialize: (state) => ({
         sidebarCollapsed: state.sidebarCollapsed,
         theme: state.theme,

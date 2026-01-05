@@ -27,8 +27,8 @@ export const Sidebar = () => {
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-violet-500/20">
         {!collapsed && (
-          <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            TechWatch
+          <h1 className="text-xl font-bold text-gradient-violet">
+            ZenWatch
           </h1>
         )}
         <Button
@@ -62,7 +62,7 @@ export const Sidebar = () => {
       {/* Footer */}
       {!collapsed && (
         <div className="p-4 border-t border-violet-500/20 text-xs text-muted-foreground">
-          TechWatch v1.0.0
+          ZenWatch v1.0.0
         </div>
       )}
     </aside>

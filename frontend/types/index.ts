@@ -105,4 +105,4 @@ export interface PaginatedResponse<T> {
   limit?: number;
 }
 
-export type Theme = 'light' | 'dark' | 'techwatch';
+export type Theme = 'light' | 'dark' | 'zenwatch';

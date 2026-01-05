@@ -24,7 +24,7 @@ export const Hero3D = () => {
         className="text-xl md:text-2xl text-muted-foreground text-center max-w-2xl"
         variants={fadeInFromBottom}
       >
-        Votre veille tech intelligente
+        Your smart tech intelligence
       </motion.p>
 
       <motion.div
@@ -35,13 +35,13 @@ export const Hero3D = () => {
           href="/articles"
           className="px-6 py-3 bg-gradient-violet-magenta rounded-lg font-semibold hover:opacity-90 transition-opacity"
         >
-          Explorer les articles
+          Explore articles
         </a>
         <a
           href="/config"
           className="px-6 py-3 border border-violet/30 rounded-lg font-semibold hover:bg-violet/10 transition-colors"
         >
-          Configurer
+          Configure
         </a>
       </motion.div>
     </motion.section>

@@ -32,9 +32,9 @@ export const ThemeToggle = () => {
           <Moon className="w-4 h-4 mr-2" />
           Dark
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('techwatch')}>
+        <DropdownMenuItem onClick={() => setTheme('zenwatch')}>
           <Palette className="w-4 h-4 mr-2" />
-          TechWatch
+          ZenWatch
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
