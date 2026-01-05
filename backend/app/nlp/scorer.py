@@ -114,29 +114,36 @@ class ArticleScorer:
 
     def _exact_match_score(self, text_lower: str, keywords: List[Dict]) -> float:
         """
-        Score basé sur la présence exacte des mots-clés
+        Score based on matched keywords weight sum.
+        Uses logarithmic scaling: each match contributes significantly.
 
         Returns:
             Score 0-100
         """
-        total_weight = 0.0
         matched_weight = 0.0
+        match_count = 0
 
         for kw in keywords:
-            weight = kw.get("weight", 1.0)
-            total_weight += weight
-
             if kw["keyword"].lower() in text_lower:
+                weight = kw.get("weight", 1.0)
                 matched_weight += weight
+                match_count += 1
 
-        if total_weight == 0:
+        if match_count == 0:
             return 0.0
 
-        return (matched_weight / total_weight) * 100
+        # Score formula: base score from matches + bonus for weight
+        # 1 match = 20, 2 matches = 35, 3 matches = 47, 5 matches = 65, 10 matches = 86
+        base_score = min(100, 20 * np.log2(match_count + 1))
+
+        # Weight bonus: high-weight keyword matches boost score
+        weight_bonus = min(30, matched_weight * 3)
+
+        return min(100.0, base_score + weight_bonus)
 
     def _semantic_similarity_score(self, doc: spacy.tokens.Doc, keywords: List[Dict]) -> float:
         """
-        Score basé sur la similarité sémantique avec spaCy embeddings
+        Score based on TOP 5 semantic similarities (best matches).
 
         Returns:
             Score 0-100
@@ -156,13 +163,15 @@ class ArticleScorer:
         if not similarities:
             return 0.0
 
-        # Average similarity weighted
-        avg_similarity = np.mean(similarities)
-        return max(0.0, avg_similarity * 100)
+        # Use TOP 5 similarities instead of average (focus on best matches)
+        top_n = sorted(similarities, reverse=True)[:5]
+        avg_top_similarity = np.mean(top_n)
+
+        return max(0.0, min(100.0, avg_top_similarity * 100))
 
     def _tfidf_score(self, text: str, keywords: List[Dict]) -> float:
         """
-        Score basé sur TF-IDF cosine similarity
+        Score based on TOP 5 TF-IDF cosine similarities.
 
         Returns:
             Score 0-100
@@ -189,8 +198,11 @@ class ArticleScorer:
             if not weighted_sims:
                 return 0.0
 
-            avg_similarity = np.mean(weighted_sims)
-            return max(0.0, avg_similarity * 100)
+            # Use TOP 5 similarities instead of average
+            top_n = sorted(weighted_sims, reverse=True)[:5]
+            avg_top_similarity = np.mean(top_n)
+
+            return max(0.0, min(100.0, avg_top_similarity * 100))
 
         except Exception as e:
             logger.warning(f"TF-IDF scoring failed: {e}")

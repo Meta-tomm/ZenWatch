@@ -48,7 +48,7 @@ def score_articles(article_ids: list[int] = None):
             # Score articles without score or with score = 0
             articles = db.query(Article).filter(
                 (Article.score == None) | (Article.score == 0)
-            ).limit(100).all()  # Limit to avoid overload
+            ).limit(500).all()  # Process up to 500 articles at a time
 
         if not articles:
             logger.info("No articles to score")

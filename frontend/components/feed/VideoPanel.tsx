@@ -19,7 +19,7 @@ export const VideoPanel = () => {
         setIsLoading(true);
         const response = await videosApi.getVideos({
           sort: 'score',
-          limit: 10,
+          limit: 50,
         });
         setVideos(response.data);
         setError(null);
