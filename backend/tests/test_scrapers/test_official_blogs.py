@@ -1,6 +1,7 @@
 from unittest.mock import Mock, patch
 
 import pytest
+
 from app.scrapers.plugins.official_blogs import OfficialBlogsScraper
 from app.scrapers.registry import ScraperRegistry
 

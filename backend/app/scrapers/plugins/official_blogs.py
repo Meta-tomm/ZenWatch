@@ -1,9 +1,10 @@
-from typing import List, Dict
 from datetime import datetime
+
 import feedparser
+
+from app.schemas.scraped_article import ScrapedArticle
 from app.scrapers.base import ScraperPlugin
 from app.scrapers.registry import scraper_plugin
-from app.schemas.scraped_article import ScrapedArticle
 
 
 @scraper_plugin(
@@ -31,7 +32,7 @@ class OfficialBlogsScraper(ScraperPlugin):
 
     CACHE_TTL = 3600  # 1 hour
 
-    def validate_config(self, config: Dict) -> bool:
+    def validate_config(self, config: dict) -> bool:
         """Validate config has feeds list"""
         return True
 
@@ -52,7 +53,7 @@ class OfficialBlogsScraper(ScraperPlugin):
             entry_id = getattr(entry, 'id', link)
 
             if not title or not link:
-                self.logger.warning(f"Skipping entry with missing title or link")
+                self.logger.warning("Skipping entry with missing title or link")
                 return None
 
             # Parse published date
@@ -84,7 +85,7 @@ class OfficialBlogsScraper(ScraperPlugin):
             self.logger.warning(f"Failed to parse RSS entry: {e}")
             return None
 
-    async def scrape(self, config: Dict, keywords: List[str]) -> List[ScrapedArticle]:
+    async def scrape(self, config: dict, keywords: list[str]) -> list[ScrapedArticle]:
         """
         Scrape articles from configured RSS feeds
 
@@ -133,8 +134,8 @@ class OfficialBlogsScraper(ScraperPlugin):
         feed_url: str,
         feed_name: str,
         max_articles: int,
-        keywords: List[str]
-    ) -> List[ScrapedArticle]:
+        keywords: list[str]
+    ) -> list[ScrapedArticle]:
         """
         Fetch and parse a single RSS feed
 
@@ -168,7 +169,7 @@ class OfficialBlogsScraper(ScraperPlugin):
 
         return articles
 
-    def _matches_keywords(self, article: ScrapedArticle, keywords: List[str]) -> bool:
+    def _matches_keywords(self, article: ScrapedArticle, keywords: list[str]) -> bool:
         """
         Check if article matches any keyword
 
@@ -185,7 +186,7 @@ class OfficialBlogsScraper(ScraperPlugin):
         text = f"{article.title} {article.content or ''}".lower()
         return any(kw.lower() in text for kw in keywords)
 
-    def _get_default_feeds(self) -> List[Dict]:
+    def _get_default_feeds(self) -> list[dict]:
         """
         Default AI blog feeds
 
