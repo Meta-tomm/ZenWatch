@@ -47,10 +47,10 @@ export const BestVideoCard3D = ({ video }: BestVideoCard3DProps) => {
         {/* Content */}
         <div className="relative z-10 h-full flex flex-col">
           <div className="flex items-center gap-2 mb-4">
-            <span className="px-3 py-1 bg-magenta/20 border border-magenta/30 rounded-full text-xs font-semibold text-magenta-light">
+            <span className="px-3 py-1 bg-violet/20 border border-violet/30 rounded-full text-xs font-semibold text-violet-300">
               Video of the week
             </span>
-            <Play className="w-4 h-4 text-magenta-light" />
+            <Play className="w-4 h-4 text-violet-300" />
           </div>
 
           <h3 className="text-2xl font-bold mb-4 line-clamp-3 text-violet-100 group-hover:text-gradient-violet transition-all">

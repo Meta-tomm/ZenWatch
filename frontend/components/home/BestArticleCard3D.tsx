@@ -47,7 +47,7 @@ export const BestArticleCard3D = ({ article }: BestArticleCard3DProps) => {
         {/* Content */}
         <div className="relative z-10 h-full flex flex-col">
           <div className="flex items-center gap-2 mb-4">
-            <span className="px-3 py-1 bg-violet/20 border border-violet/30 rounded-full text-xs font-semibold text-violet-light">
+            <span className="px-3 py-1 bg-violet/20 border border-violet/30 rounded-full text-xs font-semibold text-violet-300">
               Article of the week
             </span>
             <div className="flex items-center gap-1 text-sm text-violet-300/70">

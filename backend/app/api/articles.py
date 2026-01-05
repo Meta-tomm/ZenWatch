@@ -42,7 +42,7 @@ async def get_articles(
     # Eagerly load source relationship to populate source_type
     query = db.query(Article).options(joinedload(Article.source)).filter(
         Article.is_archived == is_archived,
-        Article.score >= minScore
+        or_(Article.score >= minScore, Article.score.is_(None))
     )
 
     # Filter by categories (multiple)
