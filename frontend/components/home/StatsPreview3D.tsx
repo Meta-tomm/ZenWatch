@@ -23,7 +23,7 @@ export const StatsPreview3D = () => {
       variants={staggerContainer}
     >
       <motion.h2
-        className="text-3xl font-bold text-center mb-12"
+        className="text-3xl font-bold text-center mb-12 text-gradient-violet"
         variants={fadeInFromBottom}
       >
         Real-time statistics
@@ -46,7 +46,7 @@ export const StatsPreview3D = () => {
               <div className="text-4xl font-bold text-gradient-violet mb-2">
                 {stat.value}
               </div>
-              <div className="text-sm text-muted-foreground">{stat.label}</div>
+              <div className="text-sm text-violet-300/70">{stat.label}</div>
             </motion.div>
           );
         })}
@@ -59,9 +59,9 @@ export const StatsPreview3D = () => {
       >
         <div className="absolute inset-0 bg-gradient-subtle" />
         <div className="relative z-10 text-center">
-          <BarChart3 className="w-16 h-16 text-violet mx-auto mb-4" />
-          <h3 className="text-xl font-semibold mb-2">Power BI Dashboard</h3>
-          <p className="text-muted-foreground">
+          <BarChart3 className="w-16 h-16 text-violet-400 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold mb-2 text-gradient-violet">Power BI Dashboard</h3>
+          <p className="text-violet-300/60">
             Interactive visualizations coming soon
           </p>
         </div>

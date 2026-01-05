@@ -18,7 +18,7 @@ export const BestVideoCard3D = ({ video }: BestVideoCard3DProps) => {
   if (!video) {
     return (
       <div className="w-full h-96 rounded-2xl bg-anthracite-800/50 border border-magenta/20 flex items-center justify-center">
-        <p className="text-muted-foreground">No video this week</p>
+        <p className="text-violet-300/60">No video this week</p>
       </div>
     );
   }
@@ -53,23 +53,23 @@ export const BestVideoCard3D = ({ video }: BestVideoCard3DProps) => {
             <Play className="w-4 h-4 text-magenta-light" />
           </div>
 
-          <h3 className="text-2xl font-bold mb-4 line-clamp-3 group-hover:text-gradient-violet transition-all">
+          <h3 className="text-2xl font-bold mb-4 line-clamp-3 text-violet-100 group-hover:text-gradient-violet transition-all">
             {video.title}
           </h3>
 
           {video.summary && (
-            <p className="text-muted-foreground leading-relaxed line-clamp-4 mb-6">
+            <p className="text-violet-200/70 leading-relaxed line-clamp-4 mb-6">
               {video.summary}
             </p>
           )}
 
           <div className="mt-auto flex items-center justify-between">
             <div className="flex flex-col gap-1">
-              <span className="text-xs text-muted-foreground capitalize">
+              <span className="text-xs text-violet-300/60 capitalize">
                 {video.source_type || 'YouTube'}
               </span>
               {video.author && (
-                <span className="text-sm font-medium">{video.author}</span>
+                <span className="text-sm font-medium text-violet-200">{video.author}</span>
               )}
             </div>
 

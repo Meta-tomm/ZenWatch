@@ -18,7 +18,7 @@ export const BestArticleCard3D = ({ article }: BestArticleCard3DProps) => {
   if (!article) {
     return (
       <div className="w-full h-96 rounded-2xl bg-anthracite-800/50 border border-violet/20 flex items-center justify-center">
-        <p className="text-muted-foreground">No article this week</p>
+        <p className="text-violet-300/60">No article this week</p>
       </div>
     );
   }
@@ -50,29 +50,29 @@ export const BestArticleCard3D = ({ article }: BestArticleCard3DProps) => {
             <span className="px-3 py-1 bg-violet/20 border border-violet/30 rounded-full text-xs font-semibold text-violet-light">
               Article of the week
             </span>
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1 text-sm text-violet-300/70">
               <TrendingUp className="w-4 h-4" />
               <span>{article.score.toFixed(0)}</span>
             </div>
           </div>
 
-          <h3 className="text-2xl font-bold mb-4 line-clamp-3 group-hover:text-gradient-violet transition-all">
+          <h3 className="text-2xl font-bold mb-4 line-clamp-3 text-violet-100 group-hover:text-gradient-violet transition-all">
             {article.title}
           </h3>
 
           {article.summary && (
-            <p className="text-muted-foreground leading-relaxed line-clamp-4 mb-6">
+            <p className="text-violet-200/70 leading-relaxed line-clamp-4 mb-6">
               {article.summary}
             </p>
           )}
 
           <div className="mt-auto flex items-center justify-between">
             <div className="flex flex-col gap-1">
-              <span className="text-xs text-muted-foreground capitalize">
+              <span className="text-xs text-violet-300/60 capitalize">
                 {article.source_type}
               </span>
               {article.author && (
-                <span className="text-sm font-medium">{article.author}</span>
+                <span className="text-sm font-medium text-violet-200">{article.author}</span>
               )}
             </div>
 

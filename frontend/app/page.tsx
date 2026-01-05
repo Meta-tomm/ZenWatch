@@ -22,15 +22,15 @@ export default function HomePage() {
   // Find best article of the week (highest score, not video)
   const bestArticle = useMemo(() => {
     return articles
-      .filter(a => a.source_type !== 'youtube')
-      .sort((a, b) => b.score - a.score)[0] || null;
+      .filter(a => !a.source_type?.startsWith('youtube'))
+      .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))[0] || null;
   }, [articles]);
 
   // Find best video of the week (highest score, YouTube only)
   const bestVideo = useMemo(() => {
     return articles
-      .filter(a => a.source_type === 'youtube')
-      .sort((a, b) => b.score - a.score)[0] || null;
+      .filter(a => a.source_type?.startsWith('youtube'))
+      .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))[0] || null;
   }, [articles]);
 
   return (

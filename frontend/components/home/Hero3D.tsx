@@ -60,7 +60,7 @@ export const Hero3D = () => {
       </motion.h1>
 
       <motion.p
-        className="text-xl md:text-2xl text-muted-foreground text-center max-w-2xl"
+        className="text-xl md:text-2xl text-violet-300/80 text-center max-w-2xl"
         variants={fadeInFromBottom}
       >
         Your smart tech intelligence
@@ -72,13 +72,13 @@ export const Hero3D = () => {
       >
         <a
           href="/articles"
-          className="px-6 py-3 bg-gradient-violet-magenta rounded-lg font-semibold hover:opacity-90 transition-opacity"
+          className="px-6 py-3 bg-gradient-violet-magenta rounded-lg font-semibold text-white hover:opacity-90 transition-opacity"
         >
           Explore articles
         </a>
         <a
           href="/config"
-          className="px-6 py-3 border border-violet/30 rounded-lg font-semibold hover:bg-violet/10 transition-colors"
+          className="px-6 py-3 border border-violet/30 rounded-lg font-semibold text-violet-200 hover:bg-violet/10 transition-colors"
         >
           Configure
         </a>
