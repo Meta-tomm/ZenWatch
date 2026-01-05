@@ -4,21 +4,30 @@ import { useEffect, useState } from 'react';
 import { VideoPreview } from './VideoPreview';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Video as VideoIcon, AlertCircle } from 'lucide-react';
 import { videosApi } from '@/lib/api-client';
+import { useUIStore } from '@/store/ui-store';
 import type { Video } from '@/types';
 
 export const VideoPanel = () => {
   const [videos, setVideos] = useState<Video[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { videoFilters, setVideoFilters } = useUIStore();
 
   useEffect(() => {
     const fetchVideos = async () => {
       try {
         setIsLoading(true);
         const response = await videosApi.getVideos({
-          sort: 'score',
+          sort: videoFilters.sort,
           limit: 50,
         });
         setVideos(response.data);
@@ -32,7 +41,7 @@ export const VideoPanel = () => {
     };
 
     fetchVideos();
-  }, []);
+  }, [videoFilters.sort]);
 
   const handleToggleFavorite = async (id: string) => {
     try {
@@ -61,12 +70,29 @@ export const VideoPanel = () => {
   return (
     <div className="h-full bg-gradient-to-b from-anthracite-800/50 to-anthracite-900/50 backdrop-blur-sm border-l border-violet-500/20">
       <div className="p-4 border-b border-violet-500/20 sticky top-0 bg-anthracite-900/90 backdrop-blur z-10">
-        <div className="flex items-center gap-2">
-          <VideoIcon className="w-5 h-5 text-violet-400" />
-          <h2 className="font-bold text-lg text-gradient-violet">Top Videos</h2>
-          {!isLoading && (
-            <span className="text-xs text-violet-400/70">({videos.length})</span>
-          )}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <VideoIcon className="w-5 h-5 text-violet-400" />
+            <h2 className="font-bold text-lg text-gradient-violet">Videos</h2>
+            {!isLoading && (
+              <span className="text-xs text-violet-400/70">({videos.length})</span>
+            )}
+          </div>
+          <Select
+            value={videoFilters.sort}
+            onValueChange={(value) =>
+              setVideoFilters({ sort: value as 'score' | 'date' | 'popularity' })
+            }
+          >
+            <SelectTrigger className="w-24 h-8 text-xs bg-anthracite-800/70 border-violet-500/30 text-violet-100 focus:border-violet-400 focus:ring-violet-400/30">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-anthracite-900/95 border-violet-500/30">
+              <SelectItem value="score" className="text-xs text-violet-100 hover:bg-violet-500/20 focus:bg-violet-500/20">Score</SelectItem>
+              <SelectItem value="date" className="text-xs text-violet-100 hover:bg-violet-500/20 focus:bg-violet-500/20">Date</SelectItem>
+              <SelectItem value="popularity" className="text-xs text-violet-100 hover:bg-violet-500/20 focus:bg-violet-500/20">Views</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

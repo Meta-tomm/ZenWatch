@@ -11,12 +11,18 @@ interface UIState {
     sources: string[];
     sort: 'score' | 'date' | 'popularity';
   };
+  videoFilters: {
+    search: string;
+    categories: string[];
+    sort: 'score' | 'date' | 'popularity';
+  };
 
   toggleSidebar: () => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
   setTheme: (theme: Theme) => void;
   setFilters: (filters: Partial<UIState['activeFilters']>) => void;
   clearFilters: () => void;
+  setVideoFilters: (filters: Partial<UIState['videoFilters']>) => void;
 }
 
 export const useUIStore = create<UIState>()(
@@ -28,6 +34,11 @@ export const useUIStore = create<UIState>()(
         search: '',
         categories: [],
         sources: [],
+        sort: 'score',
+      },
+      videoFilters: {
+        search: '',
+        categories: [],
         sort: 'score',
       },
 
@@ -66,6 +77,11 @@ export const useUIStore = create<UIState>()(
             sort: 'score',
           },
         }),
+
+      setVideoFilters: (filters) =>
+        set((state) => ({
+          videoFilters: { ...state.videoFilters, ...filters },
+        })),
     }),
     {
       name: 'zenwatch-ui-store',
