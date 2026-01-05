@@ -11,6 +11,8 @@ import { LikeDislikeButtons } from './LikeDislikeButtons';
 interface VideoPreviewProps {
   video: Video;
   onToggleFavorite?: (id: string) => void;
+  onLike?: (id: string) => void;
+  onDislike?: (id: string) => void;
   compact?: boolean;
 }
 
@@ -46,7 +48,7 @@ const getThumbnailUrl = (video: Video): string => {
   return '/placeholder-video.png';
 };
 
-export const VideoPreview = ({ video, onToggleFavorite, compact = false }: VideoPreviewProps) => {
+export const VideoPreview = ({ video, onToggleFavorite, onLike, onDislike, compact = false }: VideoPreviewProps) => {
   const thumbnailUrl = getThumbnailUrl(video);
   const scoreColor = (video.score ?? 0) >= 70 ? 'text-violet-400' : (video.score ?? 0) >= 50 ? 'text-violet-300' : 'text-violet-300/60';
 
@@ -95,6 +97,8 @@ export const VideoPreview = ({ video, onToggleFavorite, compact = false }: Video
               initialLikes={video.likes}
               initialDislikes={video.dislikes}
               userReaction={video.user_reaction}
+              onLike={() => onLike?.(video.id)}
+              onDislike={() => onDislike?.(video.id)}
               size="sm"
               showCounts={false}
             />
@@ -200,6 +204,8 @@ export const VideoPreview = ({ video, onToggleFavorite, compact = false }: Video
             initialLikes={video.likes}
             initialDislikes={video.dislikes}
             userReaction={video.user_reaction}
+            onLike={() => onLike?.(video.id)}
+            onDislike={() => onDislike?.(video.id)}
           />
 
           <div className="flex items-center gap-1">

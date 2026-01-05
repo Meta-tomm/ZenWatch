@@ -53,6 +53,24 @@ export const VideoPanel = () => {
     }
   };
 
+  const handleLike = async (id: string) => {
+    try {
+      const updated = await videosApi.toggleLike(id);
+      setVideos(videos.map(v => v.id === id ? updated : v));
+    } catch (err) {
+      console.error('Failed to toggle like:', err);
+    }
+  };
+
+  const handleDislike = async (id: string) => {
+    try {
+      const updated = await videosApi.toggleDislike(id);
+      setVideos(videos.map(v => v.id === id ? updated : v));
+    } catch (err) {
+      console.error('Failed to toggle dislike:', err);
+    }
+  };
+
   if (error) {
     return (
       <div className="h-full bg-gradient-to-b from-anthracite-800/50 to-anthracite-900/50 backdrop-blur-sm border-l border-violet-500/20 p-4">
@@ -119,6 +137,8 @@ export const VideoPanel = () => {
                 key={video.id}
                 video={video}
                 onToggleFavorite={handleToggleFavorite}
+                onLike={handleLike}
+                onDislike={handleDislike}
                 compact
               />
             ))
