@@ -34,7 +34,7 @@ export default function HomePage() {
   }, [articles]);
 
   return (
-    <main className="relative min-h-screen bg-anthracite-950">
+    <main className="relative min-h-screen bg-anthracite-950 overflow-hidden">
       {/* Parallax background */}
       <ParallaxGrid />
 

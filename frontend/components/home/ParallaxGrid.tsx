@@ -12,7 +12,7 @@ export const ParallaxGrid = () => {
 
   return (
     <div
-      className="fixed inset-0 pointer-events-none overflow-hidden"
+      className="absolute inset-0 pointer-events-none overflow-hidden"
       style={{ zIndex: 0 }}
     >
       {/* Gradient background */}
