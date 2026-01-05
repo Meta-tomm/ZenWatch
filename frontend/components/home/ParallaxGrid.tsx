@@ -23,6 +23,7 @@ export const ParallaxGrid = () => {
         className="absolute inset-0 opacity-10"
         style={{
           transform: prefersReducedMotion ? 'none' : transform,
+          willChange: 'transform',
           backgroundImage: `
             linear-gradient(to right, rgba(139, 92, 246, 0.1) 1px, transparent 1px),
             linear-gradient(to bottom, rgba(139, 92, 246, 0.1) 1px, transparent 1px)
