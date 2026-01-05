@@ -45,27 +45,27 @@ export const VideoPanel = () => {
 
   if (error) {
     return (
-      <div className="h-full bg-charcoal-800/30 backdrop-blur-sm border-l border-charcoal-700/30 p-4">
+      <div className="h-full bg-gradient-to-b from-anthracite-800/50 to-anthracite-900/50 backdrop-blur-sm border-l border-violet-500/20 p-4">
         <div className="flex items-center gap-2 mb-4">
-          <VideoIcon className="w-5 h-5 text-gold-dark" />
-          <h2 className="font-bold text-lg">Videos</h2>
+          <VideoIcon className="w-5 h-5 text-violet-400" />
+          <h2 className="font-bold text-lg text-gradient-violet">Videos</h2>
         </div>
-        <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
-          <AlertCircle className="w-8 h-8 mb-2" />
-          <p className="text-sm">{error}</p>
+        <div className="flex flex-col items-center justify-center h-32 text-violet-300/70">
+          <AlertCircle className="w-8 h-8 mb-2 text-violet-400/50" />
+          <p className="text-sm text-violet-300/60">{error}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-full bg-charcoal-800/30 backdrop-blur-sm border-l border-charcoal-700/30">
-      <div className="p-4 border-b border-gold/10 sticky top-0 bg-charcoal-900/50 backdrop-blur z-10">
+    <div className="h-full bg-gradient-to-b from-anthracite-800/50 to-anthracite-900/50 backdrop-blur-sm border-l border-violet-500/20">
+      <div className="p-4 border-b border-violet-500/20 sticky top-0 bg-anthracite-900/90 backdrop-blur z-10">
         <div className="flex items-center gap-2">
-          <VideoIcon className="w-5 h-5 text-gold-dark" />
-          <h2 className="font-bold text-lg">Top Videos</h2>
+          <VideoIcon className="w-5 h-5 text-violet-400" />
+          <h2 className="font-bold text-lg text-gradient-violet">Top Videos</h2>
           {!isLoading && (
-            <span className="text-xs text-muted-foreground">({videos.length})</span>
+            <span className="text-xs text-violet-400/70">({videos.length})</span>
           )}
         </div>
       </div>
@@ -82,9 +82,9 @@ export const VideoPanel = () => {
               </div>
             ))
           ) : videos.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
-              <VideoIcon className="w-8 h-8 mb-2 opacity-50" />
-              <p className="text-sm">No videos available</p>
+            <div className="flex flex-col items-center justify-center h-32">
+              <VideoIcon className="w-8 h-8 mb-2 text-violet-400/40" />
+              <p className="text-sm text-violet-300/60">No videos available</p>
             </div>
           ) : (
             videos.map((video) => (
