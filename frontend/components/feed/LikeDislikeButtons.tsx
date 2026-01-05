@@ -74,8 +74,8 @@ export const LikeDislikeButtons = ({
         size={buttonSize}
         onClick={handleLike}
         className={cn(
-          'gap-1.5',
-          localReaction === 'like' && 'text-gold-dark hover:text-gold-dark'
+          'gap-1.5 text-violet-300/70 hover:text-violet-200 hover:bg-violet-500/20',
+          localReaction === 'like' && 'text-violet-400 hover:text-violet-400'
         )}
       >
         <ThumbsUp
@@ -92,8 +92,8 @@ export const LikeDislikeButtons = ({
         size={buttonSize}
         onClick={handleDislike}
         className={cn(
-          'gap-1.5',
-          localReaction === 'dislike' && 'text-red-500 hover:text-red-500'
+          'gap-1.5 text-violet-300/70 hover:text-violet-200 hover:bg-violet-500/20',
+          localReaction === 'dislike' && 'text-red-400 hover:text-red-400'
         )}
       >
         <ThumbsDown

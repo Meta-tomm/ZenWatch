@@ -44,7 +44,7 @@ class ArticleResponse(ArticleCreate):
     thumbnail_url: Optional[str] = None
     duration_seconds: Optional[int] = None
     view_count: Optional[int] = None
-    is_video: bool = False
+    is_video: Optional[bool] = False
     created_at: datetime
     updated_at: datetime
 

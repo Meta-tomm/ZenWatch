@@ -4,12 +4,12 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.scraping_run import ScrapingRun
-from app.tasks.scraping import scrape_all_sources
+from app.tasks.scraping import scrape_all_sources, scrape_youtube_trending
 from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-router = APIRouter(prefix="/api/scraping", tags=["scraping"])
+router = APIRouter(prefix="/scraping", tags=["scraping"])
 
 
 class TriggerScrapingRequest(BaseModel):
@@ -131,6 +131,25 @@ def get_scraping_history(
         )
         for run in runs
     ]
+
+
+@router.post("/youtube-trending", response_model=TriggerScrapingResponse, status_code=202)
+def trigger_youtube_trending():
+    """
+    Trigger YouTube trending scraping job
+
+    Returns:
+        Task ID and status
+    """
+    logger.info("Triggering YouTube trending scraping job")
+
+    task = scrape_youtube_trending.delay()
+
+    return TriggerScrapingResponse(
+        status="accepted",
+        task_id=task.id,
+        message=f"YouTube trending scraping started with task ID: {task.id}"
+    )
 
 
 @router.get("/stats", response_model=ScrapingStatsResponse)

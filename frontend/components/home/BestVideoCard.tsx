@@ -134,7 +134,7 @@ export const BestVideoCard = () => {
   }
 
   const thumbnailUrl = getThumbnailUrl(video);
-  const scoreColor = video.score >= 70 ? 'text-gold' : video.score >= 50 ? 'text-gold-light' : 'text-muted-foreground';
+  const scoreColor = (video.score ?? 0) >= 70 ? 'text-gold' : (video.score ?? 0) >= 50 ? 'text-gold-light' : 'text-muted-foreground';
 
   return (
     <motion.div
@@ -170,7 +170,7 @@ export const BestVideoCard = () => {
             )}
             <div className="absolute top-4 right-4">
               <Badge variant="default" className={cn('font-bold text-lg px-3 py-1', scoreColor)}>
-                {video.score.toFixed(0)}
+                {video.score?.toFixed(0) ?? '-'}
               </Badge>
             </div>
           </div>

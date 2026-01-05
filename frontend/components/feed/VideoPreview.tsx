@@ -48,7 +48,7 @@ const getThumbnailUrl = (video: Video): string => {
 
 export const VideoPreview = ({ video, onToggleFavorite, compact = false }: VideoPreviewProps) => {
   const thumbnailUrl = getThumbnailUrl(video);
-  const scoreColor = video.score >= 70 ? 'text-violet-400' : video.score >= 50 ? 'text-violet-300' : 'text-violet-300/60';
+  const scoreColor = (video.score ?? 0) >= 70 ? 'text-violet-400' : (video.score ?? 0) >= 50 ? 'text-violet-300' : 'text-violet-300/60';
 
   if (compact) {
     return (
@@ -80,7 +80,7 @@ export const VideoPreview = ({ video, onToggleFavorite, compact = false }: Video
               {video.title}
             </h4>
             <div className={cn('text-lg font-bold shrink-0', scoreColor)}>
-              {video.score.toFixed(0)}
+              {video.score?.toFixed(0) ?? '-'}
             </div>
           </div>
 
@@ -152,7 +152,7 @@ export const VideoPreview = ({ video, onToggleFavorite, compact = false }: Video
         )}
         <div className="absolute top-2 right-2">
           <Badge className={cn('font-bold bg-violet-500/30 border-violet-400/50', scoreColor)}>
-            {video.score.toFixed(0)}
+            {video.score?.toFixed(0) ?? '-'}
           </Badge>
         </div>
       </div>

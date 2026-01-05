@@ -44,7 +44,7 @@ async def get_videos(
     ).filter(
         Source.type.in_(YOUTUBE_SOURCE_TYPES),
         Article.is_archived == False,
-        Article.score >= minScore
+        or_(Article.score >= minScore, Article.score.is_(None))
     )
 
     # Filter by categories

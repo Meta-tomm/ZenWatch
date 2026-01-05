@@ -44,11 +44,13 @@ async def save_articles(
             if isinstance(article, ScrapedArticle):
                 # mode='python' converts Pydantic types (HttpUrl, etc.) to native Python types
                 article_data = article.model_dump(mode='python', exclude={'raw_data'})
-                # Explicitly convert HttpUrl to str (Pydantic v2 doesn't always do this automatically)
-                if 'url' in article_data:
-                    article_data['url'] = str(article_data['url'])
             else:
                 article_data = article.copy()
+
+            # Convert HttpUrl objects to strings
+            for key in ['url', 'thumbnail_url']:
+                if key in article_data and article_data[key] is not None:
+                    article_data[key] = str(article_data[key])
 
             # Remove source_type and set source_id instead
             article_data.pop('source_type', None)
@@ -57,18 +59,22 @@ async def save_articles(
             # Check if article already exists by URL
             existing = db.query(Article).filter_by(url=article_data['url']).first()
 
+            # Filter to only include valid Article fields
+            valid_fields = {c.name for c in Article.__table__.columns}
+            filtered_data = {k: v for k, v in article_data.items() if k in valid_fields}
+
             if existing:
                 # Update existing article
-                for key, value in article_data.items():
+                for key, value in filtered_data.items():
                     if hasattr(existing, key) and value is not None:
                         setattr(existing, key, value)
 
-                logger.debug(f"Updated article: {article_data['url']}")
+                logger.debug(f"Updated article: {filtered_data['url']}")
             else:
                 # Create new article
-                article = Article(**article_data)
+                article = Article(**filtered_data)
                 db.add(article)
-                logger.debug(f"Created new article: {article_data['url']}")
+                logger.debug(f"Created new article: {filtered_data['url']}")
 
             saved_count += 1
 
