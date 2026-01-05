@@ -30,6 +30,17 @@ celery_app.conf.update(
 
 # Celery Beat schedule - Automated periodic tasks
 celery_app.conf.beat_schedule = {
+    'scrape-youtube-trending-every-6-hours': {
+        'task': 'scrape_youtube_trending',
+        'schedule': crontab(hour='*/6'),  # Every 6 hours: 00:00, 06:00, 12:00, 18:00
+        'kwargs': {
+            'config': {
+                'region_code': 'US',
+                'max_results': 50,
+                'video_category': '28'  # Science & Technology
+            }
+        },
+    },
     'scrape-all-sources-every-6-hours': {
         'task': 'scrape_all_sources',
         'schedule': crontab(hour='*/6'),  # Every 6 hours: 00:00, 06:00, 12:00, 18:00
