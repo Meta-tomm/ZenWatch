@@ -285,6 +285,13 @@ async def scrape_all_sources_async(
                 if redis_client:
                     scraper.redis = redis_client
 
+                # Inject YouTube channels for youtube_rss scraper
+                if source.type == 'youtube_rss':
+                    from app.models.youtube_channel import YouTubeChannel
+                    channels = db.query(YouTubeChannel).filter_by(is_active=True).all()
+                    scraper._channels = channels
+                    logger.info(f"Injected {len(channels)} YouTube channels")
+
                 # Validate config
                 if not scraper.validate_config(source.config):
                     logger.error(f"Invalid config for source {source.name}")

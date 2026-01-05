@@ -228,7 +228,7 @@ class YouTubeTrendingScraper(ScraperPlugin):
     def _filter_by_keywords(
         self,
         videos: list[ScrapedYouTubeVideo],
-        keywords: list[dict[str, Any]],
+        keywords: list[dict[str, Any] | str],
         config: dict[str, Any] | None = None
     ) -> list[ScrapedYouTubeVideo]:
         """
@@ -236,8 +236,9 @@ class YouTubeTrendingScraper(ScraperPlugin):
 
         Args:
             videos: List of scraped YouTube videos
-            keywords: List of keyword dicts with structure:
-                [{"keyword": "rust", "weight": 5.0, "category": "programming"}, ...]
+            keywords: List of keyword dicts or strings. Supports both formats:
+                - [{"keyword": "rust", "weight": 5.0, "category": "programming"}, ...]
+                - ["rust", "python", ...]
             config: Optional configuration dict:
                 {
                     "min_keyword_matches": 1,  # Minimum keywords required to match
@@ -270,13 +271,22 @@ class YouTubeTrendingScraper(ScraperPlugin):
             matched_keywords = 0
 
             for keyword_data in keywords:
-                keyword = keyword_data.get("keyword", "")
+                # Handle both dict and string formats
+                if isinstance(keyword_data, str):
+                    keyword = keyword_data
+                    weight = 1.0
+                elif isinstance(keyword_data, dict):
+                    keyword = keyword_data.get("keyword", "")
+                    weight = keyword_data.get("weight", 1.0)
+                else:
+                    self.logger.warning(f"Invalid keyword type: {type(keyword_data)}, skipping")
+                    continue
+
                 if not isinstance(keyword, str):
-                    self.logger.warning(f"Invalid keyword type: {type(keyword)}, skipping")
+                    self.logger.warning(f"Invalid keyword value type: {type(keyword)}, skipping")
                     continue
 
                 keyword = keyword.lower()
-                weight = keyword_data.get("weight", 1.0)
 
                 # Case-insensitive substring match
                 if keyword and keyword in searchable_text:
