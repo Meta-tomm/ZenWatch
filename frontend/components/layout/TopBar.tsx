@@ -1,6 +1,7 @@
 'use client';
 
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { ScrapeButton } from './ScrapeButton';
 import { Search, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -13,6 +14,7 @@ export const TopBar = () => {
         </h1>
 
         <div className="flex items-center gap-2">
+          <ScrapeButton collapsed />
           <Button variant="ghost" size="sm">
             <Search className="w-4 h-4" />
           </Button>

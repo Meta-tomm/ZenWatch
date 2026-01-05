@@ -3,6 +3,7 @@
 import { useUIStore } from '@/store/ui-store';
 import { Button } from '@/components/ui/button';
 import { NavLink } from './NavLink';
+import { ScrapeButton } from './ScrapeButton';
 import { Home, Settings, BarChart3, ChevronLeft, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -31,19 +32,22 @@ export const Sidebar = () => {
             ZenWatch
           </h1>
         )}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={toggleSidebar}
-          className={cn('text-violet-300/70 hover:text-violet-200 hover:bg-violet-500/20', collapsed && 'mx-auto')}
-        >
-          <ChevronLeft
-            className={cn(
-              'w-4 h-4 transition-transform',
-              collapsed && 'rotate-180'
-            )}
-          />
-        </Button>
+        <div className={cn('flex items-center gap-1', collapsed && 'flex-col')}>
+          <ScrapeButton collapsed={collapsed} />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleSidebar}
+            className={cn('text-violet-300/70 hover:text-violet-200 hover:bg-violet-500/20')}
+          >
+            <ChevronLeft
+              className={cn(
+                'w-4 h-4 transition-transform',
+                collapsed && 'rotate-180'
+              )}
+            />
+          </Button>
+        </div>
       </div>
 
       {/* Navigation */}
