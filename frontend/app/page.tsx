@@ -5,43 +5,33 @@ import { Hero3D } from '@/components/home/Hero3D';
 import { BestArticleCard3D } from '@/components/home/BestArticleCard3D';
 import { BestVideoCard3D } from '@/components/home/BestVideoCard3D';
 import { StatsPreview3D } from '@/components/home/StatsPreview3D';
-import { useArticles } from '@/hooks/use-articles';
-import { useMemo, useState, useEffect } from 'react';
-import { videosApi } from '@/lib/api-client';
-import type { Video } from '@/types';
+import { useState, useEffect } from 'react';
+import { articlesApi, videosApi } from '@/lib/api-client';
+import type { Article, Video } from '@/types';
 
 export default function HomePage() {
-  // Fetch all articles
-  const { data: articlesResponse, isLoading } = useArticles({
-    sort: 'score',
-  });
-
-  // Fetch best video separately
+  // Fetch best article (uses engagement-based scoring from API)
+  const [bestArticle, setBestArticle] = useState<Article | null>(null);
   const [bestVideo, setBestVideo] = useState<Video | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchBestVideo = async () => {
+    const fetchBestContent = async () => {
       try {
-        const video = await videosApi.getBestOfWeek();
+        const [article, video] = await Promise.all([
+          articlesApi.getBestOfWeek(),
+          videosApi.getBestOfWeek(),
+        ]);
+        setBestArticle(article);
         setBestVideo(video);
       } catch (err) {
-        console.error('Failed to fetch best video:', err);
+        console.error('Failed to fetch best content:', err);
+      } finally {
+        setIsLoading(false);
       }
     };
-    fetchBestVideo();
+    fetchBestContent();
   }, []);
-
-  // Flatten pages from infinite query
-  const articles = useMemo(() => {
-    return articlesResponse?.pages?.flatMap(page => page.data) || [];
-  }, [articlesResponse]);
-
-  // Find best article of the week (highest score, not video)
-  const bestArticle = useMemo(() => {
-    return articles
-      .filter(a => !a.source_type?.startsWith('youtube'))
-      .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))[0] || null;
-  }, [articles]);
 
   return (
     <main className="relative min-h-screen bg-anthracite-950 overflow-hidden">
