@@ -35,7 +35,7 @@ export const Sidebar = () => {
           variant="ghost"
           size="sm"
           onClick={toggleSidebar}
-          className={cn(collapsed && 'mx-auto')}
+          className={cn('text-violet-300/70 hover:text-violet-200 hover:bg-violet-500/20', collapsed && 'mx-auto')}
         >
           <ChevronLeft
             className={cn(

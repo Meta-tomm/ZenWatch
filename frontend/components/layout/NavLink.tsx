@@ -21,7 +21,7 @@ export const NavLink = ({ href, icon: Icon, label, collapsed }: NavLinkProps) =>
       href={href}
       className={cn(
         'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors',
-        'hover:bg-violet-500/20 hover:text-violet-300',
+        'text-violet-300/70 hover:bg-violet-500/20 hover:text-violet-200',
         isActive && 'bg-violet-500/30 text-violet-100 font-medium border border-violet-400/40',
         collapsed && 'justify-center'
       )}
