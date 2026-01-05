@@ -2,8 +2,11 @@
 
 import { motion } from 'framer-motion';
 import { fadeInFromBottom } from '@/lib/animations-3d';
+import { usePrefersReducedMotion } from '@/lib/scroll-parallax';
 
 export const Hero3D = () => {
+  const prefersReducedMotion = usePrefersReducedMotion();
+
   return (
     <motion.section
       className="relative z-10 min-h-[40vh] flex flex-col items-center justify-center px-4 py-16"
@@ -12,12 +15,48 @@ export const Hero3D = () => {
       variants={fadeInFromBottom}
     >
       <motion.h1
-        className="text-6xl md:text-8xl font-bold text-center mb-4 text-gradient-violet"
+        className="text-6xl md:text-8xl font-bold text-center mb-4 relative"
         style={{
-          textShadow: '0 0 40px rgba(139, 92, 246, 0.5), 0 0 80px rgba(217, 70, 239, 0.3)',
+          perspective: '1000px',
+          transformStyle: 'preserve-3d',
+        }}
+        animate={prefersReducedMotion ? {} : {
+          rotateX: [0, 2, 0, -2, 0],
+          rotateY: [0, -3, 0, 3, 0],
+          scale: [1, 1.02, 1, 1.02, 1],
+        }}
+        transition={{
+          duration: 8,
+          repeat: Infinity,
+          ease: 'easeInOut',
         }}
       >
-        ZENWATCH
+        {/* Glow layer */}
+        <span
+          className="absolute inset-0 blur-2xl opacity-50 text-gradient-violet"
+          aria-hidden="true"
+          style={{
+            animation: prefersReducedMotion ? 'none' : 'pulseGlow 4s ease-in-out infinite',
+          }}
+        >
+          ZENWATCH
+        </span>
+
+        {/* Main text with shimmer */}
+        <span
+          className="relative inline-block"
+          style={{
+            background: 'linear-gradient(90deg, #8b5cf6 0%, #d946ef 25%, #f0abfc 50%, #d946ef 75%, #8b5cf6 100%)',
+            backgroundSize: '200% 100%',
+            WebkitBackgroundClip: 'text',
+            backgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            animation: prefersReducedMotion ? 'none' : 'shimmer 6s linear infinite',
+            textShadow: '0 0 40px rgba(139, 92, 246, 0.5), 0 0 80px rgba(217, 70, 239, 0.3)',
+          }}
+        >
+          ZENWATCH
+        </span>
       </motion.h1>
 
       <motion.p

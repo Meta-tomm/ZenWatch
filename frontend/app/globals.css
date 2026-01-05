@@ -141,6 +141,27 @@
     animation: gridPulse 3s ease-in-out infinite;
   }
 
+  /* ZENWATCH title animations */
+  @keyframes shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% {
+      opacity: 0.3;
+      filter: blur(20px);
+    }
+    50% {
+      opacity: 0.6;
+      filter: blur(30px);
+    }
+  }
+
   @keyframes fade-in {
     0% { opacity: 0; }
     100% { opacity: 1; }
