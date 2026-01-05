@@ -78,7 +78,6 @@ celerybeat.pid
 .worktrees/
 
 # Documentation (local only)
-docs/
 backend/CELERY_SETUP.md
 
 # Root documentation (local only)
