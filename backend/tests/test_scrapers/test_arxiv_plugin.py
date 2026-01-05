@@ -1,7 +1,5 @@
-import pytest
-from datetime import datetime
-from unittest.mock import AsyncMock, patch
 
+import pytest
 
 SAMPLE_ARXIV_RESPONSE = """<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
@@ -28,11 +26,12 @@ async def test_arxiv_validate_config():
 
 @pytest.mark.asyncio
 async def test_arxiv_parse_entry():
+    from xml.etree import ElementTree
+
     from app.scrapers.plugins.arxiv import ArxivScraper
-    import xml.etree.ElementTree as ET
 
     scraper = ArxivScraper()
-    root = ET.fromstring(SAMPLE_ARXIV_RESPONSE)
+    root = ElementTree.fromstring(SAMPLE_ARXIV_RESPONSE)
 
     # Find entry element with namespace
     ns = {'atom': 'http://www.w3.org/2005/Atom'}
@@ -50,8 +49,9 @@ async def test_arxiv_parse_entry():
 
 @pytest.mark.asyncio
 async def test_arxiv_scrape_with_mock(monkeypatch):
-    from app.scrapers.plugins.arxiv import ArxivScraper
     from unittest.mock import MagicMock
+
+    from app.scrapers.plugins.arxiv import ArxivScraper
 
     scraper = ArxivScraper()
 
