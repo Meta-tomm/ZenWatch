@@ -77,8 +77,8 @@ celerybeat.pid
 .claude/
 .worktrees/
 
-# Documentation plans (local only)
-docs/plans/
+# Documentation (local only)
+docs/
 backend/CELERY_SETUP.md
 
 # Root documentation (local only)
