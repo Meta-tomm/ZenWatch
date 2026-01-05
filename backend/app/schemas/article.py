@@ -38,6 +38,39 @@ class ArticleResponse(ArticleCreate):
     is_read: bool = False
     is_favorite: bool = False
     is_archived: bool = False
+    is_liked: bool = False
+    is_disliked: bool = False
+    video_id: Optional[str] = None
+    thumbnail_url: Optional[str] = None
+    duration_seconds: Optional[int] = None
+    view_count: Optional[int] = None
+    is_video: bool = False
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class VideoResponse(BaseModel):
+    id: int
+    title: str
+    url: str
+    video_id: Optional[str] = None
+    thumbnail_url: Optional[str] = None
+    duration_seconds: Optional[int] = None
+    view_count: Optional[int] = None
+    author: Optional[str] = None
+    published_at: datetime
+    score: Optional[float] = None
+    category: Optional[str] = None
+    summary: Optional[str] = None
+    tags: Optional[List[str]] = []
+    is_read: bool = False
+    is_favorite: bool = False
+    is_liked: bool = False
+    is_disliked: bool = False
+    source_type: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
@@ -47,6 +80,14 @@ class ArticleResponse(ArticleCreate):
 
 class PaginatedArticlesResponse(BaseModel):
     data: List[ArticleResponse]
+    total: int
+    hasMore: bool
+    offset: int
+    limit: int
+
+
+class PaginatedVideosResponse(BaseModel):
+    data: List[VideoResponse]
     total: int
     hasMore: bool
     offset: int

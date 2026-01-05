@@ -101,7 +101,7 @@ export const KeywordManager = () => {
                 key={keyword.id}
                 className="border-violet/10 hover:bg-violet/5"
               >
-                <TableCell className="font-medium text-foreground">
+                <TableCell className="font-medium text-violet-100">
                   {keyword.keyword}
                 </TableCell>
                 <TableCell>
@@ -144,7 +144,7 @@ export const KeywordManager = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => openKeywordModal('edit', keyword.id)}
-                      className="hover:bg-violet/20 hover:text-violet-light"
+                      className="text-violet-300/70 hover:bg-violet/20 hover:text-violet-light"
                     >
                       <Pencil className="w-4 h-4" />
                     </Button>
@@ -152,7 +152,7 @@ export const KeywordManager = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => setDeleteId(keyword.id)}
-                      className="hover:bg-red-500/20 hover:text-red-400"
+                      className="text-violet-300/70 hover:bg-red-500/20 hover:text-red-400"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>

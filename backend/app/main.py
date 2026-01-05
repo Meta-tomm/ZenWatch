@@ -5,6 +5,7 @@ from app.api.articles import router as articles_router
 from app.api.keywords import router as keywords_router
 from app.api.analytics import router as analytics_router
 from app.api.youtube import router as youtube_router
+from app.api.videos import router as videos_router
 from app.config import settings
 from app.utils.logger import get_logger
 
@@ -35,6 +36,7 @@ app.include_router(articles_router, prefix="/api", tags=["articles"])
 app.include_router(keywords_router, prefix="/api", tags=["keywords"])
 app.include_router(analytics_router, prefix="/api", tags=["analytics"])
 app.include_router(youtube_router, prefix="/api", tags=["youtube"])
+app.include_router(videos_router, prefix="/api", tags=["videos"])
 
 
 @app.get("/")
