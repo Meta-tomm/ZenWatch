@@ -20,7 +20,7 @@ export const VideoPanel = () => {
   const [videos, setVideos] = useState<Video[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { videoFilters, setVideoFilters } = useUIStore();
+  const { videoFilters, setVideoFilters, activeFilters } = useUIStore();
 
   useEffect(() => {
     const fetchVideos = async () => {
@@ -28,6 +28,7 @@ export const VideoPanel = () => {
         setIsLoading(true);
         const response = await videosApi.getVideos({
           sort: videoFilters.sort,
+          timeRange: activeFilters.timeRange,
           limit: 50,
         });
         setVideos(response.data);
@@ -41,7 +42,7 @@ export const VideoPanel = () => {
     };
 
     fetchVideos();
-  }, [videoFilters.sort]);
+  }, [videoFilters.sort, activeFilters.timeRange]);
 
   const handleToggleFavorite = async (id: string) => {
     try {

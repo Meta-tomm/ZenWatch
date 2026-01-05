@@ -25,6 +25,7 @@ export const ArticleFeed = () => {
     categories: activeFilters.categories,
     sources: activeFilters.sources,
     sort: activeFilters.sort,
+    timeRange: activeFilters.timeRange,
   });
 
   const allArticles = data?.pages.flatMap((page) => page.data) ?? [];

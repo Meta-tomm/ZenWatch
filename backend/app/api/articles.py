@@ -216,6 +216,72 @@ async def delete_article(
     return {"message": "Article deleted"}
 
 
+@router.post("/articles/{article_id}/like", response_model=ArticleResponse)
+async def toggle_like(
+    article_id: int,
+    db: Session = Depends(get_db)
+):
+    """Toggle like on an article"""
+    article = db.query(Article).options(joinedload(Article.source)).filter(
+        Article.id == article_id
+    ).first()
+
+    if not article:
+        raise HTTPException(status_code=404, detail="Article not found")
+
+    # Toggle like (remove dislike if present)
+    if article.is_liked:
+        article.is_liked = False
+    else:
+        article.is_liked = True
+        article.is_disliked = False
+
+    db.commit()
+    db.refresh(article)
+
+    logger.info(f"Article {article_id} like toggled: {article.is_liked}")
+
+    # Return with source_type populated
+    article_dict = {
+        **article.__dict__,
+        'source_type': article.source.type if article.source else None
+    }
+    return ArticleResponse.model_validate(article_dict)
+
+
+@router.post("/articles/{article_id}/dislike", response_model=ArticleResponse)
+async def toggle_dislike(
+    article_id: int,
+    db: Session = Depends(get_db)
+):
+    """Toggle dislike on an article"""
+    article = db.query(Article).options(joinedload(Article.source)).filter(
+        Article.id == article_id
+    ).first()
+
+    if not article:
+        raise HTTPException(status_code=404, detail="Article not found")
+
+    # Toggle dislike (remove like if present)
+    if article.is_disliked:
+        article.is_disliked = False
+    else:
+        article.is_disliked = True
+        article.is_liked = False
+
+    db.commit()
+    db.refresh(article)
+
+    logger.info(f"Article {article_id} dislike toggled: {article.is_disliked}")
+
+    # Return with source_type populated
+    article_dict = {
+        **article.__dict__,
+        'source_type': article.source.type if article.source else None
+    }
+    return ArticleResponse.model_validate(article_dict)
+
+
 @router.get("/articles/categories/list")
 async def get_categories(db: Session = Depends(get_db)):
     """Récupère la liste des catégories disponibles"""
