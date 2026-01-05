@@ -152,6 +152,30 @@ def trigger_youtube_trending():
     )
 
 
+@router.post("/rescore", response_model=TriggerScrapingResponse, status_code=202)
+def trigger_rescore(force_all: bool = False):
+    """
+    Trigger re-scoring of articles with updated keywords
+
+    Args:
+        force_all: If True, rescore ALL articles. If False, only unscored ones.
+
+    Returns:
+        Task ID and status
+    """
+    from app.tasks.scoring import rescore_all_articles
+
+    logger.info(f"Triggering rescore task (force_all={force_all})")
+
+    task = rescore_all_articles.delay(force_all=force_all)
+
+    return TriggerScrapingResponse(
+        status="accepted",
+        task_id=task.id,
+        message=f"Rescore job started with task ID: {task.id}"
+    )
+
+
 @router.get("/stats", response_model=ScrapingStatsResponse)
 def get_scraping_stats(db: Session = Depends(get_db)):
     """

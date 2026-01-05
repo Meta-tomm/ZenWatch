@@ -96,6 +96,96 @@ def score_articles(article_ids: list[int] = None):
         db.close()
 
 
+@celery_app.task(name="rescore_all_articles")
+def rescore_all_articles(force_all: bool = True):
+    """
+    Re-score all articles with current keywords
+
+    Args:
+        force_all: If True, rescore ALL articles regardless of current score
+
+    Returns:
+        Dict avec statistiques
+    """
+    db = SessionLocal()
+
+    try:
+        # Fetch active keywords
+        keywords = db.query(Keyword).filter(Keyword.is_active == True).all()
+
+        if not keywords:
+            logger.warning("No active keywords found - skipping scoring")
+            return {"status": "skipped", "reason": "no_keywords"}
+
+        keyword_data = [
+            {
+                "keyword": kw.keyword,
+                "weight": kw.weight,
+                "category": kw.category
+            }
+            for kw in keywords
+        ]
+
+        logger.info(f"Rescoring with {len(keyword_data)} active keywords")
+
+        # Fetch all articles
+        if force_all:
+            articles = db.query(Article).all()
+        else:
+            articles = db.query(Article).filter(
+                (Article.score == None) | (Article.score == 0)
+            ).all()
+
+        if not articles:
+            logger.info("No articles to rescore")
+            return {"status": "success", "articles_scored": 0}
+
+        logger.info(f"Rescoring {len(articles)} articles...")
+
+        # Initialize scorer
+        scorer = ArticleScorer(language="en")
+
+        scored_count = 0
+        for article in articles:
+            try:
+                text = f"{article.title} {article.content or ''}"
+
+                # Score article
+                result = scorer.score_article(text, keyword_data)
+
+                # Update article
+                article.score = float(result["overall_score"])
+                article.category = str(result["category"])
+
+                scored_count += 1
+
+                if scored_count % 50 == 0:
+                    logger.info(f"Rescored {scored_count}/{len(articles)} articles")
+                    db.commit()  # Commit in batches
+
+            except Exception as e:
+                logger.error(f"Error scoring article {article.id}: {e}")
+                continue
+
+        db.commit()
+        logger.info(f"Rescore complete: {scored_count} articles rescored")
+
+        return {
+            "status": "success",
+            "articles_scored": scored_count,
+            "total_articles": len(articles),
+            "keywords_used": len(keyword_data)
+        }
+
+    except Exception as e:
+        logger.error(f"Error in rescore_all_articles task: {e}")
+        db.rollback()
+        return {"status": "error", "error": str(e)}
+
+    finally:
+        db.close()
+
+
 @celery_app.task(name="summarize_articles")
 def summarize_articles(article_ids: list[int] = None):
     """
