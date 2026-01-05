@@ -57,6 +57,8 @@ class Article(Base):
     is_read = Column(Boolean, default=False)
     is_favorite = Column(Boolean, default=False)
     is_archived = Column(Boolean, default=False)
+    is_liked = Column(Boolean, default=False)
+    is_disliked = Column(Boolean, default=False)
     video_id = Column(String(255), nullable=True)
     thumbnail_url = Column(Text, nullable=True)
     duration_seconds = Column(Integer, nullable=True)

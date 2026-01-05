@@ -47,8 +47,8 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
     <motion.div variants={minimalFadeIn} initial="hidden" animate="visible">
       <div
         className={cn(
-          'p-4 bg-anthracite-900/90 border border-violet-500/20 rounded-lg',
-          'hover:bg-anthracite-800/90 hover:border-violet-400/40 transition-all duration-300',
+          'p-4 bg-anthracite-800/80 border border-violet-500/30 rounded-lg',
+          'hover:bg-anthracite-700/80 hover:border-violet-400/50 transition-all duration-300',
           localArticle.is_read && 'opacity-60'
         )}
       >
@@ -57,14 +57,14 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
           <div className="flex-1 min-w-0">
             <h3
               className={cn(
-                'font-semibold leading-tight mb-1 cursor-pointer hover:text-violet-400 line-clamp-2 transition-colors',
-                localArticle.score >= 70 && 'text-violet-300'
+                'font-semibold leading-tight mb-1 cursor-pointer hover:text-violet-300 line-clamp-2 transition-colors text-violet-100',
+                localArticle.score >= 70 && 'text-violet-200'
               )}
               onClick={() => onOpenModal?.(localArticle.id)}
             >
               {localArticle.title}
             </h3>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2 text-xs text-violet-300/60">
               <span className="capitalize">{localArticle.source_type}</span>
               <span>•</span>
               <span>{formatRelativeDate(localArticle.published_at)}</span>
@@ -88,14 +88,14 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
 
         {/* Tags */}
         <div className="flex flex-wrap gap-1.5 mb-3">
-          <Badge variant="secondary" className="text-xs">
+          <Badge variant="secondary" className="text-xs bg-violet-500/20 text-violet-200 border-violet-400/30">
             {localArticle.category}
           </Badge>
           {(localArticle.tags || [])
             .filter(tag => tag && tag.trim())
             .slice(0, 3)
             .map((tag) => (
-              <Badge key={tag} variant="outline" className="text-xs">
+              <Badge key={tag} variant="outline" className="text-xs border-violet-500/30 text-violet-300/70">
                 {tag}
               </Badge>
             ))}
@@ -105,7 +105,7 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
         {localArticle.summary && (
           <p
             className={cn(
-              'text-sm text-muted-foreground leading-relaxed mb-3',
+              'text-sm text-violet-200/70 leading-relaxed mb-3',
               !isExpanded && 'line-clamp-2'
             )}
           >
@@ -114,7 +114,7 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
         )}
 
         {/* Stats */}
-        <div className="flex items-center gap-4 mb-3 text-xs text-muted-foreground">
+        <div className="flex items-center gap-4 mb-3 text-xs text-violet-300/50">
           <div className="flex items-center gap-1">
             <TrendingUp className="w-3 h-3" />
             {localArticle.upvotes || 0}
@@ -126,7 +126,7 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-between border-t pt-3">
+        <div className="flex items-center justify-between border-t border-violet-500/20 pt-3">
           <div className="flex items-center gap-2">
             <LikeDislikeButtons
               initialLikes={localArticle.likes}
@@ -140,6 +140,7 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
               variant="ghost"
               size="sm"
               onClick={() => toggleFavorite.mutate(localArticle.id)}
+              className="text-violet-300/70 hover:text-violet-200 hover:bg-violet-500/20"
             >
               <Star
                 className={cn(
@@ -148,7 +149,7 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
                 )}
               />
             </Button>
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" className="text-violet-300/70 hover:text-violet-200 hover:bg-violet-500/20">
               <BookmarkPlus className="w-4 h-4" />
             </Button>
           </div>
@@ -159,11 +160,12 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsExpanded(!isExpanded)}
+                className="text-violet-300/70 hover:text-violet-200 hover:bg-violet-500/20"
               >
                 {isExpanded ? 'Less' : 'More'}
               </Button>
             )}
-            <Button variant="ghost" size="sm" asChild>
+            <Button variant="ghost" size="sm" asChild className="text-violet-300/70 hover:text-violet-200 hover:bg-violet-500/20">
               <a
                 href={localArticle.url}
                 target="_blank"
