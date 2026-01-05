@@ -25,8 +25,8 @@ import { useCreateKeyword, useUpdateKeyword } from '@/hooks/use-keywords';
 import type { Keyword } from '@/types';
 
 const keywordSchema = z.object({
-  keyword: z.string().min(2, 'Minimum 2 caractères').max(50),
-  category: z.string().min(1, 'Catégorie requise'),
+  keyword: z.string().min(2, 'Minimum 2 characters').max(50),
+  category: z.string().min(1, 'Category required'),
   weight: z.number().min(1).max(5),
 });
 
@@ -80,9 +80,9 @@ export const KeywordForm = ({ keyword, onSuccess }: KeywordFormProps) => {
           name="keyword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Mot-clé</FormLabel>
+              <FormLabel>Keyword</FormLabel>
               <FormControl>
-                <Input placeholder="Ex: FHIR, blockchain..." {...field} />
+                <Input placeholder="e.g. FHIR, blockchain..." {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -94,7 +94,7 @@ export const KeywordForm = ({ keyword, onSuccess }: KeywordFormProps) => {
           name="category"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Catégorie</FormLabel>
+              <FormLabel>Category</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
@@ -119,7 +119,7 @@ export const KeywordForm = ({ keyword, onSuccess }: KeywordFormProps) => {
           name="weight"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Importance: {field.value}/5</FormLabel>
+              <FormLabel>Weight: {field.value}/5</FormLabel>
               <FormControl>
                 <Slider
                   min={1}
@@ -136,7 +136,7 @@ export const KeywordForm = ({ keyword, onSuccess }: KeywordFormProps) => {
 
         <div className="flex gap-2">
           <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-            {keyword ? 'Mettre à jour' : 'Créer'}
+            {keyword ? 'Update' : 'Create'}
           </Button>
         </div>
       </form>
