@@ -173,3 +173,23 @@ async def test_scrape_filters_by_keywords():
 
     assert len(articles) == 1
     assert articles[0].title == 'GPT-5 Release'
+
+
+@pytest.mark.asyncio
+async def test_scrape_uses_default_feeds_when_not_configured():
+    """Test scrape uses default OpenAI/DeepMind feeds when none configured"""
+    scraper = OfficialBlogsScraper()
+
+    mock_feed = Mock()
+    mock_feed.bozo = False
+    mock_feed.entries = []
+
+    with patch('app.scrapers.plugins.official_blogs.feedparser.parse', return_value=mock_feed) as mock_parse:
+        await scraper.scrape({}, [])
+
+        # Should have called parse for both default feeds
+        assert mock_parse.call_count == 2
+
+        called_urls = [call[0][0] for call in mock_parse.call_args_list]
+        assert 'https://openai.com/blog/rss.xml' in called_urls
+        assert 'https://deepmind.google/blog/rss.xml' in called_urls
