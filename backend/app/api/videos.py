@@ -138,8 +138,23 @@ async def get_videos(
 
 @router.get("/videos/best-of-week", response_model=Optional[VideoResponse])
 async def get_best_video_of_week(db: Session = Depends(get_db)):
-    """Get the best video of the current week based on score"""
+    """
+    Get the best video of the week based on score AND user engagement.
+
+    Ranking formula: score + (is_liked * 15) - (is_disliked * 20)
+    - Liked videos get +15 bonus
+    - Disliked videos get -20 penalty
+    """
+    from sqlalchemy import case
+
     one_week_ago = datetime.utcnow() - timedelta(days=7)
+
+    # Calculate engagement-adjusted score
+    engagement_score = (
+        func.coalesce(Article.score, 0) +
+        case((Article.is_liked == True, 15), else_=0) -
+        case((Article.is_disliked == True, 20), else_=0)
+    )
 
     video = db.query(Article).options(joinedload(Article.source)).join(
         Article.source
@@ -148,7 +163,7 @@ async def get_best_video_of_week(db: Session = Depends(get_db)):
         Article.published_at >= one_week_ago,
         Article.is_archived == False
     ).order_by(
-        Article.score.desc()
+        engagement_score.desc()
     ).first()
 
     if not video:

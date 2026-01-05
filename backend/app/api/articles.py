@@ -124,6 +124,50 @@ async def get_articles(
     )
 
 
+@router.get("/articles/best-of-week", response_model=Optional[ArticleResponse])
+async def get_best_article_of_week(db: Session = Depends(get_db)):
+    """
+    Get the best article of the week based on score AND user engagement.
+
+    Ranking formula: score + (is_liked * 15) - (is_disliked * 20)
+    - Liked articles get +15 bonus
+    - Disliked articles get -20 penalty
+    - This prioritizes user-validated content
+    """
+    from sqlalchemy import case
+
+    one_week_ago = datetime.utcnow() - timedelta(days=7)
+
+    # Calculate engagement-adjusted score
+    engagement_score = (
+        func.coalesce(Article.score, 0) +
+        case((Article.is_liked == True, 15), else_=0) -
+        case((Article.is_disliked == True, 20), else_=0)
+    )
+
+    # Exclude YouTube sources (those are videos)
+    youtube_types = ['youtube_rss', 'youtube_trending']
+
+    article = db.query(Article).options(joinedload(Article.source)).join(
+        Article.source
+    ).filter(
+        ~Source.type.in_(youtube_types),
+        Article.published_at >= one_week_ago,
+        Article.is_archived == False
+    ).order_by(
+        engagement_score.desc()
+    ).first()
+
+    if not article:
+        return None
+
+    article_dict = {
+        **article.__dict__,
+        'source_type': article.source.type if article.source else None
+    }
+    return ArticleResponse.model_validate(article_dict)
+
+
 @router.get("/articles/{article_id}", response_model=ArticleResponse)
 async def get_article(
     article_id: int,
