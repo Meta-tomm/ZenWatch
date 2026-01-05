@@ -1,4 +1,4 @@
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 from datetime import datetime
 from sqlalchemy.orm import Session
 import redis.asyncio as redis
@@ -16,6 +16,183 @@ from app.config import settings
 import app.scrapers
 
 logger = get_logger(__name__)
+
+
+# YouTube Trending Scraper Task
+async def scrape_youtube_trending_async(
+    db: Session,
+    config: Dict[str, Any] = None,
+    task_id: Optional[str] = None
+) -> Dict:
+    """
+    Scrape trending YouTube videos filtered by active keywords.
+
+    Args:
+        db: Database session
+        config: Scraper config (region_code, max_results, video_category)
+        task_id: Task ID for tracking
+
+    Returns:
+        Dictionary with scraping results
+    """
+    # Default config
+    if config is None:
+        config = {
+            "region_code": "US",
+            "max_results": 50,
+            "video_category": "28",  # Science & Technology
+            "min_keyword_matches": 1,
+            "include_shorts": True,
+            "min_view_count": 0
+        }
+
+    logger.info(f"Starting YouTube Trending scraping task {task_id}")
+
+    # Create scraping run record
+    scraping_run = ScrapingRun(
+        task_id=task_id or "manual-yt-trending",
+        source_type="youtube_trending",
+        status="running",
+        articles_scraped=0,
+        articles_saved=0
+    )
+    db.add(scraping_run)
+    db.commit()
+
+    # Initialize Redis client for quota management
+    redis_client = None
+    try:
+        redis_client = await redis.from_url(settings.REDIS_URL)
+        logger.info("Redis client initialized for YouTube quota management")
+    except Exception as e:
+        logger.warning(f"Failed to initialize Redis: {e}. Quota tracking disabled.")
+
+    try:
+        # Get active keywords from database
+        active_keywords = db.query(Keyword).filter_by(is_active=True).all()
+        if not active_keywords:
+            logger.warning("No active keywords found, returning empty results")
+            scraping_run.status = "skipped"
+            scraping_run.error_message = "No active keywords"
+            scraping_run.completed_at = datetime.utcnow()
+            db.commit()
+            return {
+                "task_id": task_id,
+                "status": "skipped",
+                "reason": "No active keywords"
+            }
+
+        # Prepare keywords for scraper (list of dicts with keyword, weight, category)
+        keyword_data = [
+            {
+                "keyword": kw.keyword,
+                "weight": kw.weight,
+                "category": kw.category
+            }
+            for kw in active_keywords
+        ]
+        logger.info(f"Using {len(keyword_data)} active keywords")
+
+        # Get YouTube Trending scraper from registry
+        registry = ScraperRegistry()
+        scraper = registry.get("youtube_trending")
+
+        if not scraper:
+            logger.error("YouTube Trending scraper not found in registry")
+            scraping_run.status = "failed"
+            scraping_run.error_message = "Scraper not found"
+            scraping_run.completed_at = datetime.utcnow()
+            db.commit()
+            return {
+                "task_id": task_id,
+                "status": "error",
+                "error": "YouTube Trending scraper not found"
+            }
+
+        # Inject Redis client for quota management
+        if redis_client:
+            scraper.redis = redis_client
+
+        # Run scraper
+        videos = await scraper.scrape(config, keyword_data)
+        scraped_count = len(videos)
+        logger.info(f"Scraped {scraped_count} trending videos")
+
+        # Save videos to database
+        saved_count = 0
+        if videos:
+            saved_count = await save_articles(videos, "youtube_trending", db)
+            logger.info(f"Saved {saved_count} videos ({scraped_count - saved_count} duplicates)")
+
+        # Update scraping run
+        scraping_run.status = "success"
+        scraping_run.articles_scraped = scraped_count
+        scraping_run.articles_saved = saved_count
+        scraping_run.completed_at = datetime.utcnow()
+        db.commit()
+
+        return {
+            "task_id": task_id,
+            "status": "success",
+            "videos_scraped": scraped_count,
+            "videos_saved": saved_count,
+            "duplicates": scraped_count - saved_count,
+            "keywords_used": len(keyword_data)
+        }
+
+    except Exception as e:
+        logger.error(f"YouTube Trending scraping failed: {e}", exc_info=True)
+        scraping_run.status = "failed"
+        scraping_run.error_message = str(e)
+        scraping_run.completed_at = datetime.utcnow()
+        db.commit()
+        return {
+            "task_id": task_id,
+            "status": "error",
+            "error": str(e)
+        }
+
+    finally:
+        if redis_client:
+            try:
+                await redis_client.aclose()
+            except Exception as e:
+                logger.warning(f"Error closing Redis client: {e}")
+
+
+@celery_app.task(bind=True, name='scrape_youtube_trending')
+def scrape_youtube_trending(self, config: Dict[str, Any] = None) -> Dict:
+    """
+    Celery task: Scrape trending YouTube videos.
+    Runs every 6 hours by default.
+
+    Args:
+        config: Optional scraper configuration
+
+    Returns:
+        Dictionary with scraping results
+
+    Example:
+        # Trigger manually
+        result = scrape_youtube_trending.delay()
+
+        # With custom config
+        result = scrape_youtube_trending.delay({'region_code': 'GB', 'max_results': 25})
+    """
+    import asyncio
+
+    db = next(get_db())
+    try:
+        result = asyncio.run(
+            scrape_youtube_trending_async(
+                db=db,
+                config=config,
+                task_id=self.request.id
+            )
+        )
+        return result
+    finally:
+        db.close()
 
 
 async def scrape_all_sources_async(
