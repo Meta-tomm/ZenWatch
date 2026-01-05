@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func, or_
 from typing import Optional, List
+from datetime import datetime, timedelta
 from app.database import get_db
 from app.models import Article, Source
 from app.schemas.article import ArticleResponse, PaginatedArticlesResponse
@@ -17,6 +18,7 @@ async def get_articles(
     sources: Optional[str] = Query(None, description="Comma-separated source types"),
     search: Optional[str] = Query(None, description="Search in title, content, author"),
     sort: str = Query("score", pattern="^(score|date|popularity)$"),
+    timeRange: Optional[str] = Query(None, pattern="^(24h|7d|30d)$", description="Time filter"),
     minScore: float = Query(0.0, ge=0.0, le=100.0),
     is_read: Optional[bool] = None,
     is_favorite: Optional[bool] = None,
@@ -44,6 +46,16 @@ async def get_articles(
         Article.is_archived == is_archived,
         or_(Article.score >= minScore, Article.score.is_(None))
     )
+
+    # Time range filter
+    if timeRange:
+        if timeRange == "24h":
+            since = datetime.utcnow() - timedelta(hours=24)
+        elif timeRange == "7d":
+            since = datetime.utcnow() - timedelta(days=7)
+        elif timeRange == "30d":
+            since = datetime.utcnow() - timedelta(days=30)
+        query = query.filter(Article.published_at >= since)
 
     # Filter by categories (multiple)
     if categories:

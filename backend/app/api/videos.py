@@ -21,6 +21,7 @@ async def get_videos(
     sources: Optional[str] = Query(None, description="Comma-separated source types"),
     search: Optional[str] = Query(None, description="Search in title, author"),
     sort: str = Query("score", pattern="^(score|date|popularity)$"),
+    timeRange: Optional[str] = Query(None, pattern="^(24h|7d|30d)$", description="Time filter"),
     minScore: float = Query(0.0, ge=0.0, le=100.0),
     is_favorite: Optional[bool] = None,
     limit: int = Query(50, ge=1, le=200),
@@ -46,6 +47,16 @@ async def get_videos(
         Article.is_archived == False,
         or_(Article.score >= minScore, Article.score.is_(None))
     )
+
+    # Time range filter
+    if timeRange:
+        if timeRange == "24h":
+            since = datetime.utcnow() - timedelta(hours=24)
+        elif timeRange == "7d":
+            since = datetime.utcnow() - timedelta(days=7)
+        elif timeRange == "30d":
+            since = datetime.utcnow() - timedelta(days=30)
+        query = query.filter(Article.published_at >= since)
 
     # Filter by categories
     if categories:

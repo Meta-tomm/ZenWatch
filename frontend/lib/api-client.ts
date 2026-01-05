@@ -26,6 +26,7 @@ export const articlesApi = {
       ...params,
       categories: params.categories?.length ? params.categories.join(',') : undefined,
       sources: params.sources?.length ? params.sources.join(',') : undefined,
+      timeRange: params.timeRange === 'all' ? undefined : params.timeRange,
     };
 
     // Remove undefined values
@@ -93,6 +94,7 @@ export const videosApi = {
       ...params,
       categories: params?.categories?.length ? params.categories.join(',') : undefined,
       sources: params?.sources?.length ? params.sources.join(',') : undefined,
+      timeRange: params?.timeRange === 'all' ? undefined : params?.timeRange,
     };
 
     Object.keys(queryParams).forEach(key => {

@@ -92,6 +92,7 @@ export interface ArticleFilters {
   categories?: string[];
   sources?: string[];
   sort?: 'score' | 'date' | 'popularity';
+  timeRange?: 'all' | '24h' | '7d' | '30d';
   minScore?: number;
   limit?: number;
   offset?: number;

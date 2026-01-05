@@ -10,11 +10,13 @@ interface UIState {
     categories: string[];
     sources: string[];
     sort: 'score' | 'date' | 'popularity';
+    timeRange: 'all' | '24h' | '7d' | '30d';
   };
   videoFilters: {
     search: string;
     categories: string[];
     sort: 'score' | 'date' | 'popularity';
+    timeRange: 'all' | '24h' | '7d' | '30d';
   };
 
   toggleSidebar: () => void;
@@ -35,11 +37,13 @@ export const useUIStore = create<UIState>()(
         categories: [],
         sources: [],
         sort: 'score',
+        timeRange: 'all',
       },
       videoFilters: {
         search: '',
         categories: [],
         sort: 'score',
+        timeRange: 'all',
       },
 
       toggleSidebar: () =>
@@ -75,6 +79,7 @@ export const useUIStore = create<UIState>()(
             categories: [],
             sources: [],
             sort: 'score',
+            timeRange: 'all',
           },
         }),
 
