@@ -101,8 +101,10 @@ export const KeywordManager = () => {
                 key={keyword.id}
                 className="border-violet/10 hover:bg-violet/5"
               >
-                <TableCell className="font-medium text-violet-100">
-                  {keyword.keyword}
+                <TableCell>
+                  <Badge className="bg-violet-500/20 text-violet-200 border-violet-400/30 font-medium">
+                    {keyword.keyword}
+                  </Badge>
                 </TableCell>
                 <TableCell>
                   <Badge
