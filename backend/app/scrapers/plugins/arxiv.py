@@ -1,12 +1,11 @@
-from typing import List, Dict, Optional
+import xml.etree.ElementTree as ElementTree
 from datetime import datetime
-import xml.etree.ElementTree as ET
 from urllib.parse import quote
 
+from app.schemas.scraped_article import ScrapedArticle
 from app.scrapers.base import ScraperPlugin
 from app.scrapers.registry import scraper_plugin
 from app.scrapers.strategies.rate_limit import RateLimiter
-from app.schemas.scraped_article import ScrapedArticle
 
 
 @scraper_plugin(
@@ -45,11 +44,11 @@ class ArxivScraper(ScraperPlugin):
         self.rate_limiter = RateLimiter(requests_per_minute=30)
         self.base_url = "https://export.arxiv.org/api/query"
 
-    def validate_config(self, config: Dict) -> bool:
+    def validate_config(self, config: dict) -> bool:
         """No special config required for arXiv"""
         return True
 
-    async def scrape(self, config: Dict, keywords: List[str]) -> List[ScrapedArticle]:
+    async def scrape(self, config: dict, keywords: list[str]) -> list[ScrapedArticle]:
         """
         Scrape papers from arXiv
 
@@ -69,7 +68,7 @@ class ArxivScraper(ScraperPlugin):
         # Build and execute search query
         try:
             xml_response = await self._fetch_papers(keywords, max_articles)
-            root = ET.fromstring(xml_response)
+            root = ElementTree.fromstring(xml_response)
 
             # Parse each entry
             for entry in root.findall('atom:entry', self.ATOM_NS):
@@ -93,7 +92,7 @@ class ArxivScraper(ScraperPlugin):
 
         return articles[:max_articles]
 
-    async def _fetch_papers(self, keywords: List[str], max_results: int) -> str:
+    async def _fetch_papers(self, keywords: list[str], max_results: int) -> str:
         """
         Fetch papers from arXiv API
 
@@ -127,7 +126,7 @@ class ArxivScraper(ScraperPlugin):
 
             return response.text
 
-    def _parse_entry(self, entry: ET.Element) -> Optional[ScrapedArticle]:
+    def _parse_entry(self, entry: ElementTree.Element) -> ScrapedArticle | None:
         """
         Parse arXiv Atom entry to ScrapedArticle
 
