@@ -70,3 +70,32 @@ async def test_arxiv_scrape_with_mock(monkeypatch):
 
     assert len(articles) == 1
     assert articles[0].title == "LangChain: A Framework for LLM Applications"
+
+
+@pytest.mark.asyncio
+@pytest.mark.skip(reason="Integration test - requires network access")
+async def test_arxiv_real_api():
+    """
+    Integration test with real arXiv API
+
+    Run with: pytest tests/test_scrapers/test_arxiv_plugin.py -v -k "real_api" --run-integration
+    """
+    from app.scrapers.plugins.arxiv import ArxivScraper
+
+    scraper = ArxivScraper()
+
+    async with scraper:
+        articles = await scraper.scrape(
+            {"max_articles": 5},
+            ["transformer", "attention"]
+        )
+
+    assert len(articles) > 0
+
+    # Verify article structure
+    article = articles[0]
+    assert article.title
+    assert article.url
+    assert article.source_type == "arxiv"
+    assert article.external_id
+    assert article.published_at
