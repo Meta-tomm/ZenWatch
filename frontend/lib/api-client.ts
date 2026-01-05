@@ -171,8 +171,20 @@ export const sourcesApi = {
     return response.data;
   },
 
-  triggerScraping: async (sources?: string[]): Promise<{ task_id: string }> => {
+  triggerScraping: async (sources?: string[]): Promise<{ task_id: string; status: string; message: string }> => {
     const response = await apiClient.post('/scraping/trigger', { sources });
+    return response.data;
+  },
+
+  getScrapingStatus: async (taskId: string): Promise<{
+    task_id: string;
+    status: string;
+    source_type: string;
+    articles_scraped: number;
+    articles_saved: number;
+    error_message?: string;
+  }> => {
+    const response = await apiClient.get(`/scraping/status/${taskId}`);
     return response.data;
   },
 };
