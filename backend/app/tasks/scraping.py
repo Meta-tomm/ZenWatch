@@ -161,13 +161,14 @@ async def scrape_youtube_trending_async(
 
 
 @celery_app.task(bind=True, name='scrape_youtube_trending')
-def scrape_youtube_trending(self, config: Dict[str, Any] = None) -> Dict:
+def scrape_youtube_trending(self, config: Dict[str, Any] = None, run_scoring: bool = True) -> Dict:
     """
     Celery task: Scrape trending YouTube videos.
     Runs every 6 hours by default.
 
     Args:
         config: Optional scraper configuration
+        run_scoring: Whether to run scoring after scraping (default: True)
 
     Returns:
         Dictionary with scraping results
@@ -180,6 +181,7 @@ def scrape_youtube_trending(self, config: Dict[str, Any] = None) -> Dict:
         result = scrape_youtube_trending.delay({'region_code': 'GB', 'max_results': 25})
     """
     import asyncio
+    from app.tasks.scoring import score_articles
 
     db = next(get_db())
     try:
@@ -190,6 +192,12 @@ def scrape_youtube_trending(self, config: Dict[str, Any] = None) -> Dict:
                 task_id=self.request.id
             )
         )
+
+        # Chain scoring task if scraping was successful
+        if run_scoring and result.get('videos_saved', 0) > 0:
+            logger.info(f"Chaining score_articles task after YouTube trending ({result['videos_saved']} new videos)")
+            score_articles.delay()
+
         return result
     finally:
         db.close()
@@ -410,12 +418,13 @@ async def scrape_all_sources_async(
 
 
 @celery_app.task(bind=True, name='scrape_all_sources')
-def scrape_all_sources(self, keywords: List[str] = None) -> Dict:
+def scrape_all_sources(self, keywords: List[str] = None, run_scoring: bool = True) -> Dict:
     """
     Celery task wrapper for scraping all sources
 
     Args:
         keywords: List of keywords to filter articles (optional)
+        run_scoring: Whether to run scoring after scraping (default: True)
 
     Returns:
         Dictionary with scraping results
@@ -429,6 +438,7 @@ def scrape_all_sources(self, keywords: List[str] = None) -> Dict:
         task = scrape_all_sources.apply_async(kwargs={'keywords': ['AI', 'blockchain']})
     """
     import asyncio
+    from app.tasks.scoring import score_articles
 
     # Get database session
     db = next(get_db())
@@ -442,6 +452,12 @@ def scrape_all_sources(self, keywords: List[str] = None) -> Dict:
                 task_id=self.request.id
             )
         )
+
+        # Chain scoring task if scraping was successful and articles were saved
+        if run_scoring and result.get('articles_saved', 0) > 0:
+            logger.info(f"Chaining score_articles task after scraping ({result['articles_saved']} new articles)")
+            score_articles.delay()
+
         return result
     finally:
         db.close()
