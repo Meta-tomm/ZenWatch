@@ -14,18 +14,30 @@ import { Button } from '@/components/ui/button';
 import { Search, X } from 'lucide-react';
 
 const CATEGORIES = [
-  'healthtech',
-  'blockchain',
-  'dev',
   'ai',
-  'cloud',
-  'security',
+  'backend',
+  'companies',
+  'concepts',
+  'dev',
+  'devops',
+  'frameworks',
+  'frontend',
+  'general',
+  'healthtech',
+  'models',
+  'other',
 ];
 
 const SOURCES = [
-  { id: 'hackernews', name: 'HackerNews' },
+  { id: 'arxiv', name: 'arXiv' },
   { id: 'devto', name: 'Dev.to' },
+  { id: 'github', name: 'GitHub' },
+  { id: 'hackernews', name: 'HackerNews' },
+  { id: 'medium', name: 'Medium' },
+  { id: 'official_blogs', name: 'Official Blogs' },
   { id: 'reddit', name: 'Reddit' },
+  { id: 'youtube_rss', name: 'YouTube RSS' },
+  { id: 'youtube_trending', name: 'YouTube Trending' },
 ];
 
 export const FilterBar = () => {

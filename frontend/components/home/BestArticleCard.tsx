@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { ExternalLink, Trophy, Star, BookmarkPlus } from 'lucide-react';
-import { CornerBrackets } from '@/components/cyberpunk';
-import { LikeDislikeButtons } from '@/components/feed/LikeDislikeButtons';
-import { Skeleton } from '@/components/ui/skeleton';
-import { formatRelativeDate } from '@/lib/date-utils';
-import { articlesApi } from '@/lib/api-client';
-import { cn } from '@/lib/utils';
-import type { Article } from '@/types';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ExternalLink, Trophy, Star, BookmarkPlus } from "lucide-react";
+import { CornerBrackets } from "@/components/cyberpunk";
+import { LikeDislikeButtons } from "@/components/feed/LikeDislikeButtons";
+import { Skeleton } from "@/components/ui/skeleton";
+import { formatRelativeDate } from "@/lib/date-utils";
+import { articlesApi } from "@/lib/api-client";
+import { cn } from "@/lib/utils";
+import type { Article } from "@/types";
 
 export const BestArticleCard = () => {
   const [article, setArticle] = useState<Article | null>(null);
@@ -26,8 +26,8 @@ export const BestArticleCard = () => {
         setArticle(bestArticle);
         setError(null);
       } catch (err) {
-        console.error('Failed to fetch best article:', err);
-        setError('Failed to load article');
+        console.error("Failed to fetch best article:", err);
+        setError("Failed to load article");
       } finally {
         setIsLoading(false);
       }
@@ -42,7 +42,7 @@ export const BestArticleCard = () => {
       const updated = await articlesApi.toggleFavorite(article.id);
       setArticle(updated);
     } catch (err) {
-      console.error('Failed to toggle favorite:', err);
+      console.error("Failed to toggle favorite:", err);
     }
   };
 
@@ -52,7 +52,7 @@ export const BestArticleCard = () => {
       const updated = await articlesApi.toggleLike(article.id);
       setArticle(updated);
     } catch (err) {
-      console.error('Failed to like article:', err);
+      console.error("Failed to like article:", err);
     }
   };
 
@@ -62,7 +62,7 @@ export const BestArticleCard = () => {
       const updated = await articlesApi.toggleDislike(article.id);
       setArticle(updated);
     } catch (err) {
-      console.error('Failed to dislike article:', err);
+      console.error("Failed to dislike article:", err);
     }
   };
 
@@ -98,7 +98,7 @@ export const BestArticleCard = () => {
         <CornerBrackets color="gold-light">
           <div className="bg-charcoal-900/50 border border-gold-light/30 p-6">
             <p className="text-center text-muted-foreground">
-              {error || 'No articles available'}
+              {error || "No articles available"}
             </p>
           </div>
         </CornerBrackets>
@@ -106,7 +106,12 @@ export const BestArticleCard = () => {
     );
   }
 
-  const scoreColor = article.score >= 70 ? 'text-gold' : article.score >= 50 ? 'text-gold-light' : 'text-muted-foreground';
+  const scoreColor =
+    article.score >= 70
+      ? "text-gold"
+      : article.score >= 50
+        ? "text-gold-light"
+        : "text-muted-foreground";
 
   return (
     <motion.div
@@ -143,8 +148,8 @@ export const BestArticleCard = () => {
 
             {/* Score */}
             <div className="flex flex-col items-center shrink-0">
-              <div className={cn('text-4xl font-bold', scoreColor)}>
-                {article.score.toFixed(0)}
+              <div className={cn("text-4xl font-bold", scoreColor)}>
+                {article.score != null ? article.score.toFixed(0) : "N/A"}
               </div>
               <div className="text-xs text-muted-foreground">score</div>
             </div>
@@ -188,8 +193,8 @@ export const BestArticleCard = () => {
               >
                 <Star
                   className={cn(
-                    'w-5 h-5',
-                    article.is_favorite && 'fill-gold text-gold-light'
+                    "w-5 h-5",
+                    article.is_favorite && "fill-gold text-gold-light",
                   )}
                 />
               </Button>

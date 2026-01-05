@@ -1,28 +1,28 @@
-'use client';
+"use client";
 
-import { useQuery } from '@tanstack/react-query';
-import { useModalsStore } from '@/store/modals-store';
+import { useQuery } from "@tanstack/react-query";
+import { useModalsStore } from "@/store/modals-store";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { ExternalLink, Star, BookmarkPlus } from 'lucide-react';
-import { formatDate } from '@/lib/date-utils';
-import { useToggleFavorite } from '@/hooks/use-toggle-favorite';
-import type { Article } from '@/types';
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ExternalLink, Star, BookmarkPlus } from "lucide-react";
+import { formatDate } from "@/lib/date-utils";
+import { useToggleFavorite } from "@/hooks/use-toggle-favorite";
+import type { Article } from "@/types";
 
 export const ArticleModal = () => {
   const { articleModal, closeArticleModal } = useModalsStore();
   const toggleFavorite = useToggleFavorite();
 
   const { data: article, isLoading } = useQuery<Article | null>({
-    queryKey: ['article', articleModal.articleId],
+    queryKey: ["article", articleModal.articleId],
     queryFn: async () => {
       // TODO: Replace with actual API call when backend ready
       // For now, we'll get from cache
@@ -36,7 +36,7 @@ export const ArticleModal = () => {
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl leading-tight pr-8">
-            {isLoading ? 'Chargement...' : article?.title || 'Article'}
+            {isLoading ? "Chargement..." : article?.title || "Article"}
           </DialogTitle>
           <DialogDescription className="sr-only">
             Détails de l'article sélectionné
@@ -77,7 +77,7 @@ export const ArticleModal = () => {
             <div className="flex items-center gap-4 p-4 bg-muted rounded-lg">
               <div>
                 <div className="text-3xl font-bold text-primary">
-                  {article.score.toFixed(0)}
+                  {article.score != null ? article.score.toFixed(0) : "N/A"}
                 </div>
                 <div className="text-xs text-muted-foreground">Score</div>
               </div>
@@ -113,21 +113,19 @@ export const ArticleModal = () => {
               >
                 <Star
                   className={
-                    article.is_favorite ? 'fill-gold text-gold-light' : ''
+                    article.is_favorite ? "fill-gold text-gold-light" : ""
                   }
                 />
-                {article.is_favorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+                {article.is_favorite
+                  ? "Retirer des favoris"
+                  : "Ajouter aux favoris"}
               </Button>
               <Button variant="outline">
                 <BookmarkPlus className="w-4 h-4 mr-2" />
                 Archiver
               </Button>
               <Button asChild className="ml-auto">
-                <a
-                  href={article.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <a href={article.url} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="w-4 h-4 mr-2" />
                   Lire l'article
                 </a>

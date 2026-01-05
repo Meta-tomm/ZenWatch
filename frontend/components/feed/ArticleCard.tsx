@@ -1,17 +1,23 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Star, ExternalLink, MessageSquare, TrendingUp, BookmarkPlus } from 'lucide-react';
-import { LikeDislikeButtons } from './LikeDislikeButtons';
-import { useToggleFavorite } from '@/hooks/use-toggle-favorite';
-import { formatRelativeDate } from '@/lib/date-utils';
-import { minimalFadeIn } from '@/lib/animations-3d';
-import { cn } from '@/lib/utils';
-import { articlesApi } from '@/lib/api-client';
-import type { Article } from '@/types';
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Star,
+  ExternalLink,
+  MessageSquare,
+  TrendingUp,
+  BookmarkPlus,
+} from "lucide-react";
+import { LikeDislikeButtons } from "./LikeDislikeButtons";
+import { useToggleFavorite } from "@/hooks/use-toggle-favorite";
+import { formatRelativeDate } from "@/lib/date-utils";
+import { minimalFadeIn } from "@/lib/animations-3d";
+import { cn } from "@/lib/utils";
+import { articlesApi } from "@/lib/api-client";
+import type { Article } from "@/types";
 
 interface ArticleCardProps {
   article: Article;
@@ -28,7 +34,7 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
       const updated = await articlesApi.toggleLike(localArticle.id);
       setLocalArticle(updated);
     } catch (err) {
-      console.error('Failed to like article:', err);
+      console.error("Failed to like article:", err);
     }
   };
 
@@ -37,19 +43,24 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
       const updated = await articlesApi.toggleDislike(localArticle.id);
       setLocalArticle(updated);
     } catch (err) {
-      console.error('Failed to dislike article:', err);
+      console.error("Failed to dislike article:", err);
     }
   };
 
-  const scoreColor = localArticle.score >= 70 ? 'text-violet-400' : localArticle.score >= 50 ? 'text-violet-300' : 'text-muted-foreground';
+  const scoreColor =
+    localArticle.score >= 70
+      ? "text-violet-400"
+      : localArticle.score >= 50
+        ? "text-violet-300"
+        : "text-muted-foreground";
 
   return (
     <motion.div variants={minimalFadeIn} initial="hidden" animate="visible">
       <div
         className={cn(
-          'p-4 bg-anthracite-800/80 border border-violet-500/30 rounded-lg',
-          'hover:bg-anthracite-700/80 hover:border-violet-400/50 transition-all duration-300',
-          localArticle.is_read && 'opacity-60'
+          "p-4 bg-anthracite-800/80 border border-violet-500/30 rounded-lg",
+          "hover:bg-anthracite-700/80 hover:border-violet-400/50 transition-all duration-300",
+          localArticle.is_read && "opacity-60",
         )}
       >
         {/* Header */}
@@ -57,8 +68,8 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
           <div className="flex-1 min-w-0">
             <h3
               className={cn(
-                'font-semibold leading-tight mb-1 cursor-pointer hover:text-violet-300 line-clamp-2 transition-colors text-violet-100',
-                localArticle.score >= 70 && 'text-violet-200'
+                "font-semibold leading-tight mb-1 cursor-pointer hover:text-violet-300 line-clamp-2 transition-colors text-violet-100",
+                localArticle.score >= 70 && "text-violet-200",
               )}
               onClick={() => onOpenModal?.(localArticle.id)}
             >
@@ -79,8 +90,10 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
 
           {/* Score */}
           <div className="flex flex-col items-center shrink-0">
-            <div className={cn('text-2xl font-bold', scoreColor)}>
-              {localArticle.score.toFixed(0)}
+            <div className={cn("text-2xl font-bold", scoreColor)}>
+              {localArticle.score != null
+                ? localArticle.score.toFixed(0)
+                : "N/A"}
             </div>
             <div className="text-xs text-muted-foreground">score</div>
           </div>
@@ -88,14 +101,21 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
 
         {/* Tags */}
         <div className="flex flex-wrap gap-1.5 mb-3">
-          <Badge variant="secondary" className="text-xs bg-violet-500/20 text-violet-200 border-violet-400/30">
+          <Badge
+            variant="secondary"
+            className="text-xs bg-violet-500/20 text-violet-200 border-violet-400/30"
+          >
             {localArticle.category}
           </Badge>
           {(localArticle.tags || [])
-            .filter(tag => tag && tag.trim())
+            .filter((tag) => tag && tag.trim())
             .slice(0, 3)
             .map((tag) => (
-              <Badge key={tag} variant="outline" className="text-xs border-violet-500/30 text-violet-300/70">
+              <Badge
+                key={tag}
+                variant="outline"
+                className="text-xs border-violet-500/30 text-violet-300/70"
+              >
                 {tag}
               </Badge>
             ))}
@@ -105,8 +125,8 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
         {localArticle.summary && (
           <p
             className={cn(
-              'text-sm text-violet-200/70 leading-relaxed mb-3',
-              !isExpanded && 'line-clamp-2'
+              "text-sm text-violet-200/70 leading-relaxed mb-3",
+              !isExpanded && "line-clamp-2",
             )}
           >
             {localArticle.summary}
@@ -144,12 +164,16 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
             >
               <Star
                 className={cn(
-                  'w-4 h-4',
-                  localArticle.is_favorite && 'fill-violet-400 text-violet-400'
+                  "w-4 h-4",
+                  localArticle.is_favorite && "fill-violet-400 text-violet-400",
                 )}
               />
             </Button>
-            <Button variant="ghost" size="sm" className="text-violet-300/70 hover:text-violet-200 hover:bg-violet-500/20">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-violet-300/70 hover:text-violet-200 hover:bg-violet-500/20"
+            >
               <BookmarkPlus className="w-4 h-4" />
             </Button>
           </div>
@@ -162,10 +186,15 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
                 onClick={() => setIsExpanded(!isExpanded)}
                 className="text-violet-300/70 hover:text-violet-200 hover:bg-violet-500/20"
               >
-                {isExpanded ? 'Less' : 'More'}
+                {isExpanded ? "Less" : "More"}
               </Button>
             )}
-            <Button variant="ghost" size="sm" asChild className="text-violet-300/70 hover:text-violet-200 hover:bg-violet-500/20">
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="text-violet-300/70 hover:text-violet-200 hover:bg-violet-500/20"
+            >
               <a
                 href={localArticle.url}
                 target="_blank"

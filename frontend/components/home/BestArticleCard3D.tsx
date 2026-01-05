@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import { useInView } from 'react-intersection-observer';
-import { ExternalLink, TrendingUp } from 'lucide-react';
-import { card3DLift, fadeInFromBottom } from '@/lib/animations-3d';
-import { usePrefersReducedMotion } from '@/lib/scroll-parallax';
-import type { Article } from '@/types';
+import { motion } from "framer-motion";
+import { useInView } from "react-intersection-observer";
+import { ExternalLink, TrendingUp } from "lucide-react";
+import { card3DLift, fadeInFromBottom } from "@/lib/animations-3d";
+import { usePrefersReducedMotion } from "@/lib/scroll-parallax";
+import type { Article } from "@/types";
 
 interface BestArticleCard3DProps {
   article: Article | null;
@@ -28,7 +28,7 @@ export const BestArticleCard3D = ({ article }: BestArticleCard3DProps) => {
       ref={ref}
       className="w-full h-96 perspective-1000"
       initial="hidden"
-      animate={inView ? 'visible' : 'hidden'}
+      animate={inView ? "visible" : "hidden"}
       variants={fadeInFromBottom}
     >
       <motion.div
@@ -37,8 +37,8 @@ export const BestArticleCard3D = ({ article }: BestArticleCard3DProps) => {
         initial="initial"
         whileHover="hover"
         style={{
-          transformStyle: 'preserve-3d',
-          willChange: 'transform',
+          transformStyle: "preserve-3d",
+          willChange: "transform",
         }}
       >
         {/* Glow effect */}
@@ -52,7 +52,9 @@ export const BestArticleCard3D = ({ article }: BestArticleCard3DProps) => {
             </span>
             <div className="flex items-center gap-1 text-sm text-violet-300/70">
               <TrendingUp className="w-4 h-4" />
-              <span>{article.score.toFixed(0)}</span>
+              <span>
+                {article.score != null ? article.score.toFixed(0) : "N/A"}
+              </span>
             </div>
           </div>
 
@@ -72,7 +74,9 @@ export const BestArticleCard3D = ({ article }: BestArticleCard3DProps) => {
                 {article.source_type}
               </span>
               {article.author && (
-                <span className="text-sm font-medium text-violet-200">{article.author}</span>
+                <span className="text-sm font-medium text-violet-200">
+                  {article.author}
+                </span>
               )}
             </div>
 

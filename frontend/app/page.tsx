@@ -6,13 +6,30 @@ import { BestArticleCard3D } from '@/components/home/BestArticleCard3D';
 import { BestVideoCard3D } from '@/components/home/BestVideoCard3D';
 import { StatsPreview3D } from '@/components/home/StatsPreview3D';
 import { useArticles } from '@/hooks/use-articles';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { videosApi } from '@/lib/api-client';
+import type { Video } from '@/types';
 
 export default function HomePage() {
   // Fetch all articles
   const { data: articlesResponse, isLoading } = useArticles({
     sort: 'score',
   });
+
+  // Fetch best video separately
+  const [bestVideo, setBestVideo] = useState<Video | null>(null);
+
+  useEffect(() => {
+    const fetchBestVideo = async () => {
+      try {
+        const video = await videosApi.getBestOfWeek();
+        setBestVideo(video);
+      } catch (err) {
+        console.error('Failed to fetch best video:', err);
+      }
+    };
+    fetchBestVideo();
+  }, []);
 
   // Flatten pages from infinite query
   const articles = useMemo(() => {
@@ -23,13 +40,6 @@ export default function HomePage() {
   const bestArticle = useMemo(() => {
     return articles
       .filter(a => !a.source_type?.startsWith('youtube'))
-      .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))[0] || null;
-  }, [articles]);
-
-  // Find best video of the week (highest score, YouTube only)
-  const bestVideo = useMemo(() => {
-    return articles
-      .filter(a => a.source_type?.startsWith('youtube'))
       .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))[0] || null;
   }, [articles]);
 
