@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 
 from app.auth.deps import get_current_user
@@ -13,6 +13,7 @@ from app.schemas.user_keyword import (
     UserKeywordResponse,
     UserKeywordUpdate,
 )
+from app.services.user_scoring import UserScoringService
 from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -130,3 +131,25 @@ async def delete_user_keyword(
 
     logger.info(f"User keyword deleted: {keyword.keyword} for user {user.id}")
     return None
+
+
+@router.post("/rescore", status_code=status.HTTP_202_ACCEPTED)
+async def rescore_articles(
+    background_tasks: BackgroundTasks,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Trigger rescoring of all articles for the current user.
+    Called after keyword changes to recalculate personalized scores.
+    Runs in background to avoid blocking.
+    """
+    def do_rescore():
+        scoring_service = UserScoringService(db)
+        count = scoring_service.rescore_user_articles(user.id)
+        logger.info(f"Rescored {count} articles for user {user.id}")
+
+    background_tasks.add_task(do_rescore)
+
+    logger.info(f"Rescoring triggered for user {user.id}")
+    return {"message": "Rescoring started", "status": "processing"}

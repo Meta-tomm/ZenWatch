@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Article, Video, Keyword, Source, UserConfig, ArticleFilters, PaginatedResponse, LibraryResponse, TriageResponse, LibraryFilter } from '@/types';
+import type { Article, Video, Keyword, Source, UserConfig, ArticleFilters, PaginatedResponse, LibraryResponse, TriageResponse, LibraryFilter, AnalyticsSummary } from '@/types';
 import type {
   User,
   LoginRequest,
@@ -354,18 +354,73 @@ export const commentsApi = {
 
 // User Keywords API
 export const userKeywordsApi = {
-  list: async (): Promise<UserKeyword[]> => {
-    const response = await apiClient.get('/user/keywords');
+  list: async (): Promise<{ data: UserKeyword[]; total: number }> => {
+    const response = await apiClient.get('/user-keywords');
     return response.data;
   },
 
   create: async (data: UserKeywordCreate): Promise<UserKeyword> => {
-    const response = await apiClient.post('/user/keywords', data);
+    const response = await apiClient.post('/user-keywords', data);
+    return response.data;
+  },
+
+  update: async (id: number, data: Partial<UserKeywordCreate>): Promise<UserKeyword> => {
+    const response = await apiClient.patch(`/user-keywords/${id}`, data);
     return response.data;
   },
 
   delete: async (id: number): Promise<void> => {
-    await apiClient.delete(`/user/keywords/${id}`);
+    await apiClient.delete(`/user-keywords/${id}`);
+  },
+
+  rescore: async (): Promise<{ message: string; status: string }> => {
+    const response = await apiClient.post('/user-keywords/rescore');
+    return response.data;
+  },
+};
+
+// Personalized Feed API
+export const personalizedApi = {
+  getFeed: async (params?: ArticleFilters): Promise<PaginatedResponse<Article & { personalized_score?: number; keyword_matches?: number }>> => {
+    const queryParams: Record<string, any> = {
+      ...params,
+      categories: params?.categories?.length ? params.categories.join(',') : undefined,
+      sources: params?.sources?.length ? params.sources.join(',') : undefined,
+      timeRange: params?.timeRange === 'all' ? undefined : params?.timeRange,
+    };
+
+    Object.keys(queryParams).forEach(key => {
+      if (queryParams[key] === undefined) {
+        delete queryParams[key];
+      }
+    });
+
+    const response = await apiClient.get('/personalized/feed', { params: queryParams });
+    const data = response.data;
+    return {
+      data: data.data.map((article: any) => ({
+        ...article,
+        id: String(article.id),
+        tags: article.tags || [],
+      })),
+      total: data.total,
+      hasMore: data.hasMore,
+    };
+  },
+
+  scoreNewArticles: async (): Promise<{ message: string; count: number }> => {
+    const response = await apiClient.post('/personalized/score-new');
+    return response.data;
+  },
+
+  getStats: async (): Promise<{
+    keyword_count: number;
+    scored_articles: number;
+    average_score: number;
+    high_relevance_count: number;
+  }> => {
+    const response = await apiClient.get('/personalized/stats');
+    return response.data;
   },
 };
 
@@ -480,6 +535,29 @@ export const adminApi = {
 
   triggerRescore: async (forceAll: boolean = false): Promise<{ task_id: string; status: string; message: string }> => {
     const response = await apiClient.post('/scraping/rescore', null, { params: { force_all: forceAll } });
+    return response.data;
+  },
+};
+
+// Analytics API
+export const analyticsApi = {
+  getSummary: async (): Promise<AnalyticsSummary> => {
+    const response = await apiClient.get('/analytics/summary');
+    return response.data;
+  },
+
+  getDailyStats: async (days: number = 7): Promise<any[]> => {
+    const response = await apiClient.get('/analytics/daily-stats', { params: { days } });
+    return response.data;
+  },
+
+  getTrends: async (days: number = 7, limit: number = 20): Promise<any[]> => {
+    const response = await apiClient.get('/analytics/trends', { params: { days, limit } });
+    return response.data;
+  },
+
+  getTopKeywords: async (days: number = 7, limit: number = 10): Promise<{ top_keywords: any[] }> => {
+    const response = await apiClient.get('/analytics/top-keywords', { params: { days, limit } });
     return response.data;
   },
 };

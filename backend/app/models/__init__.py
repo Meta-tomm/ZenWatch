@@ -11,6 +11,7 @@ from app.models.user_keyword import UserKeyword
 from app.models.comment import Comment
 from app.models.user_state import UserArticleState, UserVideoState
 from app.models.consent import UserConsent, DataExportRequest
+from app.models.user_article_score import UserArticleScore
 
 __all__ = [
     "Article",
@@ -29,4 +30,5 @@ __all__ = [
     "UserVideoState",
     "UserConsent",
     "DataExportRequest",
+    "UserArticleScore",
 ]

@@ -5,11 +5,12 @@ import { Button } from '@/components/ui/button';
 import { NavLink } from './NavLink';
 import { ScrapeButton } from './ScrapeButton';
 import { UserMenu } from './UserMenu';
-import { Home, Settings, BarChart3, ChevronLeft, FileText, Bookmark, Shuffle } from 'lucide-react';
+import { Home, Settings, BarChart3, ChevronLeft, FileText, Bookmark, Shuffle, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/', icon: Home, label: 'Feed' },
+  { href: '/personalized', icon: Sparkles, label: 'Pour vous' },
   { href: '/articles', icon: FileText, label: 'Articles' },
   { href: '/library', icon: Bookmark, label: 'Library' },
   { href: '/triage', icon: Shuffle, label: 'Triage' },

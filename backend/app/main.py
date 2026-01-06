@@ -13,6 +13,7 @@ from app.api.comments import router as comments_router
 from app.api.admin import router as admin_router
 from app.api.library import router as library_router
 from app.api.triage import router as triage_router
+from app.api.personalized import router as personalized_router
 from app.config import settings
 from app.utils.logger import get_logger
 
@@ -51,6 +52,7 @@ app.include_router(comments_router, prefix="/api", tags=["comments"])
 app.include_router(admin_router, prefix="/api", tags=["admin"])
 app.include_router(library_router, prefix="/api", tags=["library"])
 app.include_router(triage_router, prefix="/api", tags=["triage"])
+app.include_router(personalized_router, prefix="/api", tags=["personalized"])
 
 
 @app.get("/")

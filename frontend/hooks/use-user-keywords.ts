@@ -6,12 +6,14 @@ import type { UserKeywordCreate } from '@/types/auth';
 
 export const useUserKeywords = () => {
   const queryClient = useQueryClient();
-  const queryKey = ['user', 'keywords'];
+  const queryKey = ['user-keywords'];
 
-  const { data: keywords = [], isLoading, error } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey,
     queryFn: () => userKeywordsApi.list(),
   });
+
+  const keywords = data?.data || [];
 
   const createMutation = useMutation({
     mutationFn: (data: UserKeywordCreate) => userKeywordsApi.create(data),
@@ -27,8 +29,8 @@ export const useUserKeywords = () => {
     },
   });
 
-  const addKeyword = (keyword: string, priority?: number) => {
-    createMutation.mutate({ keyword, priority });
+  const addKeyword = (keyword: string, weight?: number, category?: string) => {
+    createMutation.mutate({ keyword, weight, category });
   };
 
   const removeKeyword = (id: number) => {

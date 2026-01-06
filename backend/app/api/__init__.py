@@ -11,6 +11,7 @@ from app.api.user_keywords import router as user_keywords_router
 from app.api.comments import router as comments_router
 from app.api.admin import router as admin_router
 from app.api.library import router as library_router
+from app.api.personalized import router as personalized_router
 
 __all__ = [
     "articles_router",
@@ -25,4 +26,5 @@ __all__ = [
     "comments_router",
     "admin_router",
     "library_router",
+    "personalized_router",
 ]

@@ -2,11 +2,13 @@ export interface User {
   id: string;
   email: string;
   username: string;
+  display_name?: string;
   avatar_url?: string;
   bio?: string;
   github_url?: string;
   portfolio_url?: string;
   role: 'user' | 'admin';
+  is_admin: boolean;
   is_verified: boolean;
   created_at: string;
 }
@@ -34,6 +36,7 @@ export interface RegisterRequest {
 export interface AuthTokens {
   access_token: string;
   token_type: string;
+  expires_in?: number;
 }
 
 export interface AuthResponse {
@@ -69,13 +72,23 @@ export interface UserKeyword {
   id: number;
   user_id: string;
   keyword: string;
-  priority: number;
+  category?: string;
+  weight: number;
+  is_active: boolean;
   created_at: string;
 }
 
 export interface UserKeywordCreate {
   keyword: string;
-  priority?: number;
+  category?: string;
+  weight?: number;
+}
+
+export interface UserKeywordUpdate {
+  keyword?: string;
+  category?: string;
+  weight?: number;
+  is_active?: boolean;
 }
 
 export interface ProfileUpdate {
