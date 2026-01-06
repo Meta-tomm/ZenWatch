@@ -176,7 +176,7 @@ function KeywordsTab() {
         <form onSubmit={handleAddKeyword} className="p-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
-              <label className="text-sm text-violet-200 mb-1 block">Mot-cle</label>
+              <label className="text-sm font-medium text-violet-100 mb-2 block">Mot-cle</label>
               <Input
                 value={newKeyword}
                 onChange={(e) => setNewKeyword(e.target.value)}
@@ -185,7 +185,7 @@ function KeywordsTab() {
               />
             </div>
             <div className="w-full md:w-40">
-              <label className="text-sm text-violet-200 mb-1 block">Categorie (optionnel)</label>
+              <label className="text-sm font-medium text-violet-100 mb-2 block">Categorie (optionnel)</label>
               <Input
                 value={newCategory}
                 onChange={(e) => setNewCategory(e.target.value)}
@@ -194,7 +194,7 @@ function KeywordsTab() {
               />
             </div>
             <div className="w-full md:w-32">
-              <label className="text-sm text-violet-200 mb-1 block">Poids: {newWeight.toFixed(1)}</label>
+              <label className="text-sm font-medium text-violet-100 mb-2 block">Poids: {newWeight.toFixed(1)}</label>
               <Slider
                 value={[newWeight]}
                 onValueChange={(v) => setNewWeight(v[0])}
@@ -278,7 +278,7 @@ function KeywordsTab() {
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="w-24">
-                      <p className="text-xs text-violet-300/60 mb-1">Poids: {keyword.weight.toFixed(1)}</p>
+                      <p className="text-xs font-medium text-violet-200 mb-1">Poids: {keyword.weight.toFixed(1)}</p>
                       <Slider
                         value={[keyword.weight]}
                         onValueChange={(v) => handleWeightChange(keyword, v[0])}
