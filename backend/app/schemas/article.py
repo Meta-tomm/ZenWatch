@@ -49,6 +49,9 @@ class ArticleResponse(ArticleCreate):
     duration_seconds: Optional[int] = None
     view_count: Optional[int] = None
     is_video: Optional[bool] = False
+    is_bookmarked: bool = False
+    is_dismissed: bool = False
+    bookmarked_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
 
