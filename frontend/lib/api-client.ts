@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Article, Video, Keyword, Source, UserConfig, ArticleFilters, PaginatedResponse } from '@/types';
+import type { Article, Video, Keyword, Source, UserConfig, ArticleFilters, PaginatedResponse, LibraryResponse, TriageResponse, LibraryFilter } from '@/types';
 import type {
   User,
   LoginRequest,
@@ -13,6 +13,16 @@ import type {
   ProfileUpdate,
   UserPublicProfile,
 } from '@/types/auth';
+import type {
+  AdminUser,
+  AdminUserUpdate,
+  AdminComment,
+  PaginatedResponse as AdminPaginatedResponse,
+  ScrapingRun,
+  ScrapingStats,
+  AdminUsersFilters,
+  AdminCommentsFilters,
+} from '@/types/admin';
 import { useAuthStore } from '@/store/auth-store';
 
 const apiClient = axios.create({
@@ -261,13 +271,29 @@ export const userConfigApi = {
 // Auth API
 export const authApi = {
   login: async (data: LoginRequest): Promise<{ user: User; tokens: AuthTokens }> => {
-    const response = await apiClient.post('/auth/login', data);
-    return response.data;
+    // OAuth2PasswordRequestForm expects form data with username/password
+    const formData = new URLSearchParams();
+    formData.append('username', data.email); // Backend uses email as username
+    formData.append('password', data.password);
+    const response = await apiClient.post('/auth/login', formData, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+    // Transform backend response to match expected format
+    const { access_token, token_type, expires_in, user } = response.data;
+    return {
+      user,
+      tokens: { access_token, token_type, expires_in }
+    };
   },
 
   register: async (data: RegisterRequest): Promise<{ user: User; tokens: AuthTokens }> => {
     const response = await apiClient.post('/auth/register', data);
-    return response.data;
+    // Transform backend response to match expected format
+    const { access_token, token_type, expires_in, user } = response.data;
+    return {
+      user,
+      tokens: { access_token, token_type, expires_in }
+    };
   },
 
   logout: async (): Promise<void> => {
@@ -340,5 +366,110 @@ export const userKeywordsApi = {
 
   delete: async (id: number): Promise<void> => {
     await apiClient.delete(`/user/keywords/${id}`);
+  },
+};
+
+// Library API
+export const libraryApi = {
+  getLibrary: async (params?: { type?: LibraryFilter; unread_only?: boolean }): Promise<LibraryResponse> => {
+    const response = await apiClient.get('/library', { params });
+    return {
+      items: response.data.items.map((item: any) => ({
+        ...item,
+        id: String(item.id),
+        tags: item.tags || [],
+      })),
+      total: response.data.total,
+      unread_count: response.data.unread_count,
+    };
+  },
+
+  toggleBookmark: async (id: string): Promise<Article> => {
+    const response = await apiClient.post(`/articles/${id}/bookmark`);
+    return response.data;
+  },
+};
+
+// Triage API
+export const triageApi = {
+  getTriage: async (limit: number = 10): Promise<TriageResponse> => {
+    const response = await apiClient.get('/triage', { params: { limit } });
+    return {
+      items: response.data.items.map((item: any) => ({
+        ...item,
+        id: String(item.id),
+        tags: item.tags || [],
+      })),
+      remaining_count: response.data.remaining_count,
+    };
+  },
+
+  dismiss: async (id: string): Promise<{ success: boolean }> => {
+    const response = await apiClient.post(`/articles/${id}/dismiss`);
+    return response.data;
+  },
+
+  bookmark: async (id: string): Promise<Article> => {
+    const response = await apiClient.post(`/articles/${id}/bookmark`);
+    return response.data;
+  },
+};
+
+// Admin API
+export const adminApi = {
+  // Users management
+  getUsers: async (filters?: AdminUsersFilters): Promise<AdminPaginatedResponse<AdminUser>> => {
+    const response = await apiClient.get('/admin/users', { params: filters });
+    return response.data;
+  },
+
+  getUser: async (userId: number): Promise<AdminUser> => {
+    const response = await apiClient.get(`/admin/users/${userId}`);
+    return response.data;
+  },
+
+  updateUser: async (userId: number, data: AdminUserUpdate): Promise<AdminUser> => {
+    const response = await apiClient.patch(`/admin/users/${userId}`, data);
+    return response.data;
+  },
+
+  deleteUser: async (userId: number): Promise<void> => {
+    await apiClient.delete(`/admin/users/${userId}`);
+  },
+
+  // Comments management
+  getComments: async (filters?: AdminCommentsFilters): Promise<AdminPaginatedResponse<AdminComment>> => {
+    const response = await apiClient.get('/admin/comments', { params: filters });
+    return response.data;
+  },
+
+  deleteComment: async (commentId: number): Promise<void> => {
+    await apiClient.delete(`/admin/comments/${commentId}`);
+  },
+
+  // Scraping management
+  getScrapingHistory: async (limit: number = 20): Promise<ScrapingRun[]> => {
+    const response = await apiClient.get('/scraping/history', { params: { limit } });
+    return response.data;
+  },
+
+  getScrapingStats: async (): Promise<ScrapingStats> => {
+    const response = await apiClient.get('/scraping/stats');
+    return response.data;
+  },
+
+  triggerScraping: async (keywords?: string[]): Promise<{ task_id: string; status: string; message: string }> => {
+    const response = await apiClient.post('/scraping/trigger', { keywords });
+    return response.data;
+  },
+
+  triggerYouTubeScraping: async (): Promise<{ task_id: string; status: string; message: string }> => {
+    const response = await apiClient.post('/scraping/youtube-trending');
+    return response.data;
+  },
+
+  triggerRescore: async (forceAll: boolean = false): Promise<{ task_id: string; status: string; message: string }> => {
+    const response = await apiClient.post('/scraping/rescore', null, { params: { force_all: forceAll } });
+    return response.data;
   },
 };

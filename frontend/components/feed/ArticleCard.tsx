@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { LikeDislikeButtons } from "./LikeDislikeButtons";
 import { useToggleFavorite } from "@/hooks/use-toggle-favorite";
+import { useToggleBookmark } from "@/hooks/use-library";
 import { formatRelativeDate } from "@/lib/date-utils";
 import { minimalFadeIn } from "@/lib/animations-3d";
 import { cn } from "@/lib/utils";
@@ -28,6 +29,7 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [localArticle, setLocalArticle] = useState(article);
   const toggleFavorite = useToggleFavorite();
+  const toggleBookmark = useToggleBookmark();
 
   const handleLike = async () => {
     try {
@@ -172,9 +174,15 @@ export const ArticleCard = ({ article, onOpenModal }: ArticleCardProps) => {
             <Button
               variant="ghost"
               size="sm"
+              onClick={() => toggleBookmark.mutate(localArticle.id)}
               className="text-violet-300/70 hover:text-violet-200 hover:bg-violet-500/20"
             >
-              <BookmarkPlus className="w-4 h-4" />
+              <BookmarkPlus
+                className={cn(
+                  "w-4 h-4",
+                  localArticle.is_bookmarked && "fill-violet-400 text-violet-400"
+                )}
+              />
             </Button>
           </div>
 

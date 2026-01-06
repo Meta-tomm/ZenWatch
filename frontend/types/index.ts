@@ -19,6 +19,9 @@ export interface Article {
   is_read: boolean;
   is_favorite: boolean;
   is_archived: boolean;
+  is_bookmarked: boolean;
+  is_dismissed: boolean;
+  bookmarked_at?: string;
   source_type: string;
   created_at: string;
   updated_at?: string;
@@ -46,6 +49,9 @@ export interface Video {
   likes?: number;
   dislikes?: number;
   is_favorite: boolean;
+  is_bookmarked: boolean;
+  is_dismissed: boolean;
+  bookmarked_at?: string;
   source_type: string;
   created_at: string;
   updated_at?: string;
@@ -107,3 +113,18 @@ export interface PaginatedResponse<T> {
 }
 
 export type Theme = 'light' | 'dark' | 'zenwatch';
+
+// Library & Triage types
+export interface LibraryResponse {
+  items: Article[];
+  total: number;
+  unread_count: number;
+}
+
+export interface TriageResponse {
+  items: Article[];
+  remaining_count: number;
+}
+
+export type LibraryFilter = 'all' | 'articles' | 'videos';
+export type LibraryView = 'list' | 'grid';

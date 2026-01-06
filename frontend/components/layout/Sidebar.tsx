@@ -4,12 +4,15 @@ import { useUIStore } from '@/store/ui-store';
 import { Button } from '@/components/ui/button';
 import { NavLink } from './NavLink';
 import { ScrapeButton } from './ScrapeButton';
-import { Home, Settings, BarChart3, ChevronLeft, FileText } from 'lucide-react';
+import { UserMenu } from './UserMenu';
+import { Home, Settings, BarChart3, ChevronLeft, FileText, Bookmark, Shuffle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/', icon: Home, label: 'Feed' },
   { href: '/articles', icon: FileText, label: 'Articles' },
+  { href: '/library', icon: Bookmark, label: 'Library' },
+  { href: '/triage', icon: Shuffle, label: 'Triage' },
   { href: '/config', icon: Settings, label: 'Configuration' },
   { href: '/analytics', icon: BarChart3, label: 'Analytics' },
 ];
@@ -63,9 +66,12 @@ export const Sidebar = () => {
         ))}
       </nav>
 
+      {/* User section */}
+      <UserMenu collapsed={collapsed} />
+
       {/* Footer */}
       {!collapsed && (
-        <div className="p-4 border-t border-violet-500/20 text-xs text-muted-foreground">
+        <div className="px-4 py-2 text-xs text-muted-foreground">
           ZenWatch v1.0.0
         </div>
       )}
