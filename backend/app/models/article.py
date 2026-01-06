@@ -64,6 +64,10 @@ class Article(Base):
     duration_seconds = Column(Integer, nullable=True)
     view_count = Column(Integer, nullable=True)
     is_video = Column(Boolean, default=False)
+    # Library & Triage fields
+    is_bookmarked = Column(Boolean, default=False)
+    is_dismissed = Column(Boolean, default=False)
+    bookmarked_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
