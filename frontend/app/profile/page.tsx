@@ -136,7 +136,7 @@ function KeywordsTab() {
     });
   };
 
-  const inputClassName = "bg-anthracite-800/50 border-violet-500/20 text-violet-100 placeholder:text-violet-300/40 focus:border-violet-500/50 focus:ring-violet-500/20";
+  const inputClassName = "bg-anthracite-800 border-violet-500/30 text-white placeholder:text-violet-300/50 focus:border-violet-500 focus:ring-violet-500/30";
 
   return (
     <TabsContent value="keywords" className="space-y-6">
