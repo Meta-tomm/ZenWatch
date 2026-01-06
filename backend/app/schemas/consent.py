@@ -1,26 +1,35 @@
-from typing import Optional, Literal, List
+"""GDPR consent and data export schemas"""
+
+from typing import Optional, List, Literal
 from datetime import datetime
 from uuid import UUID
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
-ConsentType = Literal['terms', 'privacy', 'marketing', 'analytics']
-ExportStatus = Literal['pending', 'processing', 'completed', 'expired']
+ConsentType = Literal["terms", "privacy", "marketing", "analytics"]
+ExportStatus = Literal["pending", "processing", "completed", "failed", "expired"]
 
 
 class ConsentCreate(BaseModel):
-    """Schema for recording a consent decision"""
+    """Schema for recording user consent"""
+
     consent_type: ConsentType
     consented: bool
+    ip_address: Optional[str] = Field(None, max_length=45)
+    user_agent: Optional[str] = None
 
 
 class ConsentUpdate(BaseModel):
     """Schema for updating/withdrawing consent"""
+
     consented: bool
+    ip_address: Optional[str] = Field(None, max_length=45)
+    user_agent: Optional[str] = None
 
 
 class ConsentResponse(BaseModel):
-    """Consent record response"""
+    """Schema for consent API response"""
+
     id: int
     consent_type: ConsentType
     consented: bool
@@ -32,20 +41,24 @@ class ConsentResponse(BaseModel):
 
 
 class ConsentStatusResponse(BaseModel):
-    """Current consent status for all types"""
-    terms: Optional[ConsentResponse] = None
-    privacy: Optional[ConsentResponse] = None
-    marketing: Optional[ConsentResponse] = None
-    analytics: Optional[ConsentResponse] = None
+    """Schema for all user consent statuses"""
+
+    terms: bool = False
+    privacy: bool = False
+    marketing: bool = False
+    analytics: bool = False
+    last_updated: Optional[datetime] = None
 
 
 class DataExportRequestCreate(BaseModel):
-    """Request for GDPR data export"""
+    """Schema for requesting data export (GDPR right to data portability)"""
+
     pass
 
 
-class DataExportRequestResponse(BaseModel):
-    """Data export request response"""
+class DataExportResponse(BaseModel):
+    """Schema for data export request response"""
+
     id: int
     status: ExportStatus
     file_url: Optional[str] = None
@@ -57,18 +70,22 @@ class DataExportRequestResponse(BaseModel):
         from_attributes = True
 
 
-class DataDeletionRequest(BaseModel):
-    """Request for GDPR data deletion (right to be forgotten)"""
-    confirm_deletion: bool
-    password: Optional[str] = None
+class DataExportListResponse(BaseModel):
+    """Schema for list of data export requests"""
+
+    exports: List[DataExportResponse]
+    total: int
 
 
-class UserDataExport(BaseModel):
-    """Exported user data structure"""
-    user: dict
-    articles_read: List[dict]
-    videos_watched: List[dict]
-    comments: List[dict]
-    keywords: List[dict]
-    consents: List[dict]
-    export_date: datetime
+class AccountDeletionRequest(BaseModel):
+    """Schema for account deletion request (GDPR right to erasure)"""
+
+    password: str = Field(..., min_length=1)
+    confirmation: Literal["DELETE MY ACCOUNT"]
+
+
+class AccountDeletionResponse(BaseModel):
+    """Schema for account deletion confirmation"""
+
+    message: str = "Account deletion initiated"
+    deletion_scheduled_at: datetime

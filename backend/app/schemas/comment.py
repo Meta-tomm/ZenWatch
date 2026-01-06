@@ -1,52 +1,49 @@
+"""Comment schemas for article and video discussions"""
+
 from typing import Optional, List
 from datetime import datetime
 from uuid import UUID
 from pydantic import BaseModel, Field, model_validator
 
+from app.schemas.user import UserPublicProfile
+
 
 class CommentCreate(BaseModel):
     """Schema for creating a new comment"""
+
+    content: str = Field(..., min_length=1, max_length=5000)
     article_id: Optional[int] = None
     video_id: Optional[int] = None
     parent_id: Optional[int] = None
-    content: str = Field(..., min_length=1, max_length=5000)
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def validate_target(self):
         if self.article_id is None and self.video_id is None:
-            raise ValueError('Either article_id or video_id must be provided')
+            raise ValueError("Either article_id or video_id must be provided")
         if self.article_id is not None and self.video_id is not None:
-            raise ValueError('Cannot specify both article_id and video_id')
+            raise ValueError("Cannot comment on both article and video")
         return self
 
 
 class CommentUpdate(BaseModel):
     """Schema for updating a comment"""
+
     content: str = Field(..., min_length=1, max_length=5000)
 
 
-class CommentAuthor(BaseModel):
-    """Minimal author info for comment responses"""
-    id: UUID
-    username: str
-    avatar_url: Optional[str] = None
-
-    class Config:
-        from_attributes = True
-
-
 class CommentResponse(BaseModel):
-    """Single comment response"""
+    """Schema for comment API response"""
+
     id: int
     user_id: Optional[UUID] = None
+    user: Optional[UserPublicProfile] = None
     article_id: Optional[int] = None
     video_id: Optional[int] = None
     parent_id: Optional[int] = None
     content: str
-    is_deleted: bool
+    is_deleted: bool = False
     created_at: datetime
     updated_at: datetime
-    author: Optional[CommentAuthor] = None
     reply_count: int = 0
 
     class Config:
@@ -54,25 +51,27 @@ class CommentResponse(BaseModel):
 
 
 class CommentThread(BaseModel):
-    """Comment with nested replies"""
+    """Schema for comment with nested replies"""
+
     id: int
     user_id: Optional[UUID] = None
+    user: Optional[UserPublicProfile] = None
     article_id: Optional[int] = None
     video_id: Optional[int] = None
     parent_id: Optional[int] = None
     content: str
-    is_deleted: bool
+    is_deleted: bool = False
     created_at: datetime
     updated_at: datetime
-    author: Optional[CommentAuthor] = None
-    replies: List['CommentThread'] = []
+    replies: List["CommentThread"] = []
 
     class Config:
         from_attributes = True
 
 
 class PaginatedCommentsResponse(BaseModel):
-    """Paginated comments response"""
+    """Schema for paginated comments list"""
+
     data: List[CommentResponse]
     total: int
     has_more: bool

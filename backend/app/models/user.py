@@ -1,13 +1,26 @@
-import uuid
-from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ForeignKey
+"""User and OAuth account models for authentication"""
+
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    Text,
+    Boolean,
+    DateTime,
+    ForeignKey,
+    CheckConstraint,
+    UniqueConstraint,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
+import uuid
+
 from app.database import Base
 
 
 class User(Base):
-    """User account model for authentication and profile management"""
+    """User account model"""
 
     __tablename__ = "users"
 
@@ -19,23 +32,43 @@ class User(Base):
     bio = Column(String(500), nullable=True)
     github_url = Column(Text, nullable=True)
     portfolio_url = Column(Text, nullable=True)
-    role = Column(String(20), server_default='user', nullable=False)
-    is_active = Column(Boolean, server_default='true', nullable=False)
-    is_verified = Column(Boolean, server_default='false', nullable=False)
+    role = Column(String(20), default="user", nullable=False)
+    is_active = Column(Boolean, default=True, nullable=False)
+    is_verified = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    __table_args__ = (
+        CheckConstraint("role IN ('user', 'admin')", name="check_user_role"),
+    )
 
     # Relationships
-    oauth_accounts = relationship("OAuthAccount", back_populates="user", cascade="all, delete-orphan")
-    article_states = relationship("UserArticleState", back_populates="user", cascade="all, delete-orphan")
-    video_states = relationship("UserVideoState", back_populates="user", cascade="all, delete-orphan")
-    keywords = relationship("UserKeyword", back_populates="user", cascade="all, delete-orphan")
+    oauth_accounts = relationship(
+        "OAuthAccount", back_populates="user", cascade="all, delete-orphan"
+    )
+    article_states = relationship(
+        "UserArticleState", back_populates="user", cascade="all, delete-orphan"
+    )
+    video_states = relationship(
+        "UserVideoState", back_populates="user", cascade="all, delete-orphan"
+    )
+    keywords = relationship(
+        "UserKeyword", back_populates="user", cascade="all, delete-orphan"
+    )
     comments = relationship("Comment", back_populates="user")
-    consents = relationship("UserConsent", back_populates="user", cascade="all, delete-orphan")
-    export_requests = relationship("DataExportRequest", back_populates="user", cascade="all, delete-orphan")
-    config = relationship("UserConfig", back_populates="user", uselist=False)
+    consents = relationship(
+        "UserConsent", back_populates="user", cascade="all, delete-orphan"
+    )
+    data_export_requests = relationship(
+        "DataExportRequest", back_populates="user", cascade="all, delete-orphan"
+    )
+    config = relationship(
+        "UserConfig", back_populates="user", uselist=False, cascade="all, delete-orphan"
+    )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<User(id={self.id}, username='{self.username}', email='{self.email}')>"
 
 
@@ -45,7 +78,9 @@ class OAuthAccount(Base):
     __tablename__ = "oauth_accounts"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
     provider = Column(String(20), nullable=False)
     provider_user_id = Column(String(255), nullable=False)
     provider_email = Column(String(255), nullable=True)
@@ -53,8 +88,15 @@ class OAuthAccount(Base):
     refresh_token = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+    __table_args__ = (
+        CheckConstraint(
+            "provider IN ('github', 'google', 'discord')", name="check_oauth_provider"
+        ),
+        UniqueConstraint("provider", "provider_user_id", name="uq_oauth_provider_user"),
+    )
+
     # Relationships
     user = relationship("User", back_populates="oauth_accounts")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<OAuthAccount(provider='{self.provider}', user_id={self.user_id})>"

@@ -5,31 +5,39 @@ from app.schemas.article import (
     PaginatedArticlesResponse,
     PaginatedVideosResponse,
 )
+from app.schemas.keyword import KeywordCreate, KeywordUpdate, KeywordResponse
+from app.schemas.user_config import UserConfigCreate, UserConfigUpdate, UserConfigResponse
+from app.schemas.analytics import (
+    DailyStatsResponse,
+    CategoryStatsResponse,
+    TrendResponse,
+    AnalyticsSummaryResponse,
+)
+from app.schemas.scraped_article import ScrapedArticle
 from app.schemas.user import (
-    UserBase,
     UserCreate,
     UserUpdate,
     UserResponse,
     UserPublicProfile,
-    OAuthAccountResponse,
-    UserWithOAuth,
+    UserKeywordCreate,
+    UserKeywordResponse,
+    UserKeywordsListResponse,
 )
 from app.schemas.auth import (
     LoginRequest,
     RegisterRequest,
     TokenResponse,
+    TokenPayload,
     RefreshTokenRequest,
     PasswordResetRequest,
     PasswordResetConfirm,
     PasswordChangeRequest,
-    EmailVerificationRequest,
     OAuthCallbackRequest,
-    OAuthLinkRequest,
+    OAuthAccountResponse,
 )
 from app.schemas.comment import (
     CommentCreate,
     CommentUpdate,
-    CommentAuthor,
     CommentResponse,
     CommentThread,
     PaginatedCommentsResponse,
@@ -40,9 +48,10 @@ from app.schemas.consent import (
     ConsentResponse,
     ConsentStatusResponse,
     DataExportRequestCreate,
-    DataExportRequestResponse,
-    DataDeletionRequest,
-    UserDataExport,
+    DataExportResponse,
+    DataExportListResponse,
+    AccountDeletionRequest,
+    AccountDeletionResponse,
 )
 
 __all__ = [
@@ -52,29 +61,43 @@ __all__ = [
     "VideoResponse",
     "PaginatedArticlesResponse",
     "PaginatedVideosResponse",
+    # Keyword schemas
+    "KeywordCreate",
+    "KeywordUpdate",
+    "KeywordResponse",
+    # User config schemas
+    "UserConfigCreate",
+    "UserConfigUpdate",
+    "UserConfigResponse",
+    # Analytics schemas
+    "DailyStatsResponse",
+    "CategoryStatsResponse",
+    "TrendResponse",
+    "AnalyticsSummaryResponse",
+    # Scraped article
+    "ScrapedArticle",
     # User schemas
-    "UserBase",
     "UserCreate",
     "UserUpdate",
     "UserResponse",
     "UserPublicProfile",
-    "OAuthAccountResponse",
-    "UserWithOAuth",
+    "UserKeywordCreate",
+    "UserKeywordResponse",
+    "UserKeywordsListResponse",
     # Auth schemas
     "LoginRequest",
     "RegisterRequest",
     "TokenResponse",
+    "TokenPayload",
     "RefreshTokenRequest",
     "PasswordResetRequest",
     "PasswordResetConfirm",
     "PasswordChangeRequest",
-    "EmailVerificationRequest",
     "OAuthCallbackRequest",
-    "OAuthLinkRequest",
+    "OAuthAccountResponse",
     # Comment schemas
     "CommentCreate",
     "CommentUpdate",
-    "CommentAuthor",
     "CommentResponse",
     "CommentThread",
     "PaginatedCommentsResponse",
@@ -84,7 +107,8 @@ __all__ = [
     "ConsentResponse",
     "ConsentStatusResponse",
     "DataExportRequestCreate",
-    "DataExportRequestResponse",
-    "DataDeletionRequest",
-    "UserDataExport",
+    "DataExportResponse",
+    "DataExportListResponse",
+    "AccountDeletionRequest",
+    "AccountDeletionResponse",
 ]
