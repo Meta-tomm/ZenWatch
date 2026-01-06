@@ -52,7 +52,7 @@ export const TriageModal = ({
             initial={{ opacity: 0, y: 100 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 100 }}
-            className="fixed inset-x-4 bottom-0 top-20 md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:top-1/2 md:-translate-y-1/2 md:w-full md:max-w-2xl md:max-h-[80vh] z-50 flex flex-col bg-anthracite-900 border border-violet-500/30 rounded-t-2xl md:rounded-2xl shadow-xl overflow-hidden"
+            className="fixed inset-x-4 bottom-0 top-20 md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:top-1/2 md:-translate-y-1/2 md:w-full md:max-w-2xl md:max-h-[80vh] z-50 flex flex-col bg-anthracite-950 border border-violet-500/30 rounded-t-2xl md:rounded-2xl shadow-xl shadow-violet-500/10 overflow-hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-violet-500/20">
@@ -160,7 +160,7 @@ export const TriageModal = ({
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-between p-4 border-t border-violet-500/20 bg-anthracite-800/50">
+            <div className="flex items-center justify-between p-4 border-t border-violet-500/20 bg-anthracite-900/50">
               <Button
                 variant="ghost"
                 onClick={() => {

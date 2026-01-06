@@ -80,77 +80,85 @@ export default function TriagePage() {
 
   if (error) {
     return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-400 mb-4">Failed to load triage items</p>
-          <Button onClick={() => refetch()}>Try again</Button>
+      <main className="min-h-screen bg-anthracite-950">
+        <div className="container max-w-6xl py-8">
+          <div className="flex flex-col items-center justify-center h-64">
+            <p className="text-red-400 mb-4">Failed to load triage items</p>
+            <Button onClick={() => refetch()} variant="outline">Try again</Button>
+          </div>
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="flex-1 flex flex-col p-6 overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-violet-100 flex items-center gap-2">
-            <Shuffle className="w-6 h-6" />
-            Triage
-          </h1>
-          <p className="text-sm text-violet-300/60 mt-1">
-            Discover new content
-            {data && data.remaining_count > 0 && (
-              <span> - {data.remaining_count} items remaining</span>
-            )}
-          </p>
+    <main className="min-h-screen bg-anthracite-950">
+      <div className="container max-w-6xl py-8">
+        {/* Header */}
+        <div className="p-6 rounded-2xl bg-anthracite-800/50 border border-violet-500/20 mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <Shuffle className="w-8 h-8 text-violet-400" />
+                <h1 className="text-3xl font-bold text-gradient-violet">
+                  Triage
+                </h1>
+              </div>
+              <p className="text-violet-300/60 ml-11">
+                Discover new content
+                {data && data.remaining_count > 0 && (
+                  <span> - {data.remaining_count} items remaining</span>
+                )}
+              </p>
+            </div>
+
+            <Button
+              variant="ghost"
+              asChild
+              className="text-violet-300/70 hover:text-violet-200 hover:bg-violet-500/20"
+            >
+              <Link href="/">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Exit
+              </Link>
+            </Button>
+          </div>
         </div>
 
-        <Button
-          variant="ghost"
-          asChild
-          className="text-violet-300/70 hover:text-violet-200"
-        >
-          <Link href="/">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Exit
-          </Link>
-        </Button>
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 flex items-center justify-center">
-        {isLoading ? (
-          <div className="w-full max-w-md">
-            <Skeleton className="h-96 bg-anthracite-800 rounded-xl" />
-          </div>
-        ) : !currentArticle || data?.items.length === 0 ? (
-          <div className="text-center">
-            <Shuffle className="w-16 h-16 text-violet-500/30 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-violet-200 mb-2">
-              All caught up!
-            </h2>
-            <p className="text-violet-300/60 max-w-md mb-6">
-              No new items to triage. Check back later or explore the Feed.
-            </p>
-            <div className="flex items-center justify-center gap-4">
-              <Button asChild variant="outline">
-                <Link href="/">Go to Feed</Link>
-              </Button>
-              <Button asChild>
-                <Link href="/library">View Library</Link>
-              </Button>
+        {/* Content */}
+        <div className="flex items-center justify-center min-h-[60vh]">
+          {isLoading ? (
+            <div className="w-full max-w-md">
+              <Skeleton className="h-[500px] bg-anthracite-800/50 rounded-xl" />
             </div>
-          </div>
-        ) : (
-          <TriageCard
-            key={currentArticle.id}
-            article={currentArticle}
-            onSwipeLeft={handleSwipeLeft}
-            onSwipeRight={handleSwipeRight}
-            onTap={handleTap}
-          />
-        )}
+          ) : !currentArticle || data?.items.length === 0 ? (
+            <div className="text-center p-12 rounded-2xl bg-anthracite-800/50 border border-violet-500/20">
+              <Shuffle className="w-16 h-16 text-violet-500/30 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-violet-200 mb-2">
+                All caught up!
+              </h2>
+              <p className="text-violet-300/60 max-w-md mb-6">
+                No new items to triage. Check back later or explore the Feed.
+              </p>
+              <div className="flex items-center justify-center gap-4">
+                <Button asChild variant="outline" className="border-violet-500/30 text-violet-300 hover:bg-violet-500/20">
+                  <Link href="/">Go to Feed</Link>
+                </Button>
+                <Button asChild className="bg-violet-600 hover:bg-violet-700">
+                  <Link href="/library">View Library</Link>
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <TriageCard
+              key={currentArticle.id}
+              article={currentArticle}
+              onSwipeLeft={handleSwipeLeft}
+              onSwipeRight={handleSwipeRight}
+              onTap={handleTap}
+            />
+          )}
+        </div>
       </div>
 
       {/* Modal */}
@@ -161,6 +169,6 @@ export default function TriagePage() {
         onDismiss={handleModalDismiss}
         onBookmark={handleModalBookmark}
       />
-    </div>
+    </main>
   );
 }
