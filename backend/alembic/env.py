@@ -13,6 +13,26 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from app.database import Base
 from app.config import settings
 
+# Import all models to register them with Base.metadata
+from app.models import (
+    Article,
+    Source,
+    ScrapingRun,
+    Keyword,
+    ArticleKeyword,
+    Trend,
+    UserConfig,
+    YouTubeChannel,
+    User,
+    OAuthAccount,
+    UserArticleState,
+    UserVideoState,
+    UserKeyword,
+    Comment,
+    UserConsent,
+    DataExportRequest,
+)
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
