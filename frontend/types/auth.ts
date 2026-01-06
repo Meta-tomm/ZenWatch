@@ -1,5 +1,3 @@
-// frontend/types/auth.ts
-
 export interface User {
   id: string;
   email: string;
@@ -20,7 +18,6 @@ export interface UserPublicProfile {
   bio?: string;
   github_url?: string;
   portfolio_url?: string;
-  created_at: string;
 }
 
 export interface LoginRequest {
@@ -39,6 +36,11 @@ export interface AuthTokens {
   token_type: string;
 }
 
+export interface AuthResponse {
+  user: User;
+  tokens: AuthTokens;
+}
+
 export interface Comment {
   id: number;
   user_id: string;
@@ -49,18 +51,17 @@ export interface Comment {
   content: string;
   is_deleted: boolean;
   created_at: string;
-  updated_at: string;
   replies?: Comment[];
 }
 
-export interface CreateCommentRequest {
+export interface CommentCreate {
   content: string;
   article_id?: number;
   video_id?: number;
   parent_id?: number;
 }
 
-export interface UpdateCommentRequest {
+export interface CommentUpdate {
   content: string;
 }
 
@@ -68,13 +69,19 @@ export interface UserKeyword {
   id: number;
   user_id: string;
   keyword: string;
-  weight: number;
+  priority: number;
   created_at: string;
 }
 
-export interface CreateUserKeywordRequest {
+export interface UserKeywordCreate {
   keyword: string;
-  weight?: number;
+  priority?: number;
 }
 
-export type OAuthProvider = 'github' | 'google' | 'discord';
+export interface ProfileUpdate {
+  username?: string;
+  bio?: string;
+  github_url?: string;
+  portfolio_url?: string;
+  avatar_url?: string;
+}

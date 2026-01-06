@@ -1,61 +1,47 @@
-// frontend/hooks/use-user-keywords.ts
+'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { userKeywordsApi } from '@/lib/api-client';
-import { useToast } from '@/hooks/use-toast';
+import type { UserKeywordCreate } from '@/types/auth';
 
 export const useUserKeywords = () => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  const queryKey = ['user', 'keywords'];
 
-  const query = useQuery({
-    queryKey: ['user-keywords'],
-    queryFn: userKeywordsApi.list,
+  const { data: keywords = [], isLoading, error } = useQuery({
+    queryKey,
+    queryFn: () => userKeywordsApi.list(),
   });
 
   const createMutation = useMutation({
-    mutationFn: ({ keyword, weight }: { keyword: string; weight?: number }) =>
-      userKeywordsApi.create(keyword, weight),
+    mutationFn: (data: UserKeywordCreate) => userKeywordsApi.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-keywords'] });
-      toast({
-        title: 'Keyword added',
-        description: 'Your personalized keyword has been saved',
-      });
-    },
-    onError: () => {
-      toast({
-        title: 'Error',
-        description: 'Could not add keyword',
-        variant: 'destructive',
-      });
+      queryClient.invalidateQueries({ queryKey });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => userKeywordsApi.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-keywords'] });
-      toast({
-        title: 'Keyword removed',
-      });
-    },
-    onError: () => {
-      toast({
-        title: 'Error',
-        description: 'Could not remove keyword',
-        variant: 'destructive',
-      });
+      queryClient.invalidateQueries({ queryKey });
     },
   });
 
+  const addKeyword = (keyword: string, priority?: number) => {
+    createMutation.mutate({ keyword, priority });
+  };
+
+  const removeKeyword = (id: number) => {
+    deleteMutation.mutate(id);
+  };
+
   return {
-    keywords: query.data ?? [],
-    isLoading: query.isLoading,
-    error: query.error,
-    addKeyword: createMutation.mutate,
-    removeKeyword: deleteMutation.mutate,
+    keywords,
+    isLoading,
+    error,
+    addKeyword,
+    removeKeyword,
     isAdding: createMutation.isPending,
-    isRemoving: deleteMutation.isPending,
+    isDeleting: deleteMutation.isPending,
   };
 };

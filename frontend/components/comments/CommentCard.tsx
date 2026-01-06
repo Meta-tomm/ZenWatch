@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { MoreHorizontal, Pencil, Trash2, Reply, User } from 'lucide-react';
+import { fr } from 'date-fns/locale';
+import { MoreVertical, Pencil, Trash2, Reply } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,9 +12,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { CommentForm } from './CommentForm';
+import { Textarea } from '@/components/ui/textarea';
 import { useCurrentUser } from '@/hooks/use-current-user';
-import { cn } from '@/lib/utils';
 import type { Comment } from '@/types/auth';
 
 interface CommentCardProps {
@@ -21,7 +21,7 @@ interface CommentCardProps {
   onEdit: (id: number, content: string) => void;
   onDelete: (id: number) => void;
   onReply: (parentId: number, content: string) => void;
-  isUpdating?: boolean;
+  isEditing?: boolean;
   isDeleting?: boolean;
 }
 
@@ -30,160 +30,156 @@ export const CommentCard = ({
   onEdit,
   onDelete,
   onReply,
-  isUpdating = false,
-  isDeleting = false,
+  isEditing,
+  isDeleting,
 }: CommentCardProps) => {
   const { user } = useCurrentUser();
-  const [isEditing, setIsEditing] = useState(false);
-  const [isReplying, setIsReplying] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isReplyMode, setIsReplyMode] = useState(false);
+  const [editContent, setEditContent] = useState(comment.content);
+  const [replyContent, setReplyContent] = useState('');
 
   const isOwner = user?.id === comment.user_id;
-  const displayUser = comment.user;
+  const userInitials = comment.user?.username?.slice(0, 2).toUpperCase() || 'U';
 
-  const handleEdit = (content: string) => {
-    onEdit(comment.id, content);
-    setIsEditing(false);
+  const handleEdit = () => {
+    if (editContent.trim()) {
+      onEdit(comment.id, editContent);
+      setIsEditMode(false);
+    }
   };
 
-  const handleReply = (content: string) => {
-    onReply(comment.id, content);
-    setIsReplying(false);
-  };
-
-  const getInitials = (username?: string) => {
-    if (!username) return 'U';
-    return username.slice(0, 2).toUpperCase();
+  const handleReply = () => {
+    if (replyContent.trim()) {
+      onReply(comment.id, replyContent);
+      setReplyContent('');
+      setIsReplyMode(false);
+    }
   };
 
   if (comment.is_deleted) {
     return (
-      <div className="p-3 bg-anthracite-800/50 border border-violet-500/20 rounded-lg">
-        <p className="text-violet-300/50 italic text-sm">
-          This comment has been deleted
-        </p>
+      <div className="py-3 px-4 bg-muted/50 rounded-lg italic text-muted-foreground text-sm">
+        Ce commentaire a ete supprime
       </div>
     );
   }
 
   return (
     <div className="space-y-3">
-      <div className="p-4 bg-anthracite-800/80 border border-violet-500/30 rounded-lg">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-8 w-8">
-              {displayUser?.avatar_url && (
-                <AvatarImage src={displayUser.avatar_url} alt={displayUser.username} />
-              )}
-              <AvatarFallback className="bg-violet-600 text-white text-xs">
-                {getInitials(displayUser?.username)}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="text-sm font-medium text-violet-200">
-                {displayUser?.username || 'Unknown User'}
-              </p>
-              <p className="text-xs text-violet-300/50">
-                {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
-                {comment.updated_at !== comment.created_at && ' (edited)'}
-              </p>
-            </div>
+      <div className="flex gap-3">
+        <Avatar className="h-8 w-8">
+          <AvatarImage src={comment.user?.avatar_url} />
+          <AvatarFallback>{userInitials}</AvatarFallback>
+        </Avatar>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-sm">
+              {comment.user?.username || 'Utilisateur'}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {formatDistanceToNow(new Date(comment.created_at), {
+                addSuffix: true,
+                locale: fr,
+              })}
+            </span>
           </div>
 
-          {isOwner && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+          {isEditMode ? (
+            <div className="mt-2 space-y-2">
+              <Textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                className="min-h-[80px]"
+              />
+              <div className="flex gap-2">
+                <Button size="sm" onClick={handleEdit} disabled={isEditing}>
+                  {isEditing ? 'Sauvegarde...' : 'Sauvegarder'}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setIsEditMode(false);
+                    setEditContent(comment.content);
+                  }}
+                >
+                  Annuler
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm mt-1 whitespace-pre-wrap">{comment.content}</p>
+          )}
+
+          {!isEditMode && (
+            <div className="flex items-center gap-2 mt-2">
+              {user && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 text-violet-300/70 hover:text-violet-200"
+                  className="h-7 text-xs"
+                  onClick={() => setIsReplyMode(!isReplyMode)}
                 >
-                  <MoreHorizontal className="h-4 w-4" />
+                  <Reply className="h-3 w-3 mr-1" />
+                  Repondre
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className="bg-anthracite-800 border-violet-500/30"
-              >
-                <DropdownMenuItem
-                  onClick={() => setIsEditing(true)}
-                  className="text-violet-200 focus:bg-violet-500/20"
+              )}
+
+              {isOwner && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setIsEditMode(true)}>
+                      <Pencil className="h-4 w-4 mr-2" />
+                      Modifier
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => onDelete(comment.id)}
+                      className="text-destructive"
+                      disabled={isDeleting}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      {isDeleting ? 'Suppression...' : 'Supprimer'}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
+          )}
+
+          {isReplyMode && (
+            <div className="mt-3 space-y-2">
+              <Textarea
+                value={replyContent}
+                onChange={(e) => setReplyContent(e.target.value)}
+                placeholder="Votre reponse..."
+                className="min-h-[60px]"
+              />
+              <div className="flex gap-2">
+                <Button size="sm" onClick={handleReply}>
+                  Repondre
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setIsReplyMode(false);
+                    setReplyContent('');
+                  }}
                 >
-                  <Pencil className="mr-2 h-4 w-4" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => onDelete(comment.id)}
-                  className="text-red-400 focus:bg-red-500/20"
-                  disabled={isDeleting}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  Annuler
+                </Button>
+              </div>
+            </div>
           )}
         </div>
-
-        {/* Content */}
-        {isEditing ? (
-          <CommentForm
-            initialValue={comment.content}
-            onSubmit={handleEdit}
-            onCancel={() => setIsEditing(false)}
-            isSubmitting={isUpdating}
-            autoFocus
-          />
-        ) : (
-          <p className="text-sm text-violet-100/90 whitespace-pre-wrap">
-            {comment.content}
-          </p>
-        )}
-
-        {/* Actions */}
-        {!isEditing && user && (
-          <div className="mt-3 pt-3 border-t border-violet-500/20">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsReplying(!isReplying)}
-              className="text-violet-300/70 hover:text-violet-200 hover:bg-violet-500/20"
-            >
-              <Reply className="mr-2 h-4 w-4" />
-              Reply
-            </Button>
-          </div>
-        )}
       </div>
-
-      {/* Reply form */}
-      {isReplying && (
-        <div className="ml-8">
-          <CommentForm
-            placeholder="Write a reply..."
-            onSubmit={handleReply}
-            onCancel={() => setIsReplying(false)}
-            autoFocus
-          />
-        </div>
-      )}
-
-      {/* Replies */}
-      {comment.replies && comment.replies.length > 0 && (
-        <div className="ml-8 space-y-3">
-          {comment.replies.map((reply) => (
-            <CommentCard
-              key={reply.id}
-              comment={reply}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              onReply={onReply}
-              isUpdating={isUpdating}
-              isDeleting={isDeleting}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 };

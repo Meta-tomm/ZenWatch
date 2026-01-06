@@ -4,7 +4,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -17,23 +16,28 @@ import {
   FormMessage,
   FormDescription,
 } from '@/components/ui/form';
-import { useToast } from '@/hooks/use-toast';
-import { usersApi } from '@/lib/api-client';
+import { authApi } from '@/lib/api-client';
 import { useAuthStore } from '@/store/auth-store';
 import type { User } from '@/types/auth';
 
 const profileSchema = z.object({
   username: z
     .string()
-    .min(3, 'Username must be at least 3 characters')
-    .max(30, 'Username must be at most 30 characters')
+    .min(3, 'Le nom utilisateur doit contenir au moins 3 caracteres')
+    .max(30, 'Le nom utilisateur ne peut pas depasser 30 caracteres')
     .regex(
       /^[a-zA-Z0-9_-]+$/,
-      'Username can only contain letters, numbers, underscores and hyphens'
+      'Le nom utilisateur ne peut contenir que des lettres, chiffres, tirets et underscores'
     ),
-  bio: z.string().max(500, 'Bio must be at most 500 characters').optional(),
-  github_url: z.string().url('Invalid URL').optional().or(z.literal('')),
-  portfolio_url: z.string().url('Invalid URL').optional().or(z.literal('')),
+  bio: z.string().max(500, 'La bio ne peut pas depasser 500 caracteres').optional(),
+  github_url: z
+    .string()
+    .url('URL invalide')
+    .regex(/github\.com/, 'Doit etre une URL GitHub')
+    .optional()
+    .or(z.literal('')),
+  portfolio_url: z.string().url('URL invalide').optional().or(z.literal('')),
+  avatar_url: z.string().url('URL invalide').optional().or(z.literal('')),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -45,7 +49,6 @@ interface ProfileEditFormProps {
 }
 
 export const ProfileEditForm = ({ user, onSuccess, onCancel }: ProfileEditFormProps) => {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const { setUser } = useAuthStore();
 
@@ -56,60 +59,44 @@ export const ProfileEditForm = ({ user, onSuccess, onCancel }: ProfileEditFormPr
       bio: user.bio || '',
       github_url: user.github_url || '',
       portfolio_url: user.portfolio_url || '',
+      avatar_url: user.avatar_url || '',
     },
   });
 
-  const updateMutation = useMutation({
+  const mutation = useMutation({
     mutationFn: (data: ProfileFormValues) => {
-      // Clean empty strings to undefined
       const cleanData = {
         ...data,
         bio: data.bio || undefined,
         github_url: data.github_url || undefined,
         portfolio_url: data.portfolio_url || undefined,
+        avatar_url: data.avatar_url || undefined,
       };
-      return usersApi.updateProfile(cleanData);
+      return authApi.updateProfile(cleanData);
     },
     onSuccess: (updatedUser) => {
       setUser(updatedUser);
       queryClient.invalidateQueries({ queryKey: ['user'] });
-      toast({
-        title: 'Profile updated',
-        description: 'Your changes have been saved',
-      });
       onSuccess?.();
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Update failed',
-        description: error.message || 'Could not update profile',
-        variant: 'destructive',
-      });
     },
   });
 
-  const onSubmit = (data: ProfileFormValues) => {
-    updateMutation.mutate(data);
+  const onSubmit = (values: ProfileFormValues) => {
+    mutation.mutate(values);
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
           name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-violet-200">Username</FormLabel>
+              <FormLabel>Nom utilisateur</FormLabel>
               <FormControl>
-                <Input
-                  className="bg-anthracite-800 border-violet-500/30 text-violet-100"
-                  {...field}
-                />
+                <Input {...field} />
               </FormControl>
-              <FormDescription className="text-violet-300/60">
-                Your public display name
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -120,17 +107,31 @@ export const ProfileEditForm = ({ user, onSuccess, onCancel }: ProfileEditFormPr
           name="bio"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-violet-200">Bio</FormLabel>
+              <FormLabel>Bio</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Tell us about yourself..."
-                  className="bg-anthracite-800 border-violet-500/30 text-violet-100 min-h-[100px]"
+                  placeholder="Parlez-nous de vous..."
+                  className="resize-none"
                   {...field}
                 />
               </FormControl>
-              <FormDescription className="text-violet-300/60">
-                {field.value?.length || 0}/500 characters
+              <FormDescription>
+                {(field.value?.length || 0)}/500 caracteres
               </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="avatar_url"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>URL Avatar</FormLabel>
+              <FormControl>
+                <Input placeholder="https://example.com/avatar.jpg" {...field} />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -141,13 +142,9 @@ export const ProfileEditForm = ({ user, onSuccess, onCancel }: ProfileEditFormPr
           name="github_url"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-violet-200">GitHub URL</FormLabel>
+              <FormLabel>GitHub</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="https://github.com/username"
-                  className="bg-anthracite-800 border-violet-500/30 text-violet-100"
-                  {...field}
-                />
+                <Input placeholder="https://github.com/username" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -159,45 +156,30 @@ export const ProfileEditForm = ({ user, onSuccess, onCancel }: ProfileEditFormPr
           name="portfolio_url"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-violet-200">Portfolio URL</FormLabel>
+              <FormLabel>Portfolio</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="https://yourportfolio.com"
-                  className="bg-anthracite-800 border-violet-500/30 text-violet-100"
-                  {...field}
-                />
+                <Input placeholder="https://votresite.com" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <div className="flex items-center justify-end gap-3 pt-4">
+        {mutation.error && (
+          <p className="text-sm text-destructive">
+            Une erreur est survenue lors de la mise a jour du profil
+          </p>
+        )}
+
+        <div className="flex gap-3 pt-2">
+          <Button type="submit" disabled={mutation.isPending}>
+            {mutation.isPending ? 'Sauvegarde...' : 'Sauvegarder'}
+          </Button>
           {onCancel && (
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={onCancel}
-              disabled={updateMutation.isPending}
-              className="text-violet-300/70 hover:text-violet-200"
-            >
-              Cancel
+            <Button type="button" variant="outline" onClick={onCancel}>
+              Annuler
             </Button>
           )}
-          <Button
-            type="submit"
-            disabled={updateMutation.isPending}
-            className="bg-violet-600 hover:bg-violet-700 text-white"
-          >
-            {updateMutation.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              'Save Changes'
-            )}
-          </Button>
         </div>
       </form>
     </Form>

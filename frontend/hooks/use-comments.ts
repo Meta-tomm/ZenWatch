@@ -1,66 +1,36 @@
-// frontend/hooks/use-comments.ts
+'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { commentsApi } from '@/lib/api-client';
-import { useToast } from '@/hooks/use-toast';
-import type { CreateCommentRequest } from '@/types/auth';
+import type { CommentCreate, CommentUpdate } from '@/types/auth';
 
-interface UseCommentsOptions {
-  articleId?: number;
-  videoId?: number;
-}
+type ContentType = 'article' | 'video';
 
-export const useComments = ({ articleId, videoId }: UseCommentsOptions) => {
+export const useComments = (contentType: ContentType, contentId: number) => {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
+  const queryKey = ['comments', contentType, contentId];
 
-  const queryKey = articleId
-    ? ['comments', 'article', articleId]
-    : ['comments', 'video', videoId];
-
-  const query = useQuery({
+  const { data: comments = [], isLoading, error } = useQuery({
     queryKey,
-    queryFn: () => {
-      if (articleId) return commentsApi.getForArticle(articleId);
-      if (videoId) return commentsApi.getForVideo(videoId);
-      return Promise.resolve([]);
-    },
-    enabled: !!(articleId || videoId),
+    queryFn: () =>
+      contentType === 'article'
+        ? commentsApi.getForArticle(contentId)
+        : commentsApi.getForVideo(contentId),
+    enabled: !!contentId,
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: CreateCommentRequest) => commentsApi.create(data),
+    mutationFn: (data: CommentCreate) => commentsApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey });
-      toast({
-        title: 'Comment posted',
-        description: 'Your comment has been added',
-      });
-    },
-    onError: () => {
-      toast({
-        title: 'Error',
-        description: 'Could not post comment',
-        variant: 'destructive',
-      });
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, content }: { id: number; content: string }) =>
-      commentsApi.update(id, content),
+    mutationFn: ({ id, data }: { id: number; data: CommentUpdate }) =>
+      commentsApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey });
-      toast({
-        title: 'Comment updated',
-      });
-    },
-    onError: () => {
-      toast({
-        title: 'Error',
-        description: 'Could not update comment',
-        variant: 'destructive',
-      });
     },
   });
 
@@ -68,28 +38,35 @@ export const useComments = ({ articleId, videoId }: UseCommentsOptions) => {
     mutationFn: (id: number) => commentsApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey });
-      toast({
-        title: 'Comment deleted',
-      });
-    },
-    onError: () => {
-      toast({
-        title: 'Error',
-        description: 'Could not delete comment',
-        variant: 'destructive',
-      });
     },
   });
 
+  const addComment = (content: string, parentId?: number) => {
+    const data: CommentCreate = {
+      content,
+      parent_id: parentId,
+      ...(contentType === 'article' ? { article_id: contentId } : { video_id: contentId }),
+    };
+    createMutation.mutate(data);
+  };
+
+  const editComment = (id: number, content: string) => {
+    updateMutation.mutate({ id, data: { content } });
+  };
+
+  const removeComment = (id: number) => {
+    deleteMutation.mutate(id);
+  };
+
   return {
-    comments: query.data ?? [],
-    isLoading: query.isLoading,
-    error: query.error,
-    createComment: createMutation.mutate,
-    updateComment: updateMutation.mutate,
-    deleteComment: deleteMutation.mutate,
-    isCreating: createMutation.isPending,
-    isUpdating: updateMutation.isPending,
+    comments,
+    isLoading,
+    error,
+    addComment,
+    editComment,
+    removeComment,
+    isAdding: createMutation.isPending,
+    isEditing: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
   };
 };

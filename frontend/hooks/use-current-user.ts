@@ -1,44 +1,43 @@
-// frontend/hooks/use-current-user.ts
+'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { useAuthStore } from '@/store/auth-store';
-import { usersApi } from '@/lib/api-client';
 import { useEffect } from 'react';
+import { authApi } from '@/lib/api-client';
+import { useAuthStore } from '@/store/auth-store';
 
 export const useCurrentUser = () => {
-  const { user, isAuthenticated, accessToken, setUser, setLoading, clearAuth } = useAuthStore();
+  const { user, accessToken, isAuthenticated, isLoading, setUser, setLoading, logout } = useAuthStore();
 
-  const query = useQuery({
+  const { data, isLoading: isQueryLoading, error } = useQuery({
     queryKey: ['user', 'me'],
-    queryFn: usersApi.getMe,
-    enabled: isAuthenticated && !!accessToken,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    queryFn: () => authApi.getMe(),
+    enabled: !!accessToken && !user,
     retry: false,
+    staleTime: 5 * 60 * 1000,
   });
 
-  // Sync query data with store
   useEffect(() => {
-    if (query.data) {
-      setUser(query.data);
+    if (data) {
+      setUser(data);
+      setLoading(false);
     }
-  }, [query.data, setUser]);
+  }, [data, setUser, setLoading]);
 
-  // Handle auth errors
   useEffect(() => {
-    if (query.error) {
-      clearAuth();
+    if (error) {
+      logout();
     }
-  }, [query.error, clearAuth]);
+  }, [error, logout]);
 
-  // Set loading state based on query
   useEffect(() => {
-    setLoading(query.isLoading);
-  }, [query.isLoading, setLoading]);
+    if (!accessToken) {
+      setLoading(false);
+    }
+  }, [accessToken, setLoading]);
 
   return {
-    user: query.data ?? user,
-    isLoading: query.isLoading,
+    user,
     isAuthenticated,
-    refetch: query.refetch,
+    isLoading: isLoading || isQueryLoading,
   };
 };

@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
-import { useAuthStore } from '@/store/auth-store';
+import { useCurrentUser } from '@/hooks/use-current-user';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface AuthGuardProps {
-  children: React.ReactNode;
+  children: ReactNode;
   requireAuth?: boolean;
   redirectTo?: string;
 }
@@ -17,38 +17,40 @@ export const AuthGuard = ({
   redirectTo = '/login',
 }: AuthGuardProps) => {
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuthStore();
+  const { isAuthenticated, isLoading } = useCurrentUser();
 
   useEffect(() => {
     if (!isLoading) {
       if (requireAuth && !isAuthenticated) {
         router.push(redirectTo);
+      } else if (!requireAuth && isAuthenticated) {
+        router.push('/');
       }
     }
   }, [isAuthenticated, isLoading, requireAuth, redirectTo, router]);
 
-  // Show loading state while checking auth
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-charcoal-950">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
-          <p className="text-violet-300/70">Loading...</p>
+      <div className="flex h-screen items-center justify-center">
+        <div className="space-y-4 w-full max-w-md p-8">
+          <Skeleton className="h-8 w-3/4 mx-auto" />
+          <Skeleton className="h-4 w-1/2 mx-auto" />
+          <div className="space-y-3 pt-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
         </div>
       </div>
     );
   }
 
-  // If auth required and not authenticated, show loading while redirecting
   if (requireAuth && !isAuthenticated) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-charcoal-950">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
-          <p className="text-violet-300/70">Redirecting...</p>
-        </div>
-      </div>
-    );
+    return null;
+  }
+
+  if (!requireAuth && isAuthenticated) {
+    return null;
   }
 
   return <>{children}</>;
