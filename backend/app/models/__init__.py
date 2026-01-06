@@ -6,6 +6,11 @@ from app.models.article_keyword import ArticleKeyword
 from app.models.trend import Trend
 from app.models.user_config import UserConfig
 from app.models.youtube_channel import YouTubeChannel
+from app.models.user import User, OAuthAccount
+from app.models.user_state import UserArticleState, UserVideoState
+from app.models.user_keyword import UserKeyword
+from app.models.comment import Comment
+from app.models.consent import UserConsent, DataExportRequest
 
 __all__ = [
     "Article",
@@ -16,4 +21,12 @@ __all__ = [
     "Trend",
     "UserConfig",
     "YouTubeChannel",
+    "User",
+    "OAuthAccount",
+    "UserArticleState",
+    "UserVideoState",
+    "UserKeyword",
+    "Comment",
+    "UserConsent",
+    "DataExportRequest",
 ]
