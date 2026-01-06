@@ -53,8 +53,12 @@ async def save_articles(
                     article_data[key] = str(article_data[key])
 
             # Remove source_type and set source_id instead
-            article_data.pop('source_type', None)
+            original_source_type = article_data.pop('source_type', None)
             article_data['source_id'] = source.id
+
+            # Set is_video based on source_type
+            if source_type in ('youtube_rss', 'youtube_trending', 'youtube'):
+                article_data['is_video'] = True
 
             # Check if article already exists by URL
             existing = db.query(Article).filter_by(url=article_data['url']).first()

@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, X, Video, Circle } from 'lucide-react';
+import { ExternalLink, X, Play, Circle } from 'lucide-react';
 import { formatRelativeDate } from '@/lib/date-utils';
 import { cn } from '@/lib/utils';
 import type { Article } from '@/types';
@@ -15,7 +15,7 @@ interface LibraryCardProps {
 }
 
 export const LibraryCard = ({ article, onRemove, onOpen }: LibraryCardProps) => {
-  const isVideo = article.source_type === 'youtube' || article.source_type === 'video';
+  const isVideo = article.source_type === 'youtube' || article.source_type === 'youtube_rss' || article.source_type === 'video';
 
   return (
     <motion.div
@@ -28,20 +28,35 @@ export const LibraryCard = ({ article, onRemove, onOpen }: LibraryCardProps) => 
         !article.is_read && 'ring-2 ring-violet-500/30'
       )}
     >
-      {/* Unread indicator */}
-      {!article.is_read && (
-        <div className="absolute top-2 left-2 z-10">
-          <Circle className="w-3 h-3 fill-violet-400 text-violet-400" />
+      {/* Thumbnail for videos */}
+      {isVideo && article.thumbnail_url && (
+        <div
+          className="relative aspect-video cursor-pointer group/thumb"
+          onClick={() => onOpen(article)}
+        >
+          <img
+            src={article.thumbnail_url}
+            alt={article.title}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/thumb:opacity-100 transition-opacity">
+            <div className="w-12 h-12 rounded-full bg-violet-600/90 flex items-center justify-center">
+              <Play className="w-6 h-6 text-white fill-white ml-1" />
+            </div>
+          </div>
+          {/* Unread indicator on thumbnail */}
+          {!article.is_read && (
+            <div className="absolute top-2 left-2">
+              <Circle className="w-3 h-3 fill-violet-400 text-violet-400" />
+            </div>
+          )}
         </div>
       )}
 
-      {/* Video badge */}
-      {isVideo && (
-        <div className="absolute top-2 right-2 z-10">
-          <Badge className="bg-violet-600/80 text-white text-xs">
-            <Video className="w-3 h-3 mr-1" />
-            Video
-          </Badge>
+      {/* Unread indicator (only if no thumbnail) */}
+      {!article.is_read && !(isVideo && article.thumbnail_url) && (
+        <div className="absolute top-2 left-2 z-10">
+          <Circle className="w-3 h-3 fill-violet-400 text-violet-400" />
         </div>
       )}
 

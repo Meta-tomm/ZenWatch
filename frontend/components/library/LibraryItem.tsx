@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, X, Video, Circle } from 'lucide-react';
+import { ExternalLink, X, Play, Circle } from 'lucide-react';
 import { formatRelativeDate } from '@/lib/date-utils';
 import { cn } from '@/lib/utils';
 import type { Article } from '@/types';
@@ -15,7 +15,7 @@ interface LibraryItemProps {
 }
 
 export const LibraryItem = ({ article, onRemove, onOpen }: LibraryItemProps) => {
-  const isVideo = article.source_type === 'youtube' || article.source_type === 'video';
+  const isVideo = article.source_type === 'youtube' || article.source_type === 'youtube_rss' || article.source_type === 'video';
 
   return (
     <motion.div
@@ -27,12 +27,33 @@ export const LibraryItem = ({ article, onRemove, onOpen }: LibraryItemProps) => 
         'hover:bg-anthracite-700/80 hover:border-violet-400/50 transition-all duration-300'
       )}
     >
-      {/* Unread indicator */}
-      <div className="shrink-0 w-3">
-        {!article.is_read && (
-          <Circle className="w-3 h-3 fill-violet-400 text-violet-400" />
-        )}
-      </div>
+      {/* Thumbnail or unread indicator */}
+      {isVideo && article.thumbnail_url ? (
+        <div
+          className="shrink-0 relative w-24 h-14 rounded overflow-hidden cursor-pointer group/thumb"
+          onClick={() => onOpen(article)}
+        >
+          <img
+            src={article.thumbnail_url}
+            alt={article.title}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/thumb:opacity-100 transition-opacity">
+            <Play className="w-6 h-6 text-white fill-white" />
+          </div>
+          {!article.is_read && (
+            <div className="absolute top-1 left-1">
+              <Circle className="w-2 h-2 fill-violet-400 text-violet-400" />
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="shrink-0 w-3">
+          {!article.is_read && (
+            <Circle className="w-3 h-3 fill-violet-400 text-violet-400" />
+          )}
+        </div>
+      )}
 
       {/* Content */}
       <div className="flex-1 min-w-0">
@@ -43,11 +64,6 @@ export const LibraryItem = ({ article, onRemove, onOpen }: LibraryItemProps) => 
           >
             {article.title}
           </h3>
-          {isVideo && (
-            <Badge className="shrink-0 bg-violet-600/80 text-white text-xs">
-              <Video className="w-3 h-3" />
-            </Badge>
-          )}
         </div>
 
         <div className="flex items-center gap-3 text-xs text-violet-300/60">

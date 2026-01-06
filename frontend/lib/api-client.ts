@@ -372,7 +372,17 @@ export const userKeywordsApi = {
 // Library API
 export const libraryApi = {
   getLibrary: async (params?: { type?: LibraryFilter; unread_only?: boolean }): Promise<LibraryResponse> => {
-    const response = await apiClient.get('/library', { params });
+    // Convert plural filter to singular for backend
+    const apiParams: { type?: string; unread_only?: boolean } = {
+      unread_only: params?.unread_only,
+    };
+    if (params?.type === 'articles') {
+      apiParams.type = 'article';
+    } else if (params?.type === 'videos') {
+      apiParams.type = 'video';
+    }
+
+    const response = await apiClient.get('/library', { params: apiParams });
     return {
       items: response.data.items.map((item: any) => ({
         ...item,

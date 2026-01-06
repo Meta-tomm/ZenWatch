@@ -14,6 +14,8 @@ export interface Article {
   tags: string[];
   language?: string;
   read_time_minutes?: number;
+  thumbnail_url?: string;
+  video_url?: string;
   upvotes: number;
   comments_count: number;
   is_read: boolean;

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { motion, useMotionValue, useTransform, PanInfo } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Bookmark, X, Video, ExternalLink, ChevronDown } from 'lucide-react';
+import { Bookmark, X, Play, ExternalLink, ChevronDown } from 'lucide-react';
 import { formatRelativeDate } from '@/lib/date-utils';
 import { cn } from '@/lib/utils';
 import type { Article } from '@/types';
@@ -33,7 +33,7 @@ export const TriageCard = ({
   const leftIndicatorOpacity = useTransform(x, [-100, 0], [1, 0]);
   const rightIndicatorOpacity = useTransform(x, [0, 100], [0, 1]);
 
-  const isVideo = article.source_type === 'youtube' || article.source_type === 'video';
+  const isVideo = article.source_type === 'youtube' || article.source_type === 'youtube_rss' || article.source_type === 'video';
 
   const handleDragEnd = (_: any, info: PanInfo) => {
     const threshold = 100;
@@ -82,17 +82,24 @@ export const TriageCard = ({
           'shadow-lg shadow-violet-500/10'
         )}
       >
-        {/* Video badge */}
-        {isVideo && (
-          <div className="absolute top-4 right-4 z-10">
-            <Badge className="bg-violet-600/80 text-white">
-              <Video className="w-3 h-3 mr-1" />
-              Video
-            </Badge>
+        {/* Thumbnail for videos */}
+        {isVideo && article.thumbnail_url && (
+          <div className="relative aspect-video">
+            <img
+              src={article.thumbnail_url}
+              alt={article.title}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-anthracite-800 via-transparent to-transparent" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-violet-600/90 flex items-center justify-center shadow-lg">
+                <Play className="w-8 h-8 text-white fill-white ml-1" />
+              </div>
+            </div>
           </div>
         )}
 
-        <div className="p-6">
+        <div className={cn("p-6", isVideo && article.thumbnail_url && "pt-4")}>
           {/* Title */}
           <h2 className="text-xl font-bold text-violet-100 mb-3 line-clamp-3">
             {article.title}
