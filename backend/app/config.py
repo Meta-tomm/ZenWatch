@@ -18,6 +18,22 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     ENVIRONMENT: str = "development"
 
+    # JWT Settings
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+
+    # OAuth Settings
+    OAUTH_GITHUB_CLIENT_ID: Optional[str] = None
+    OAUTH_GITHUB_CLIENT_SECRET: Optional[str] = None
+    OAUTH_GOOGLE_CLIENT_ID: Optional[str] = None
+    OAUTH_GOOGLE_CLIENT_SECRET: Optional[str] = None
+    OAUTH_DISCORD_CLIENT_ID: Optional[str] = None
+    OAUTH_DISCORD_CLIENT_SECRET: Optional[str] = None
+
+    # Frontend URL for OAuth redirects
+    FRONTEND_URL: str = "http://localhost:3000"
+
     # Anthropic API
     ANTHROPIC_API_KEY: Optional[str] = None
 

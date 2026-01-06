@@ -1,243 +1,269 @@
-"""OAuth provider configurations and utilities"""
-from typing import Optional
 from dataclasses import dataclass
-from urllib.parse import urlencode
+from typing import Optional
 
 import httpx
 
 from app.config import settings
+from app.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 @dataclass
+class OAuthUserInfo:
+    """Normalized user info from OAuth providers."""
+    provider: str
+    provider_user_id: str
+    email: Optional[str]
+    username: Optional[str]
+    display_name: Optional[str]
+    avatar_url: Optional[str]
+
+
 class OAuthProvider:
-    """OAuth provider configuration"""
-    name: str
-    authorize_url: str
-    token_url: str
-    userinfo_url: str
-    client_id: Optional[str]
-    client_secret: Optional[str]
-    scopes: list[str]
+    """Base class for OAuth providers."""
+
+    def __init__(self, client_id: str, client_secret: str):
+        self.client_id = client_id
+        self.client_secret = client_secret
+
+    def get_authorization_url(self, redirect_uri: str, state: str) -> str:
+        """Get the OAuth authorization URL."""
+        raise NotImplementedError
+
+    async def exchange_code(self, code: str, redirect_uri: str) -> Optional[str]:
+        """Exchange authorization code for access token."""
+        raise NotImplementedError
+
+    async def get_user_info(self, access_token: str) -> Optional[OAuthUserInfo]:
+        """Get user info from the provider."""
+        raise NotImplementedError
 
 
-# OAuth provider configurations
-OAUTH_PROVIDERS = {
-    "github": OAuthProvider(
-        name="github",
-        authorize_url="https://github.com/login/oauth/authorize",
-        token_url="https://github.com/login/oauth/access_token",
-        userinfo_url="https://api.github.com/user",
-        client_id=getattr(settings, "GITHUB_CLIENT_ID", None),
-        client_secret=getattr(settings, "GITHUB_CLIENT_SECRET", None),
-        scopes=["read:user", "user:email"],
-    ),
-    "google": OAuthProvider(
-        name="google",
-        authorize_url="https://accounts.google.com/o/oauth2/v2/auth",
-        token_url="https://oauth2.googleapis.com/token",
-        userinfo_url="https://www.googleapis.com/oauth2/v2/userinfo",
-        client_id=getattr(settings, "GOOGLE_CLIENT_ID", None),
-        client_secret=getattr(settings, "GOOGLE_CLIENT_SECRET", None),
-        scopes=["openid", "email", "profile"],
-    ),
-    "discord": OAuthProvider(
-        name="discord",
-        authorize_url="https://discord.com/api/oauth2/authorize",
-        token_url="https://discord.com/api/oauth2/token",
-        userinfo_url="https://discord.com/api/users/@me",
-        client_id=getattr(settings, "DISCORD_CLIENT_ID", None),
-        client_secret=getattr(settings, "DISCORD_CLIENT_SECRET", None),
-        scopes=["identify", "email"],
-    ),
-}
+class GitHubOAuth(OAuthProvider):
+    """GitHub OAuth implementation."""
+
+    AUTH_URL = "https://github.com/login/oauth/authorize"
+    TOKEN_URL = "https://github.com/login/oauth/access_token"
+    USER_URL = "https://api.github.com/user"
+    EMAILS_URL = "https://api.github.com/user/emails"
+
+    def get_authorization_url(self, redirect_uri: str, state: str) -> str:
+        params = {
+            "client_id": self.client_id,
+            "redirect_uri": redirect_uri,
+            "scope": "user:email",
+            "state": state,
+        }
+        query = "&".join(f"{k}={v}" for k, v in params.items())
+        return f"{self.AUTH_URL}?{query}"
+
+    async def exchange_code(self, code: str, redirect_uri: str) -> Optional[str]:
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.post(
+                    self.TOKEN_URL,
+                    data={
+                        "client_id": self.client_id,
+                        "client_secret": self.client_secret,
+                        "code": code,
+                        "redirect_uri": redirect_uri,
+                    },
+                    headers={"Accept": "application/json"},
+                )
+                response.raise_for_status()
+                data = response.json()
+                return data.get("access_token")
+            except Exception as e:
+                logger.error(f"GitHub token exchange failed: {e}")
+                return None
+
+    async def get_user_info(self, access_token: str) -> Optional[OAuthUserInfo]:
+        async with httpx.AsyncClient() as client:
+            try:
+                headers = {"Authorization": f"Bearer {access_token}"}
+
+                # Get user profile
+                user_response = await client.get(self.USER_URL, headers=headers)
+                user_response.raise_for_status()
+                user_data = user_response.json()
+
+                # Get primary email
+                email = user_data.get("email")
+                if not email:
+                    emails_response = await client.get(self.EMAILS_URL, headers=headers)
+                    emails_response.raise_for_status()
+                    emails = emails_response.json()
+                    primary = next((e for e in emails if e.get("primary")), None)
+                    email = primary.get("email") if primary else None
+
+                return OAuthUserInfo(
+                    provider="github",
+                    provider_user_id=str(user_data["id"]),
+                    email=email,
+                    username=user_data.get("login"),
+                    display_name=user_data.get("name"),
+                    avatar_url=user_data.get("avatar_url"),
+                )
+            except Exception as e:
+                logger.error(f"GitHub user info fetch failed: {e}")
+                return None
 
 
-def get_oauth_provider(provider_name: str) -> Optional[OAuthProvider]:
-    """Get OAuth provider configuration by name"""
-    return OAUTH_PROVIDERS.get(provider_name.lower())
+class GoogleOAuth(OAuthProvider):
+    """Google OAuth implementation."""
+
+    AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
+    TOKEN_URL = "https://oauth2.googleapis.com/token"
+    USER_URL = "https://www.googleapis.com/oauth2/v2/userinfo"
+
+    def get_authorization_url(self, redirect_uri: str, state: str) -> str:
+        params = {
+            "client_id": self.client_id,
+            "redirect_uri": redirect_uri,
+            "response_type": "code",
+            "scope": "email profile",
+            "state": state,
+            "access_type": "offline",
+        }
+        query = "&".join(f"{k}={v}" for k, v in params.items())
+        return f"{self.AUTH_URL}?{query}"
+
+    async def exchange_code(self, code: str, redirect_uri: str) -> Optional[str]:
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.post(
+                    self.TOKEN_URL,
+                    data={
+                        "client_id": self.client_id,
+                        "client_secret": self.client_secret,
+                        "code": code,
+                        "redirect_uri": redirect_uri,
+                        "grant_type": "authorization_code",
+                    },
+                )
+                response.raise_for_status()
+                data = response.json()
+                return data.get("access_token")
+            except Exception as e:
+                logger.error(f"Google token exchange failed: {e}")
+                return None
+
+    async def get_user_info(self, access_token: str) -> Optional[OAuthUserInfo]:
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.get(
+                    self.USER_URL,
+                    headers={"Authorization": f"Bearer {access_token}"},
+                )
+                response.raise_for_status()
+                data = response.json()
+
+                return OAuthUserInfo(
+                    provider="google",
+                    provider_user_id=data["id"],
+                    email=data.get("email"),
+                    username=None,
+                    display_name=data.get("name"),
+                    avatar_url=data.get("picture"),
+                )
+            except Exception as e:
+                logger.error(f"Google user info fetch failed: {e}")
+                return None
 
 
-def build_authorize_url(provider: OAuthProvider, redirect_uri: str, state: str) -> str:
+class DiscordOAuth(OAuthProvider):
+    """Discord OAuth implementation."""
+
+    AUTH_URL = "https://discord.com/api/oauth2/authorize"
+    TOKEN_URL = "https://discord.com/api/oauth2/token"
+    USER_URL = "https://discord.com/api/users/@me"
+
+    def get_authorization_url(self, redirect_uri: str, state: str) -> str:
+        params = {
+            "client_id": self.client_id,
+            "redirect_uri": redirect_uri,
+            "response_type": "code",
+            "scope": "identify email",
+            "state": state,
+        }
+        query = "&".join(f"{k}={v}" for k, v in params.items())
+        return f"{self.AUTH_URL}?{query}"
+
+    async def exchange_code(self, code: str, redirect_uri: str) -> Optional[str]:
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.post(
+                    self.TOKEN_URL,
+                    data={
+                        "client_id": self.client_id,
+                        "client_secret": self.client_secret,
+                        "code": code,
+                        "redirect_uri": redirect_uri,
+                        "grant_type": "authorization_code",
+                    },
+                    headers={"Content-Type": "application/x-www-form-urlencoded"},
+                )
+                response.raise_for_status()
+                data = response.json()
+                return data.get("access_token")
+            except Exception as e:
+                logger.error(f"Discord token exchange failed: {e}")
+                return None
+
+    async def get_user_info(self, access_token: str) -> Optional[OAuthUserInfo]:
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.get(
+                    self.USER_URL,
+                    headers={"Authorization": f"Bearer {access_token}"},
+                )
+                response.raise_for_status()
+                data = response.json()
+
+                avatar_url = None
+                if data.get("avatar"):
+                    avatar_url = (
+                        f"https://cdn.discordapp.com/avatars/{data['id']}/{data['avatar']}.png"
+                    )
+
+                return OAuthUserInfo(
+                    provider="discord",
+                    provider_user_id=data["id"],
+                    email=data.get("email"),
+                    username=data.get("username"),
+                    display_name=data.get("global_name") or data.get("username"),
+                    avatar_url=avatar_url,
+                )
+            except Exception as e:
+                logger.error(f"Discord user info fetch failed: {e}")
+                return None
+
+
+def get_oauth_provider(provider: str) -> Optional[OAuthProvider]:
     """
-    Build OAuth authorization URL for a provider
+    Factory function to get OAuth provider instance.
 
     Args:
-        provider: OAuth provider configuration
-        redirect_uri: Callback URL after authorization
-        state: CSRF protection state token
+        provider: Provider name ('github', 'google', 'discord')
 
     Returns:
-        Full authorization URL
+        Configured OAuth provider or None if not configured
     """
-    params = {
-        "client_id": provider.client_id,
-        "redirect_uri": redirect_uri,
-        "scope": " ".join(provider.scopes),
-        "state": state,
-        "response_type": "code",
+    providers = {
+        "github": (settings.OAUTH_GITHUB_CLIENT_ID, settings.OAUTH_GITHUB_CLIENT_SECRET, GitHubOAuth),
+        "google": (settings.OAUTH_GOOGLE_CLIENT_ID, settings.OAUTH_GOOGLE_CLIENT_SECRET, GoogleOAuth),
+        "discord": (settings.OAUTH_DISCORD_CLIENT_ID, settings.OAUTH_DISCORD_CLIENT_SECRET, DiscordOAuth),
     }
 
-    # Google requires additional params
-    if provider.name == "google":
-        params["access_type"] = "offline"
-        params["prompt"] = "consent"
+    if provider not in providers:
+        logger.warning(f"Unknown OAuth provider: {provider}")
+        return None
 
-    return f"{provider.authorize_url}?{urlencode(params)}"
+    client_id, client_secret, provider_class = providers[provider]
 
+    if not client_id or not client_secret:
+        logger.warning(f"OAuth provider {provider} not configured")
+        return None
 
-async def exchange_code_for_token(
-    provider: OAuthProvider,
-    code: str,
-    redirect_uri: str
-) -> Optional[dict]:
-    """
-    Exchange authorization code for access token
-
-    Args:
-        provider: OAuth provider configuration
-        code: Authorization code from callback
-        redirect_uri: Same redirect URI used in authorization
-
-    Returns:
-        Token response dict or None if failed
-    """
-    async with httpx.AsyncClient() as client:
-        data = {
-            "client_id": provider.client_id,
-            "client_secret": provider.client_secret,
-            "code": code,
-            "redirect_uri": redirect_uri,
-            "grant_type": "authorization_code",
-        }
-
-        headers = {"Accept": "application/json"}
-
-        try:
-            response = await client.post(
-                provider.token_url,
-                data=data,
-                headers=headers,
-                timeout=10.0
-            )
-            response.raise_for_status()
-            return response.json()
-        except httpx.HTTPError:
-            return None
-
-
-async def get_oauth_user_info(
-    provider: OAuthProvider,
-    access_token: str
-) -> Optional[dict]:
-    """
-    Get user info from OAuth provider
-
-    Args:
-        provider: OAuth provider configuration
-        access_token: OAuth access token
-
-    Returns:
-        User info dict or None if failed
-    """
-    async with httpx.AsyncClient() as client:
-        headers = {"Authorization": f"Bearer {access_token}"}
-
-        # GitHub uses different header format
-        if provider.name == "github":
-            headers["Authorization"] = f"token {access_token}"
-
-        try:
-            response = await client.get(
-                provider.userinfo_url,
-                headers=headers,
-                timeout=10.0
-            )
-            response.raise_for_status()
-            user_data = response.json()
-
-            # Normalize user data across providers
-            return normalize_oauth_user_data(provider.name, user_data)
-        except httpx.HTTPError:
-            return None
-
-
-async def get_github_email(access_token: str) -> Optional[str]:
-    """
-    Get primary email from GitHub (requires separate API call)
-
-    Args:
-        access_token: GitHub OAuth access token
-
-    Returns:
-        Primary email address or None
-    """
-    async with httpx.AsyncClient() as client:
-        headers = {"Authorization": f"token {access_token}"}
-
-        try:
-            response = await client.get(
-                "https://api.github.com/user/emails",
-                headers=headers,
-                timeout=10.0
-            )
-            response.raise_for_status()
-            emails = response.json()
-
-            # Find primary verified email
-            for email_data in emails:
-                if email_data.get("primary") and email_data.get("verified"):
-                    return email_data.get("email")
-
-            # Fallback to first verified email
-            for email_data in emails:
-                if email_data.get("verified"):
-                    return email_data.get("email")
-
-            return None
-        except httpx.HTTPError:
-            return None
-
-
-def normalize_oauth_user_data(provider_name: str, raw_data: dict) -> dict:
-    """
-    Normalize OAuth user data to consistent format
-
-    Args:
-        provider_name: OAuth provider name
-        raw_data: Raw user data from provider
-
-    Returns:
-        Normalized user data dict with keys: id, email, name, avatar_url
-    """
-    if provider_name == "github":
-        return {
-            "provider_id": str(raw_data.get("id")),
-            "email": raw_data.get("email"),  # May be None, need separate call
-            "name": raw_data.get("name") or raw_data.get("login"),
-            "username": raw_data.get("login"),
-            "avatar_url": raw_data.get("avatar_url"),
-        }
-    elif provider_name == "google":
-        return {
-            "provider_id": raw_data.get("id"),
-            "email": raw_data.get("email"),
-            "name": raw_data.get("name"),
-            "username": None,  # Google does not provide username
-            "avatar_url": raw_data.get("picture"),
-        }
-    elif provider_name == "discord":
-        avatar_hash = raw_data.get("avatar")
-        user_id = raw_data.get("id")
-        avatar_url = None
-        if avatar_hash and user_id:
-            avatar_url = f"https://cdn.discordapp.com/avatars/{user_id}/{avatar_hash}.png"
-
-        return {
-            "provider_id": raw_data.get("id"),
-            "email": raw_data.get("email"),
-            "name": raw_data.get("global_name") or raw_data.get("username"),
-            "username": raw_data.get("username"),
-            "avatar_url": avatar_url,
-        }
-    else:
-        return raw_data
+    return provider_class(client_id, client_secret)

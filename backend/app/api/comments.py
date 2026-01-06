@@ -1,95 +1,50 @@
-"""Comments API routes"""
-from datetime import datetime
-from typing import List, Optional
-
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
-from pydantic import BaseModel, Field
+from sqlalchemy import func
+from sqlalchemy.orm import Session, joinedload
 
+from app.auth.deps import get_current_user
 from app.database import get_db
-from app.auth.deps import get_current_user, get_current_user_optional
+from app.models.comment import Comment
+
+# Import models (will be created by models branch)
+from app.models.user import User
+from app.schemas.comment import (
+    CommentAuthor,
+    CommentCreate,
+    CommentResponse,
+    CommentTargetType,
+    CommentUpdate,
+    PaginatedCommentsResponse,
+)
 from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
-router = APIRouter()
+router = APIRouter(prefix="/comments", tags=["comments"])
 
 
-# Pydantic schemas for comments
-class CommentCreate(BaseModel):
-    """Create comment request"""
-    content: str = Field(..., min_length=1, max_length=5000)
-    article_id: Optional[int] = None
-    video_id: Optional[int] = None
-    parent_id: Optional[int] = None  # For threaded replies
-
-
-class CommentUpdate(BaseModel):
-    """Update comment request"""
-    content: str = Field(..., min_length=1, max_length=5000)
-
-
-class CommentAuthor(BaseModel):
-    """Comment author info"""
-    id: int
-    username: Optional[str]
-    display_name: Optional[str]
-    avatar_url: Optional[str]
-
-    class Config:
-        from_attributes = True
-
-
-class CommentResponse(BaseModel):
-    """Comment response"""
-    id: int
-    content: str
-    article_id: Optional[int]
-    video_id: Optional[int]
-    parent_id: Optional[int]
-    author: CommentAuthor
-    is_edited: bool
-    created_at: datetime
-    updated_at: datetime
-    replies: List["CommentResponse"] = []
-
-    class Config:
-        from_attributes = True
-
-
-class MessageResponse(BaseModel):
-    """Simple message response"""
-    message: str
-
-
-def build_comment_response(comment, include_replies: bool = True) -> CommentResponse:
-    """Build comment response with nested replies"""
-    author = CommentAuthor(
-        id=comment.author.id,
-        username=comment.author.username,
-        display_name=comment.author.display_name,
-        avatar_url=comment.author.avatar_url,
-    )
-
-    replies = []
-    if include_replies and hasattr(comment, "replies") and comment.replies:
-        replies = [build_comment_response(reply, include_replies=True)
-                   for reply in comment.replies if not reply.is_deleted]
-
+def _build_comment_response(comment: Comment, replies_count: int = 0) -> CommentResponse:
+    """Build comment response with author info."""
     return CommentResponse(
         id=comment.id,
         content=comment.content,
-        article_id=comment.article_id,
-        video_id=comment.video_id,
+        target_type=comment.target_type,
+        target_id=comment.target_id,
         parent_id=comment.parent_id,
-        author=author,
+        author=CommentAuthor(
+            id=comment.author.id,
+            username=comment.author.username,
+            display_name=comment.author.display_name,
+            avatar_url=comment.author.avatar_url,
+        ),
         is_edited=comment.is_edited,
+        is_deleted=comment.is_deleted,
         created_at=comment.created_at,
         updated_at=comment.updated_at,
-        replies=replies,
+        replies_count=replies_count,
     )
 
 
-@router.get("/comments/article/{article_id}", response_model=List[CommentResponse])
+@router.get("/article/{article_id}", response_model=PaginatedCommentsResponse)
 async def get_article_comments(
     article_id: int,
     limit: int = Query(50, ge=1, le=100),
@@ -97,35 +52,51 @@ async def get_article_comments(
     db: Session = Depends(get_db)
 ):
     """
-    Get comments for an article (threaded)
+    Get comments for an article.
 
-    - Returns top-level comments with nested replies
-    - Soft-deleted comments are hidden
+    Returns top-level comments with reply counts.
     """
-    from app.models.comment import Comment
-    from app.models.article import Article
-
-    # Verify article exists
-    article = db.query(Article).filter(Article.id == article_id).first()
-    if not article:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Article not found"
-        )
-
     # Get top-level comments (no parent)
-    comments = db.query(Comment).filter(
-        Comment.article_id == article_id,
+    query = db.query(Comment).options(joinedload(Comment.author)).filter(
+        Comment.target_type == CommentTargetType.ARTICLE,
+        Comment.target_id == article_id,
         Comment.parent_id.is_(None),
-        Comment.is_deleted == False
-    ).order_by(
-        Comment.created_at.desc()
-    ).limit(limit).offset(offset).all()
+        Comment.is_deleted.is_(False),
+    )
 
-    return [build_comment_response(c) for c in comments]
+    total = query.count()
+
+    comments = query.order_by(Comment.created_at.desc()).offset(offset).limit(limit).all()
+
+    # Get reply counts for each comment
+    reply_counts = {}
+    if comments:
+        comment_ids = [c.id for c in comments]
+        counts = db.query(
+            Comment.parent_id,
+            func.count(Comment.id)
+        ).filter(
+            Comment.parent_id.in_(comment_ids),
+            Comment.is_deleted.is_(False)
+        ).group_by(Comment.parent_id).all()
+
+        reply_counts = {parent_id: count for parent_id, count in counts}
+
+    data = [
+        _build_comment_response(c, reply_counts.get(c.id, 0))
+        for c in comments
+    ]
+
+    return PaginatedCommentsResponse(
+        data=data,
+        total=total,
+        hasMore=offset + len(comments) < total,
+        offset=offset,
+        limit=limit,
+    )
 
 
-@router.get("/comments/video/{video_id}", response_model=List[CommentResponse])
+@router.get("/video/{video_id}", response_model=PaginatedCommentsResponse)
 async def get_video_comments(
     video_id: int,
     limit: int = Query(50, ge=1, le=100),
@@ -133,135 +104,148 @@ async def get_video_comments(
     db: Session = Depends(get_db)
 ):
     """
-    Get comments for a video (threaded)
+    Get comments for a video.
 
-    - Returns top-level comments with nested replies
-    - Soft-deleted comments are hidden
+    Returns top-level comments with reply counts.
     """
-    from app.models.comment import Comment
-    from app.models.article import Article
-
-    # Verify video exists (videos are articles with is_video=True)
-    video = db.query(Article).filter(
-        Article.id == video_id,
-        Article.is_video == True
-    ).first()
-    if not video:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Video not found"
-        )
-
-    # Get top-level comments
-    comments = db.query(Comment).filter(
-        Comment.video_id == video_id,
+    query = db.query(Comment).options(joinedload(Comment.author)).filter(
+        Comment.target_type == CommentTargetType.VIDEO,
+        Comment.target_id == video_id,
         Comment.parent_id.is_(None),
-        Comment.is_deleted == False
-    ).order_by(
-        Comment.created_at.desc()
-    ).limit(limit).offset(offset).all()
+        Comment.is_deleted.is_(False),
+    )
 
-    return [build_comment_response(c) for c in comments]
+    total = query.count()
+
+    comments = query.order_by(Comment.created_at.desc()).offset(offset).limit(limit).all()
+
+    # Get reply counts
+    reply_counts = {}
+    if comments:
+        comment_ids = [c.id for c in comments]
+        counts = db.query(
+            Comment.parent_id,
+            func.count(Comment.id)
+        ).filter(
+            Comment.parent_id.in_(comment_ids),
+            Comment.is_deleted.is_(False)
+        ).group_by(Comment.parent_id).all()
+
+        reply_counts = {parent_id: count for parent_id, count in counts}
+
+    data = [
+        _build_comment_response(c, reply_counts.get(c.id, 0))
+        for c in comments
+    ]
+
+    return PaginatedCommentsResponse(
+        data=data,
+        total=total,
+        hasMore=offset + len(comments) < total,
+        offset=offset,
+        limit=limit,
+    )
 
 
-@router.post("/comments", response_model=CommentResponse, status_code=status.HTTP_201_CREATED)
-async def create_comment(
-    comment_data: CommentCreate,
-    current_user = Depends(get_current_user),
+@router.get("/{comment_id}/replies", response_model=PaginatedCommentsResponse)
+async def get_comment_replies(
+    comment_id: int,
+    limit: int = Query(50, ge=1, le=100),
+    offset: int = Query(0, ge=0),
     db: Session = Depends(get_db)
 ):
     """
-    Create a new comment
-
-    - Must provide either article_id or video_id
-    - parent_id for reply to another comment
+    Get replies to a specific comment.
     """
-    from app.models.comment import Comment
-    from app.models.article import Article
-
-    # Validate: must have article_id or video_id
-    if not comment_data.article_id and not comment_data.video_id:
+    # Verify parent comment exists
+    parent = db.query(Comment).filter(Comment.id == comment_id).first()
+    if not parent:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Must provide article_id or video_id"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Comment not found"
         )
 
-    if comment_data.article_id and comment_data.video_id:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot provide both article_id and video_id"
-        )
+    query = db.query(Comment).options(joinedload(Comment.author)).filter(
+        Comment.parent_id == comment_id,
+        Comment.is_deleted.is_(False),
+    )
 
-    # Verify article/video exists
-    if comment_data.article_id:
-        article = db.query(Article).filter(Article.id == comment_data.article_id).first()
-        if not article:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Article not found"
-            )
+    total = query.count()
 
-    if comment_data.video_id:
-        video = db.query(Article).filter(
-            Article.id == comment_data.video_id,
-            Article.is_video == True
-        ).first()
-        if not video:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Video not found"
-            )
+    replies = query.order_by(Comment.created_at.asc()).offset(offset).limit(limit).all()
 
-    # Verify parent comment exists if replying
-    if comment_data.parent_id:
+    data = [_build_comment_response(r) for r in replies]
+
+    return PaginatedCommentsResponse(
+        data=data,
+        total=total,
+        hasMore=offset + len(replies) < total,
+        offset=offset,
+        limit=limit,
+    )
+
+
+@router.post("", response_model=CommentResponse, status_code=status.HTTP_201_CREATED)
+async def create_comment(
+    data: CommentCreate,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Create a new comment.
+    """
+    # Verify parent comment if replying
+    if data.parent_id:
         parent = db.query(Comment).filter(
-            Comment.id == comment_data.parent_id,
-            Comment.is_deleted == False
+            Comment.id == data.parent_id,
+            Comment.is_deleted.is_(False)
         ).first()
         if not parent:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Parent comment not found"
             )
+        # Ensure reply is on same target
+        if parent.target_type != data.target_type or parent.target_id != data.target_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Reply must be on same content as parent"
+            )
 
-    # Create comment
     comment = Comment(
-        content=comment_data.content,
-        article_id=comment_data.article_id,
-        video_id=comment_data.video_id,
-        parent_id=comment_data.parent_id,
-        user_id=current_user.id,
-        is_edited=False,
-        is_deleted=False,
+        content=data.content,
+        target_type=data.target_type,
+        target_id=data.target_id,
+        parent_id=data.parent_id,
+        author_id=user.id,
     )
-
     db.add(comment)
     db.commit()
     db.refresh(comment)
 
-    logger.info(f"Comment created: id={comment.id}, user_id={current_user.id}")
+    # Reload with author relationship
+    comment = db.query(Comment).options(joinedload(Comment.author)).filter(
+        Comment.id == comment.id
+    ).first()
 
-    return build_comment_response(comment, include_replies=False)
+    logger.info(f"Comment created: {comment.id} by user {user.id}")
+    return _build_comment_response(comment)
 
 
-@router.patch("/comments/{comment_id}", response_model=CommentResponse)
+@router.patch("/{comment_id}", response_model=CommentResponse)
 async def update_comment(
     comment_id: int,
-    comment_data: CommentUpdate,
-    current_user = Depends(get_current_user),
+    data: CommentUpdate,
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    Edit a comment
+    Edit an existing comment.
 
-    - Only comment author can edit
-    - Marks comment as edited
+    Only the author can edit their own comments.
     """
-    from app.models.comment import Comment
-
-    comment = db.query(Comment).filter(
-        Comment.id == comment_id,
-        Comment.is_deleted == False
+    comment = db.query(Comment).options(joinedload(Comment.author)).filter(
+        Comment.id == comment_id
     ).first()
 
     if not comment:
@@ -270,43 +254,40 @@ async def update_comment(
             detail="Comment not found"
         )
 
-    # Only author can edit
-    if comment.user_id != current_user.id:
+    if comment.author_id != user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Cannot edit another user comment"
+            detail="Cannot edit other users' comments"
         )
 
-    comment.content = comment_data.content
-    comment.is_edited = True
-    comment.updated_at = datetime.utcnow()
+    if comment.is_deleted:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot edit deleted comment"
+        )
 
+    comment.content = data.content
+    comment.is_edited = True
     db.commit()
     db.refresh(comment)
 
-    logger.info(f"Comment updated: id={comment_id}")
+    logger.info(f"Comment updated: {comment.id} by user {user.id}")
+    return _build_comment_response(comment)
 
-    return build_comment_response(comment, include_replies=False)
 
-
-@router.delete("/comments/{comment_id}", response_model=MessageResponse)
+@router.delete("/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_comment(
     comment_id: int,
-    current_user = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    Delete a comment (soft delete)
+    Soft delete a comment.
 
-    - Only comment author can delete
-    - Content is replaced with placeholder
+    Only the author can delete their own comments.
+    Content is replaced with "[deleted]".
     """
-    from app.models.comment import Comment
-
-    comment = db.query(Comment).filter(
-        Comment.id == comment_id,
-        Comment.is_deleted == False
-    ).first()
+    comment = db.query(Comment).filter(Comment.id == comment_id).first()
 
     if not comment:
         raise HTTPException(
@@ -314,20 +295,15 @@ async def delete_comment(
             detail="Comment not found"
         )
 
-    # Only author can delete
-    if comment.user_id != current_user.id:
+    if comment.author_id != user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Cannot delete another user comment"
+            detail="Cannot delete other users' comments"
         )
 
-    # Soft delete
     comment.is_deleted = True
     comment.content = "[deleted]"
-    comment.deleted_at = datetime.utcnow()
-
     db.commit()
 
-    logger.info(f"Comment soft deleted: id={comment_id}")
-
-    return MessageResponse(message="Comment deleted")
+    logger.info(f"Comment soft deleted: {comment.id} by user {user.id}")
+    return None

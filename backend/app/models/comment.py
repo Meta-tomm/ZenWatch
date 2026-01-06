@@ -1,60 +1,37 @@
-"""Comment model for article and video discussions"""
+import enum
 
-from sqlalchemy import (
-    Column,
-    Integer,
-    Text,
-    Boolean,
-    DateTime,
-    ForeignKey,
-    CheckConstraint,
-)
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.sql import func
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 from app.database import Base
 
 
-class Comment(Base):
-    """Comment on articles or videos with support for nested replies"""
+class CommentTargetType(str, enum.Enum):
+    """Type of content being commented on."""
+    ARTICLE = "article"
+    VIDEO = "video"
 
+
+class Comment(Base):
+    """User comments on articles or videos."""
     __tablename__ = "comments"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(
-        UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
-    )
-    article_id = Column(
-        Integer, ForeignKey("articles.id", ondelete="CASCADE"), nullable=True
-    )
-    video_id = Column(
-        Integer, ForeignKey("articles.id", ondelete="CASCADE"), nullable=True
-    )
-    parent_id = Column(
-        Integer, ForeignKey("comments.id", ondelete="CASCADE"), nullable=True
-    )
+    author_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    target_type = Column(String(20), nullable=False)  # 'article' or 'video'
+    target_id = Column(Integer, nullable=False, index=True)
+    parent_id = Column(Integer, ForeignKey("comments.id", ondelete="CASCADE"), nullable=True, index=True)
     content = Column(Text, nullable=False)
+    is_edited = Column(Boolean, default=False, nullable=False)
     is_deleted = Column(Boolean, default=False, nullable=False)
-    deleted_at = Column(DateTime(timezone=True), nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
-    )
-
-    __table_args__ = (
-        CheckConstraint(
-            "article_id IS NOT NULL OR video_id IS NOT NULL",
-            name="check_comment_target",
-        ),
-    )
+    created_at = Column(DateTime, server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
 
     # Relationships
-    user = relationship("User", back_populates="comments")
-    article = relationship("Article", foreign_keys=[article_id])
-    video = relationship("Article", foreign_keys=[video_id])
-    parent = relationship("Comment", remote_side=[id], backref="replies")
+    author = relationship("User", back_populates="comments")
+    replies = relationship("Comment", back_populates="parent", cascade="all, delete-orphan")
+    parent = relationship("Comment", back_populates="replies", remote_side=[id])
 
-    def __repr__(self) -> str:
-        target = f"article_id={self.article_id}" if self.article_id else f"video_id={self.video_id}"
-        return f"<Comment(id={self.id}, user_id={self.user_id}, {target})>"
+    def __repr__(self):
+        return f"<Comment(id={self.id}, author_id={self.author_id}, target={self.target_type}:{self.target_id})>"

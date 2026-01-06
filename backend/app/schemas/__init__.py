@@ -1,3 +1,4 @@
+# Schemas package
 from app.schemas.article import (
     ArticleCreate,
     ArticleResponse,
@@ -5,110 +6,72 @@ from app.schemas.article import (
     PaginatedArticlesResponse,
     PaginatedVideosResponse,
 )
-from app.schemas.keyword import KeywordCreate, KeywordUpdate, KeywordResponse
-from app.schemas.user_config import UserConfigCreate, UserConfigUpdate, UserConfigResponse
-from app.schemas.analytics import (
-    DailyStatsResponse,
-    CategoryStatsResponse,
-    TrendResponse,
-    AnalyticsSummaryResponse,
+from app.schemas.auth import (
+    RegisterRequest,
+    LoginRequest,
+    TokenResponse,
+    AuthResponse,
+    RefreshResponse,
+    OAuthRedirectResponse,
 )
-from app.schemas.scraped_article import ScrapedArticle
 from app.schemas.user import (
     UserCreate,
     UserUpdate,
     UserResponse,
     UserPublicProfile,
-    UserKeywordCreate,
-    UserKeywordResponse,
-    UserKeywordsListResponse,
+    UserExportData,
+    AdminUserUpdate,
+    PaginatedUsersResponse,
 )
-from app.schemas.auth import (
-    LoginRequest,
-    RegisterRequest,
-    TokenResponse,
-    TokenPayload,
-    RefreshTokenRequest,
-    PasswordResetRequest,
-    PasswordResetConfirm,
-    PasswordChangeRequest,
-    OAuthCallbackRequest,
-    OAuthAccountResponse,
+from app.schemas.user_keyword import (
+    UserKeywordCreate,
+    UserKeywordUpdate,
+    UserKeywordResponse,
+    UserKeywordList,
 )
 from app.schemas.comment import (
+    CommentTargetType,
     CommentCreate,
     CommentUpdate,
     CommentResponse,
-    CommentThread,
+    CommentWithReplies,
     PaginatedCommentsResponse,
-)
-from app.schemas.consent import (
-    ConsentCreate,
-    ConsentUpdate,
-    ConsentResponse,
-    ConsentStatusResponse,
-    DataExportRequestCreate,
-    DataExportResponse,
-    DataExportListResponse,
-    AccountDeletionRequest,
-    AccountDeletionResponse,
+    AdminCommentResponse,
 )
 
 __all__ = [
-    # Article schemas
+    # Article
     "ArticleCreate",
     "ArticleResponse",
     "VideoResponse",
     "PaginatedArticlesResponse",
     "PaginatedVideosResponse",
-    # Keyword schemas
-    "KeywordCreate",
-    "KeywordUpdate",
-    "KeywordResponse",
-    # User config schemas
-    "UserConfigCreate",
-    "UserConfigUpdate",
-    "UserConfigResponse",
-    # Analytics schemas
-    "DailyStatsResponse",
-    "CategoryStatsResponse",
-    "TrendResponse",
-    "AnalyticsSummaryResponse",
-    # Scraped article
-    "ScrapedArticle",
-    # User schemas
+    # Auth
+    "RegisterRequest",
+    "LoginRequest",
+    "TokenResponse",
+    "AuthResponse",
+    "RefreshResponse",
+    "OAuthRedirectResponse",
+    # User
     "UserCreate",
     "UserUpdate",
     "UserResponse",
     "UserPublicProfile",
+    "UserExportData",
+    "AdminUserUpdate",
+    "PaginatedUsersResponse",
+    # User Keyword
     "UserKeywordCreate",
+    "UserKeywordUpdate",
     "UserKeywordResponse",
-    "UserKeywordsListResponse",
-    # Auth schemas
-    "LoginRequest",
-    "RegisterRequest",
-    "TokenResponse",
-    "TokenPayload",
-    "RefreshTokenRequest",
-    "PasswordResetRequest",
-    "PasswordResetConfirm",
-    "PasswordChangeRequest",
-    "OAuthCallbackRequest",
-    "OAuthAccountResponse",
-    # Comment schemas
+    "UserKeywordList",
+    # Comment
+    "CommentTargetType",
     "CommentCreate",
     "CommentUpdate",
     "CommentResponse",
-    "CommentThread",
+    "CommentWithReplies",
     "PaginatedCommentsResponse",
-    # Consent schemas
-    "ConsentCreate",
-    "ConsentUpdate",
-    "ConsentResponse",
-    "ConsentStatusResponse",
-    "DataExportRequestCreate",
-    "DataExportResponse",
-    "DataExportListResponse",
-    "AccountDeletionRequest",
-    "AccountDeletionResponse",
+    "AdminCommentResponse",
 ]

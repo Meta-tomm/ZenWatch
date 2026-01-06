@@ -1,79 +1,73 @@
-"""Comment schemas for article and video discussions"""
-
-from typing import Optional, List
 from datetime import datetime
-from uuid import UUID
-from pydantic import BaseModel, Field, model_validator
+from enum import Enum
+from typing import Optional
 
-from app.schemas.user import UserPublicProfile
+from pydantic import BaseModel, Field
+
+
+class CommentTargetType(str, Enum):
+    """Type of content being commented on."""
+    ARTICLE = "article"
+    VIDEO = "video"
 
 
 class CommentCreate(BaseModel):
-    """Schema for creating a new comment"""
-
-    content: str = Field(..., min_length=1, max_length=5000)
-    article_id: Optional[int] = None
-    video_id: Optional[int] = None
-    parent_id: Optional[int] = None
-
-    @model_validator(mode="after")
-    def validate_target(self):
-        if self.article_id is None and self.video_id is None:
-            raise ValueError("Either article_id or video_id must be provided")
-        if self.article_id is not None and self.video_id is not None:
-            raise ValueError("Cannot comment on both article and video")
-        return self
+    """Create a new comment."""
+    content: str = Field(..., min_length=1, max_length=2000)
+    target_type: CommentTargetType
+    target_id: int
+    parent_id: Optional[int] = None  # For replies
 
 
 class CommentUpdate(BaseModel):
-    """Schema for updating a comment"""
+    """Update an existing comment."""
+    content: str = Field(..., min_length=1, max_length=2000)
 
-    content: str = Field(..., min_length=1, max_length=5000)
+
+class CommentAuthor(BaseModel):
+    """Minimal author info for comments."""
+    id: int
+    username: Optional[str] = None
+    display_name: Optional[str] = None
+    avatar_url: Optional[str] = None
+
+    class Config:
+        from_attributes = True
 
 
 class CommentResponse(BaseModel):
-    """Schema for comment API response"""
-
+    """Comment response with author info."""
     id: int
-    user_id: Optional[UUID] = None
-    user: Optional[UserPublicProfile] = None
-    article_id: Optional[int] = None
-    video_id: Optional[int] = None
-    parent_id: Optional[int] = None
     content: str
+    target_type: CommentTargetType
+    target_id: int
+    parent_id: Optional[int] = None
+    author: CommentAuthor
+    is_edited: bool = False
     is_deleted: bool = False
     created_at: datetime
     updated_at: datetime
-    reply_count: int = 0
+    replies_count: int = 0
 
     class Config:
         from_attributes = True
 
 
-class CommentThread(BaseModel):
-    """Schema for comment with nested replies"""
-
-    id: int
-    user_id: Optional[UUID] = None
-    user: Optional[UserPublicProfile] = None
-    article_id: Optional[int] = None
-    video_id: Optional[int] = None
-    parent_id: Optional[int] = None
-    content: str
-    is_deleted: bool = False
-    created_at: datetime
-    updated_at: datetime
-    replies: List["CommentThread"] = []
-
-    class Config:
-        from_attributes = True
+class CommentWithReplies(CommentResponse):
+    """Comment with nested replies."""
+    replies: list["CommentResponse"] = []
 
 
 class PaginatedCommentsResponse(BaseModel):
-    """Schema for paginated comments list"""
-
-    data: List[CommentResponse]
+    """Paginated list of comments."""
+    data: list[CommentResponse]
     total: int
-    has_more: bool
+    hasMore: bool
     offset: int
     limit: int
+
+
+# Admin schema
+class AdminCommentResponse(CommentResponse):
+    """Comment with extra admin fields."""
+    author_email: Optional[str] = None

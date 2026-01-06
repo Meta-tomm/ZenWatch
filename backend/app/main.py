@@ -6,6 +6,11 @@ from app.api.keywords import router as keywords_router
 from app.api.analytics import router as analytics_router
 from app.api.youtube import router as youtube_router
 from app.api.videos import router as videos_router
+from app.api.auth import router as auth_router
+from app.api.users import router as users_router
+from app.api.user_keywords import router as user_keywords_router
+from app.api.comments import router as comments_router
+from app.api.admin import router as admin_router
 from app.config import settings
 from app.utils.logger import get_logger
 
@@ -37,6 +42,11 @@ app.include_router(keywords_router, prefix="/api", tags=["keywords"])
 app.include_router(analytics_router, prefix="/api", tags=["analytics"])
 app.include_router(youtube_router, prefix="/api", tags=["youtube"])
 app.include_router(videos_router, prefix="/api", tags=["videos"])
+app.include_router(auth_router, prefix="/api", tags=["auth"])
+app.include_router(users_router, prefix="/api", tags=["users"])
+app.include_router(user_keywords_router, prefix="/api", tags=["user-keywords"])
+app.include_router(comments_router, prefix="/api", tags=["comments"])
+app.include_router(admin_router, prefix="/api", tags=["admin"])
 
 
 @app.get("/")

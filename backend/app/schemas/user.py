@@ -1,73 +1,41 @@
-"""User schemas for API request/response validation"""
-
-from typing import Optional, List
 from datetime import datetime
-from uuid import UUID
-from pydantic import BaseModel, Field, EmailStr, field_validator
-import re
+from typing import Optional
+
+from pydantic import BaseModel, EmailStr, Field
 
 
 class UserBase(BaseModel):
-    """Base user fields shared across schemas"""
-
+    """Base user fields."""
     email: EmailStr
-    username: str = Field(..., min_length=3, max_length=50)
-
-    @field_validator("username")
-    @classmethod
-    def validate_username(cls, v: str) -> str:
-        if not re.match(r"^[a-zA-Z0-9_-]+$", v):
-            raise ValueError("Username can only contain letters, numbers, underscores and hyphens")
-        return v
+    username: Optional[str] = Field(None, min_length=3, max_length=50)
+    display_name: Optional[str] = Field(None, max_length=100)
+    bio: Optional[str] = Field(None, max_length=500)
+    avatar_url: Optional[str] = None
 
 
 class UserCreate(UserBase):
-    """Schema for user registration"""
-
-    password: str = Field(..., min_length=8, max_length=100)
-
-    @field_validator("password")
-    @classmethod
-    def validate_password(cls, v: str) -> str:
-        if not re.search(r"[A-Z]", v):
-            raise ValueError("Password must contain at least one uppercase letter")
-        if not re.search(r"[a-z]", v):
-            raise ValueError("Password must contain at least one lowercase letter")
-        if not re.search(r"\d", v):
-            raise ValueError("Password must contain at least one digit")
-        return v
+    """Fields for creating a new user."""
+    password: str = Field(..., min_length=8, max_length=128)
 
 
 class UserUpdate(BaseModel):
-    """Schema for updating user profile"""
-
-    username: Optional[str] = Field(None, min_length=3, max_length=50)
-    avatar_url: Optional[str] = None
+    """Fields that can be updated by the user."""
+    username: Optional[str] = Field(None, min_length=3, max_length=50, pattern=r'^[a-zA-Z0-9_-]+$')
+    display_name: Optional[str] = Field(None, max_length=100)
     bio: Optional[str] = Field(None, max_length=500)
-    github_url: Optional[str] = None
-    portfolio_url: Optional[str] = None
-
-    @field_validator("username")
-    @classmethod
-    def validate_username(cls, v: Optional[str]) -> Optional[str]:
-        if v is not None and not re.match(r"^[a-zA-Z0-9_-]+$", v):
-            raise ValueError("Username can only contain letters, numbers, underscores and hyphens")
-        return v
+    avatar_url: Optional[str] = None
 
 
 class UserResponse(BaseModel):
-    """Schema for user API responses"""
-
-    id: UUID
+    """Public user response."""
+    id: int
     email: EmailStr
-    username: str
-    avatar_url: Optional[str] = None
+    username: Optional[str] = None
+    display_name: Optional[str] = None
     bio: Optional[str] = None
-    github_url: Optional[str] = None
-    portfolio_url: Optional[str] = None
-    role: str = "user"
+    avatar_url: Optional[str] = None
     is_active: bool = True
-    is_verified: bool = False
+    is_admin: bool = False
     created_at: datetime
     updated_at: datetime
 
@@ -76,41 +44,48 @@ class UserResponse(BaseModel):
 
 
 class UserPublicProfile(BaseModel):
-    """Schema for public user profile (limited info)"""
-
-    id: UUID
-    username: str
-    avatar_url: Optional[str] = None
-    bio: Optional[str] = None
-    github_url: Optional[str] = None
-    portfolio_url: Optional[str] = None
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
-class UserKeywordCreate(BaseModel):
-    """Schema for creating user keywords"""
-
-    keyword: str = Field(..., min_length=1, max_length=100)
-    weight: float = Field(default=1.0, ge=0.1, le=5.0)
-
-
-class UserKeywordResponse(BaseModel):
-    """Schema for user keyword response"""
-
+    """Public profile visible to other users."""
     id: int
-    keyword: str
-    weight: float
+    username: Optional[str] = None
+    display_name: Optional[str] = None
+    bio: Optional[str] = None
+    avatar_url: Optional[str] = None
     created_at: datetime
 
     class Config:
         from_attributes = True
 
 
-class UserKeywordsListResponse(BaseModel):
-    """Schema for list of user keywords"""
+class UserExportData(BaseModel):
+    """GDPR data export format."""
+    user: UserResponse
+    keywords: list["UserKeywordResponse"]
+    comments: list["CommentResponse"]
+    article_states: list[dict]
+    video_states: list[dict]
+    consents: list[dict]
+    export_date: datetime
 
-    keywords: List[UserKeywordResponse]
+
+class AdminUserUpdate(BaseModel):
+    """Admin-only user update fields."""
+    is_active: Optional[bool] = None
+    is_admin: Optional[bool] = None
+    email: Optional[EmailStr] = None
+    username: Optional[str] = Field(None, min_length=3, max_length=50)
+
+
+class PaginatedUsersResponse(BaseModel):
+    """Paginated list of users for admin."""
+    data: list[UserResponse]
     total: int
+    hasMore: bool
+    offset: int
+    limit: int
+
+
+# Forward references for circular imports
+from app.schemas.comment import CommentResponse
+from app.schemas.user_keyword import UserKeywordResponse
+
+UserExportData.model_rebuild()

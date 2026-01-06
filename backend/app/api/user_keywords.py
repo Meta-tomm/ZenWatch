@@ -1,135 +1,91 @@
-"""User Keywords API routes"""
-from datetime import datetime
-from typing import List, Optional
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from pydantic import BaseModel, Field
 
-from app.database import get_db
 from app.auth.deps import get_current_user
+from app.database import get_db
+
+# Import models (will be created by models branch)
+from app.models.user import User
+from app.models.user_keyword import UserKeyword
+from app.schemas.user_keyword import (
+    UserKeywordCreate,
+    UserKeywordList,
+    UserKeywordResponse,
+    UserKeywordUpdate,
+)
 from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
-router = APIRouter()
+router = APIRouter(prefix="/user-keywords", tags=["user-keywords"])
 
 
-# Pydantic schemas for user keywords
-class UserKeywordCreate(BaseModel):
-    """Create user keyword request"""
-    keyword: str = Field(..., min_length=1, max_length=100)
-    category: Optional[str] = Field(None, max_length=50)
-    weight: float = Field(1.0, ge=0.1, le=5.0)
-
-
-class UserKeywordResponse(BaseModel):
-    """User keyword response"""
-    id: int
-    keyword: str
-    category: Optional[str]
-    weight: float
-    is_active: bool
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
-class MessageResponse(BaseModel):
-    """Simple message response"""
-    message: str
-
-
-@router.get("/user-keywords", response_model=List[UserKeywordResponse])
+@router.get("", response_model=UserKeywordList)
 async def list_user_keywords(
-    category: Optional[str] = None,
-    is_active: Optional[bool] = None,
-    current_user = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    List user personal keywords
-
-    - Returns all keywords for the current user
-    - Can filter by category and active status
+    List all keywords for the current user.
     """
-    from app.models.user_keyword import UserKeyword
+    keywords = db.query(UserKeyword).filter(
+        UserKeyword.user_id == user.id
+    ).order_by(UserKeyword.created_at.desc()).all()
 
-    query = db.query(UserKeyword).filter(UserKeyword.user_id == current_user.id)
-
-    if category:
-        query = query.filter(UserKeyword.category == category)
-
-    if is_active is not None:
-        query = query.filter(UserKeyword.is_active == is_active)
-
-    keywords = query.order_by(UserKeyword.weight.desc()).all()
-
-    return [UserKeywordResponse.model_validate(kw) for kw in keywords]
+    return UserKeywordList(
+        data=[UserKeywordResponse.model_validate(k) for k in keywords],
+        total=len(keywords)
+    )
 
 
-@router.post("/user-keywords", response_model=UserKeywordResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=UserKeywordResponse, status_code=status.HTTP_201_CREATED)
 async def create_user_keyword(
-    keyword_data: UserKeywordCreate,
-    current_user = Depends(get_current_user),
+    data: UserKeywordCreate,
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    Add a personal keyword for the current user
-
-    - Creates a new keyword
-    - Keyword must be unique per user
+    Add a new keyword for the current user.
     """
-    from app.models.user_keyword import UserKeyword
-
     # Check if keyword already exists for this user
     existing = db.query(UserKeyword).filter(
-        UserKeyword.user_id == current_user.id,
-        UserKeyword.keyword == keyword_data.keyword
+        UserKeyword.user_id == user.id,
+        UserKeyword.keyword == data.keyword
     ).first()
 
     if existing:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_409_CONFLICT,
             detail="Keyword already exists"
         )
 
-    # Create new keyword
     keyword = UserKeyword(
-        user_id=current_user.id,
-        keyword=keyword_data.keyword,
-        category=keyword_data.category,
-        weight=keyword_data.weight,
+        user_id=user.id,
+        keyword=data.keyword,
+        category=data.category,
+        weight=data.weight,
         is_active=True,
     )
-
     db.add(keyword)
     db.commit()
     db.refresh(keyword)
 
-    logger.info(f"User keyword created: user_id={current_user.id}, keyword={keyword.keyword}")
-
+    logger.info(f"User keyword created: {keyword.keyword} for user {user.id}")
     return UserKeywordResponse.model_validate(keyword)
 
 
-@router.patch("/user-keywords/{keyword_id}", response_model=UserKeywordResponse)
+@router.patch("/{keyword_id}", response_model=UserKeywordResponse)
 async def update_user_keyword(
     keyword_id: int,
-    keyword_data: UserKeywordCreate,
-    current_user = Depends(get_current_user),
+    data: UserKeywordUpdate,
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    Update a personal keyword
-
-    - Can update keyword text, category, and weight
-    - Only owner can update
+    Update an existing user keyword.
     """
-    from app.models.user_keyword import UserKeyword
-
     keyword = db.query(UserKeyword).filter(
         UserKeyword.id == keyword_id,
-        UserKeyword.user_id == current_user.id
+        UserKeyword.user_id == user.id
     ).first()
 
     if not keyword:
@@ -138,50 +94,29 @@ async def update_user_keyword(
             detail="Keyword not found"
         )
 
-    # Check if new keyword text already exists
-    if keyword_data.keyword != keyword.keyword:
-        existing = db.query(UserKeyword).filter(
-            UserKeyword.user_id == current_user.id,
-            UserKeyword.keyword == keyword_data.keyword,
-            UserKeyword.id != keyword_id
-        ).first()
-
-        if existing:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Keyword already exists"
-            )
-
-    keyword.keyword = keyword_data.keyword
-    keyword.category = keyword_data.category
-    keyword.weight = keyword_data.weight
-    keyword.updated_at = datetime.utcnow()
+    update_data = data.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(keyword, field, value)
 
     db.commit()
     db.refresh(keyword)
 
-    logger.info(f"User keyword updated: id={keyword_id}")
-
+    logger.info(f"User keyword updated: {keyword.keyword} for user {user.id}")
     return UserKeywordResponse.model_validate(keyword)
 
 
-@router.delete("/user-keywords/{keyword_id}", response_model=MessageResponse)
+@router.delete("/{keyword_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user_keyword(
     keyword_id: int,
-    current_user = Depends(get_current_user),
+    user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    Delete a personal keyword
-
-    - Only owner can delete
-    - Hard delete (no soft delete for keywords)
+    Delete a user keyword.
     """
-    from app.models.user_keyword import UserKeyword
-
     keyword = db.query(UserKeyword).filter(
         UserKeyword.id == keyword_id,
-        UserKeyword.user_id == current_user.id
+        UserKeyword.user_id == user.id
     ).first()
 
     if not keyword:
@@ -193,6 +128,5 @@ async def delete_user_keyword(
     db.delete(keyword)
     db.commit()
 
-    logger.info(f"User keyword deleted: id={keyword_id}")
-
-    return MessageResponse(message="Keyword deleted")
+    logger.info(f"User keyword deleted: {keyword.keyword} for user {user.id}")
+    return None
