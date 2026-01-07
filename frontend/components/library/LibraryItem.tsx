@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, X, Play, Circle } from 'lucide-react';
+import { ExternalLink, X, Play, Circle, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { formatRelativeDate } from '@/lib/date-utils';
 import { cn } from '@/lib/utils';
 import type { Article } from '@/types';
@@ -12,10 +12,14 @@ interface LibraryItemProps {
   article: Article;
   onRemove: (id: string) => void;
   onOpen: (article: Article) => void;
+  onLike?: (id: string) => void;
+  onDislike?: (id: string) => void;
 }
 
-export const LibraryItem = ({ article, onRemove, onOpen }: LibraryItemProps) => {
+export const LibraryItem = ({ article, onRemove, onOpen, onLike, onDislike }: LibraryItemProps) => {
   const isVideo = article.source_type === 'youtube' || article.source_type === 'youtube_rss' || article.source_type === 'video';
+  const isLiked = article.user_reaction === 'like' || article.is_liked;
+  const isDisliked = article.user_reaction === 'dislike' || article.is_disliked;
 
   return (
     <motion.div
@@ -98,6 +102,28 @@ export const LibraryItem = ({ article, onRemove, onOpen }: LibraryItemProps) => 
 
       {/* Actions */}
       <div className="shrink-0 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onLike?.(article.id)}
+          className={cn(
+            "text-violet-300/70 hover:text-green-400 hover:bg-green-500/20",
+            isLiked && "text-green-400 bg-green-500/20 opacity-100"
+          )}
+        >
+          <ThumbsUp className={cn("w-4 h-4", isLiked && "fill-current")} />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onDislike?.(article.id)}
+          className={cn(
+            "text-violet-300/70 hover:text-red-400 hover:bg-red-500/20",
+            isDisliked && "text-red-400 bg-red-500/20 opacity-100"
+          )}
+        >
+          <ThumbsDown className={cn("w-4 h-4", isDisliked && "fill-current")} />
+        </Button>
         <Button
           variant="ghost"
           size="sm"

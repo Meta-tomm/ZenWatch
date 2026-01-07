@@ -1,11 +1,13 @@
 'use client';
 
 import { KeywordManager } from '@/components/config/KeywordManager';
+import { AdminGuard } from '@/components/admin/AdminGuard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Settings, Key, Database, User } from 'lucide-react';
 
 export default function ConfigPage() {
   return (
+    <AdminGuard>
     <main className="min-h-screen bg-anthracite-950 relative z-10">
       <div className="container max-w-6xl py-8">
         <div className="mb-8 p-6 rounded-2xl bg-anthracite-800/50 border border-violet/20">
@@ -69,5 +71,6 @@ export default function ConfigPage() {
         </Tabs>
       </div>
     </main>
+    </AdminGuard>
   );
 }

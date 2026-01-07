@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/form';
 import { authApi, userKeywordsApi, personalizedApi } from '@/lib/api-client';
 import { useAuthStore } from '@/store/auth-store';
+import { useToast } from '@/hooks/use-toast';
 import type { UserKeyword } from '@/types/auth';
 
 const profileSchema = z.object({
@@ -58,6 +59,7 @@ function KeywordsTab() {
   const [newCategory, setNewCategory] = useState('');
   const [newWeight, setNewWeight] = useState(1);
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   // Fetch keywords
   const { data: keywordsData, isLoading: keywordsLoading } = useQuery({
@@ -83,6 +85,10 @@ function KeywordsTab() {
       setNewKeyword('');
       setNewCategory('');
       setNewWeight(1);
+      toast({ title: 'Mot-cle ajoute', description: 'Le mot-cle a ete ajoute avec succes' });
+    },
+    onError: (error: Error) => {
+      toast({ title: 'Erreur', description: error.message || 'Impossible d\'ajouter le mot-cle', variant: 'destructive' });
     },
   });
 
@@ -109,6 +115,10 @@ function KeywordsTab() {
     mutationFn: userKeywordsApi.rescore,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['personalized-stats'] });
+      toast({ title: 'Rescoring lance', description: 'Les articles vont etre re-scores en arriere-plan' });
+    },
+    onError: (error: Error) => {
+      toast({ title: 'Erreur', description: error.message || 'Impossible de lancer le rescoring', variant: 'destructive' });
     },
   });
 

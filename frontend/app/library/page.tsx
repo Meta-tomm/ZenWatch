@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { Bookmark } from 'lucide-react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLibrary, useRemoveFromLibrary } from '@/hooks/use-library';
 import { LibraryCard } from '@/components/library/LibraryCard';
 import { LibraryItem } from '@/components/library/LibraryItem';
@@ -20,6 +21,7 @@ export default function LibraryPage() {
     return 'grid';
   });
   const [unreadOnly, setUnreadOnly] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useLibrary({
     type: filter === 'all' ? undefined : filter,
@@ -28,6 +30,22 @@ export default function LibraryPage() {
 
   const removeFromLibrary = useRemoveFromLibrary();
 
+  // Like mutation
+  const likeMutation = useMutation({
+    mutationFn: (id: string) => articlesApi.toggleLike(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['library'] });
+    },
+  });
+
+  // Dislike mutation
+  const dislikeMutation = useMutation({
+    mutationFn: (id: string) => articlesApi.toggleDislike(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['library'] });
+    },
+  });
+
   // Persist view preference
   useEffect(() => {
     localStorage.setItem('libraryView', view);
@@ -35,6 +53,14 @@ export default function LibraryPage() {
 
   const handleRemove = (id: string) => {
     removeFromLibrary.mutate(id);
+  };
+
+  const handleLike = (id: string) => {
+    likeMutation.mutate(id);
+  };
+
+  const handleDislike = (id: string) => {
+    dislikeMutation.mutate(id);
   };
 
   const handleOpen = async (article: Article) => {
@@ -121,6 +147,8 @@ export default function LibraryPage() {
                   article={article}
                   onRemove={handleRemove}
                   onOpen={handleOpen}
+                  onLike={handleLike}
+                  onDislike={handleDislike}
                 />
               ))}
             </AnimatePresence>
@@ -134,6 +162,8 @@ export default function LibraryPage() {
                   article={article}
                   onRemove={handleRemove}
                   onOpen={handleOpen}
+                  onLike={handleLike}
+                  onDislike={handleDislike}
                 />
               ))}
             </AnimatePresence>

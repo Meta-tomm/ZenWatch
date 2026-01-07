@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { NavLink } from './NavLink';
 import { ScrapeButton } from './ScrapeButton';
 import { UserMenu } from './UserMenu';
-import { Home, Settings, BarChart3, ChevronLeft, FileText, Bookmark, Shuffle, Sparkles } from 'lucide-react';
+import { Home, BarChart3, ChevronLeft, FileText, Bookmark, Shuffle, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -14,7 +14,6 @@ const navItems = [
   { href: '/articles', icon: FileText, label: 'Articles' },
   { href: '/library', icon: Bookmark, label: 'Library' },
   { href: '/triage', icon: Shuffle, label: 'Triage' },
-  { href: '/config', icon: Settings, label: 'Configuration' },
   { href: '/analytics', icon: BarChart3, label: 'Analytics' },
 ];
 

@@ -23,6 +23,8 @@ export interface Article {
   is_archived: boolean;
   is_bookmarked: boolean;
   is_dismissed: boolean;
+  is_liked?: boolean;
+  is_disliked?: boolean;
   bookmarked_at?: string;
   source_type: string;
   created_at: string;
@@ -130,3 +132,24 @@ export interface TriageResponse {
 
 export type LibraryFilter = 'all' | 'articles' | 'videos';
 export type LibraryView = 'list' | 'grid';
+
+// Analytics types
+export interface Trend {
+  id: number;
+  keyword: string;
+  category?: string;
+  trend_score: number;
+  article_count: number;
+  date: string;
+  created_at: string;
+}
+
+export interface AnalyticsSummary {
+  total_articles: number;
+  total_sources: number;
+  total_keywords: number;
+  avg_score_last_7_days: number;
+  top_trends: Trend[];
+  articles_by_category: Record<string, number>;
+  articles_scraped_today: number;
+}

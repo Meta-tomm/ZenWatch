@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, X, Play, Circle } from 'lucide-react';
+import { ExternalLink, X, Play, Circle, ThumbsUp, ThumbsDown, FileText } from 'lucide-react';
 import { formatRelativeDate } from '@/lib/date-utils';
 import { cn } from '@/lib/utils';
 import type { Article } from '@/types';
@@ -12,10 +12,17 @@ interface LibraryCardProps {
   article: Article;
   onRemove: (id: string) => void;
   onOpen: (article: Article) => void;
+  onLike?: (id: string) => void;
+  onDislike?: (id: string) => void;
 }
 
-export const LibraryCard = ({ article, onRemove, onOpen }: LibraryCardProps) => {
+export const LibraryCard = ({ article, onRemove, onOpen, onLike, onDislike }: LibraryCardProps) => {
   const isVideo = article.source_type === 'youtube' || article.source_type === 'youtube_rss' || article.source_type === 'video';
+  const isLiked = article.user_reaction === 'like' || article.is_liked;
+  const isDisliked = article.user_reaction === 'dislike' || article.is_disliked;
+
+  // Get preview text from summary or content
+  const previewText = article.summary || article.content;
 
   return (
     <motion.div
@@ -23,15 +30,15 @@ export const LibraryCard = ({ article, onRemove, onOpen }: LibraryCardProps) => 
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95 }}
       className={cn(
-        'group relative bg-anthracite-800/80 border border-violet-500/30 rounded-lg overflow-hidden',
+        'group relative flex flex-col h-full bg-anthracite-800/80 border border-violet-500/30 rounded-lg overflow-hidden',
         'hover:border-violet-400/50 transition-all duration-300',
         !article.is_read && 'ring-2 ring-violet-500/30'
       )}
     >
       {/* Thumbnail for videos */}
-      {isVideo && article.thumbnail_url && (
+      {isVideo && article.thumbnail_url ? (
         <div
-          className="relative aspect-video cursor-pointer group/thumb"
+          className="relative aspect-video cursor-pointer group/thumb shrink-0"
           onClick={() => onOpen(article)}
         >
           <img
@@ -51,17 +58,24 @@ export const LibraryCard = ({ article, onRemove, onOpen }: LibraryCardProps) => 
             </div>
           )}
         </div>
-      )}
-
-      {/* Unread indicator (only if no thumbnail) */}
-      {!article.is_read && !(isVideo && article.thumbnail_url) && (
-        <div className="absolute top-2 left-2 z-10">
-          <Circle className="w-3 h-3 fill-violet-400 text-violet-400" />
+      ) : (
+        /* Article preview image placeholder */
+        <div
+          className="relative h-24 bg-gradient-to-br from-violet-900/30 to-anthracite-900 flex items-center justify-center cursor-pointer shrink-0"
+          onClick={() => onOpen(article)}
+        >
+          <FileText className="w-10 h-10 text-violet-500/40" />
+          {/* Unread indicator */}
+          {!article.is_read && (
+            <div className="absolute top-2 left-2">
+              <Circle className="w-3 h-3 fill-violet-400 text-violet-400" />
+            </div>
+          )}
         </div>
       )}
 
-      {/* Content */}
-      <div className="p-4">
+      {/* Content - grows to fill space */}
+      <div className="flex-1 p-4 flex flex-col">
         <h3
           className="font-semibold text-violet-100 mb-2 line-clamp-2 cursor-pointer hover:text-violet-300 transition-colors"
           onClick={() => onOpen(article)}
@@ -69,14 +83,21 @@ export const LibraryCard = ({ article, onRemove, onOpen }: LibraryCardProps) => 
           {article.title}
         </h3>
 
-        <div className="flex items-center gap-2 text-xs text-violet-300/60 mb-3">
+        <div className="flex items-center gap-2 text-xs text-violet-300/60 mb-2">
           <span className="capitalize">{article.source_type}</span>
           <span>-</span>
           <span>{formatRelativeDate(article.bookmarked_at || article.created_at)}</span>
         </div>
 
+        {/* Preview text for articles */}
+        {!isVideo && previewText && (
+          <p className="text-xs text-violet-300/50 line-clamp-2 mb-2 flex-1">
+            {previewText}
+          </p>
+        )}
+
         {/* Tags */}
-        <div className="flex flex-wrap gap-1 mb-3">
+        <div className="flex flex-wrap gap-1 mb-2">
           <Badge
             variant="secondary"
             className="text-xs bg-violet-500/20 text-violet-200 border-violet-400/30"
@@ -85,8 +106,8 @@ export const LibraryCard = ({ article, onRemove, onOpen }: LibraryCardProps) => 
           </Badge>
         </div>
 
-        {/* Score */}
-        <div className="flex items-center justify-between">
+        {/* Score - pushed to bottom of content area */}
+        <div className="flex items-center justify-between mt-auto">
           <div className="flex items-center gap-1">
             <span className={cn(
               'text-lg font-bold',
@@ -105,17 +126,40 @@ export const LibraryCard = ({ article, onRemove, onOpen }: LibraryCardProps) => 
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center justify-between px-4 py-2 border-t border-violet-500/20 bg-anthracite-900/50">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onRemove(article.id)}
-          className="text-violet-300/70 hover:text-red-400 hover:bg-red-500/20"
-        >
-          <X className="w-4 h-4 mr-1" />
-          Remove
-        </Button>
+      {/* Actions - always at bottom */}
+      <div className="flex items-center justify-between px-4 py-2 border-t border-violet-500/20 bg-anthracite-900/50 shrink-0">
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onLike?.(article.id)}
+            className={cn(
+              "text-violet-300/70 hover:text-green-400 hover:bg-green-500/20",
+              isLiked && "text-green-400 bg-green-500/20"
+            )}
+          >
+            <ThumbsUp className={cn("w-4 h-4", isLiked && "fill-current")} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onDislike?.(article.id)}
+            className={cn(
+              "text-violet-300/70 hover:text-red-400 hover:bg-red-500/20",
+              isDisliked && "text-red-400 bg-red-500/20"
+            )}
+          >
+            <ThumbsDown className={cn("w-4 h-4", isDisliked && "fill-current")} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onRemove(article.id)}
+            className="text-violet-300/70 hover:text-red-400 hover:bg-red-500/20"
+          >
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
 
         <Button
           variant="ghost"
