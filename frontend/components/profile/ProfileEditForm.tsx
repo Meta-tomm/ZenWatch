@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Save, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -85,19 +86,22 @@ export const ProfileEditForm = ({ user, onSuccess, onCancel }: ProfileEditFormPr
     mutation.mutate(values);
   };
 
+  const inputClassName = "bg-anthracite-800/50 border-violet-500/20 text-violet-100 placeholder:text-violet-300/40 focus:border-violet-500/50 focus:ring-violet-500/20";
+  const labelClassName = "text-violet-200";
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
         <FormField
           control={form.control}
           name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nom utilisateur</FormLabel>
+              <FormLabel className={labelClassName}>Nom utilisateur</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input className={inputClassName} {...field} />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-red-400" />
             </FormItem>
           )}
         />
@@ -107,18 +111,18 @@ export const ProfileEditForm = ({ user, onSuccess, onCancel }: ProfileEditFormPr
           name="bio"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Bio</FormLabel>
+              <FormLabel className={labelClassName}>Bio</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="Parlez-nous de vous..."
-                  className="resize-none"
+                  className={`${inputClassName} resize-none min-h-[100px]`}
                   {...field}
                 />
               </FormControl>
-              <FormDescription>
+              <FormDescription className="text-violet-300/50">
                 {(field.value?.length || 0)}/500 caracteres
               </FormDescription>
-              <FormMessage />
+              <FormMessage className="text-red-400" />
             </FormItem>
           )}
         />
@@ -128,11 +132,15 @@ export const ProfileEditForm = ({ user, onSuccess, onCancel }: ProfileEditFormPr
           name="avatar_url"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>URL Avatar</FormLabel>
+              <FormLabel className={labelClassName}>URL Avatar</FormLabel>
               <FormControl>
-                <Input placeholder="https://example.com/avatar.jpg" {...field} />
+                <Input
+                  placeholder="https://example.com/avatar.jpg"
+                  className={inputClassName}
+                  {...field}
+                />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-red-400" />
             </FormItem>
           )}
         />
@@ -142,11 +150,15 @@ export const ProfileEditForm = ({ user, onSuccess, onCancel }: ProfileEditFormPr
           name="github_url"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>GitHub</FormLabel>
+              <FormLabel className={labelClassName}>GitHub</FormLabel>
               <FormControl>
-                <Input placeholder="https://github.com/username" {...field} />
+                <Input
+                  placeholder="https://github.com/username"
+                  className={inputClassName}
+                  {...field}
+                />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-red-400" />
             </FormItem>
           )}
         />
@@ -156,27 +168,42 @@ export const ProfileEditForm = ({ user, onSuccess, onCancel }: ProfileEditFormPr
           name="portfolio_url"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Portfolio</FormLabel>
+              <FormLabel className={labelClassName}>Portfolio</FormLabel>
               <FormControl>
-                <Input placeholder="https://votresite.com" {...field} />
+                <Input
+                  placeholder="https://votresite.com"
+                  className={inputClassName}
+                  {...field}
+                />
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-red-400" />
             </FormItem>
           )}
         />
 
         {mutation.error && (
-          <p className="text-sm text-destructive">
+          <div className="p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 text-sm">
             Une erreur est survenue lors de la mise a jour du profil
-          </p>
+          </div>
         )}
 
-        <div className="flex gap-3 pt-2">
-          <Button type="submit" disabled={mutation.isPending}>
+        <div className="flex gap-3 pt-4">
+          <Button
+            type="submit"
+            disabled={mutation.isPending}
+            className="bg-violet-600 hover:bg-violet-500 text-white gap-2"
+          >
+            <Save className="w-4 h-4" />
             {mutation.isPending ? 'Sauvegarde...' : 'Sauvegarder'}
           </Button>
           {onCancel && (
-            <Button type="button" variant="outline" onClick={onCancel}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              className="border-violet-500/30 text-violet-300 hover:bg-violet-500/20 hover:text-violet-100 gap-2"
+            >
+              <X className="w-4 h-4" />
               Annuler
             </Button>
           )}

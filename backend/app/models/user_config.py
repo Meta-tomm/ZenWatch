@@ -2,7 +2,7 @@
 
 from sqlalchemy import Column, Integer, String, Boolean, Float, Time, DateTime, ForeignKey, Text
 from sqlalchemy.sql import func
-from sqlalchemy.dialects.postgresql import ARRAY as PG_ARRAY, UUID
+from sqlalchemy.dialects.postgresql import ARRAY as PG_ARRAY
 from sqlalchemy.orm import relationship
 
 from app.database import Base
@@ -15,7 +15,7 @@ class UserConfig(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(
-        UUID(as_uuid=True),
+        Integer,
         ForeignKey("users.id", ondelete="CASCADE"),
         unique=True,
         nullable=True,

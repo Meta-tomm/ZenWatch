@@ -4,6 +4,7 @@ import { FilterBar } from '@/components/feed/FilterBar';
 import { ArticleFeed } from '@/components/feed/ArticleFeed';
 import { VideoPanel } from '@/components/feed/VideoPanel';
 import { ArticleModal } from '@/components/feed/ArticleModal';
+import { RealTimeStats } from '@/components/feed/RealTimeStats';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -30,11 +31,14 @@ export default function ArticlesPage() {
         </div>
       </div>
 
+      {/* Real-time Stats */}
+      <RealTimeStats />
+
       {/* Filter Bar */}
       <FilterBar />
 
       {/* Two-column layout: Articles + Videos */}
-      <div className="flex h-[calc(100vh-12rem)]">
+      <div className="flex h-[calc(100vh-22rem)]">
         {/* Articles Feed (Main area) */}
         <div className="flex-1 overflow-hidden">
           <ArticleFeed />

@@ -63,29 +63,29 @@ export default function PersonalizedPage() {
                 <Link href="/">
                   <Button variant="ghost" size="sm" className="gap-2 text-violet-300 hover:text-violet-200 hover:bg-violet-500/20">
                     <ArrowLeft className="w-4 h-4" />
-                    Accueil
+                    Home
                   </Button>
                 </Link>
                 <h1 className="text-2xl font-bold text-gradient-violet flex items-center gap-2">
                   <Sparkles className="w-6 h-6" />
-                  Pour Vous
+                  For You
                 </h1>
               </div>
               <div className="flex items-center gap-3">
                 {stats && (
                   <div className="hidden md:flex items-center gap-3">
                     <Badge variant="secondary" className="bg-violet-500/20 text-violet-300 border-violet-500/30">
-                      {stats.keyword_count} mot{stats.keyword_count > 1 ? 's' : ''}-cle{stats.keyword_count > 1 ? 's' : ''}
+                      {stats.keyword_count} keyword{stats.keyword_count !== 1 ? 's' : ''}
                     </Badge>
                     <Badge variant="secondary" className="bg-green-500/20 text-green-400 border-green-500/30">
-                      {stats.high_relevance_count} haute pertinence
+                      {stats.high_relevance_count} high relevance
                     </Badge>
                   </div>
                 )}
                 <Link href="/profile">
                   <Button variant="outline" size="sm" className="gap-2 border-violet-500/30 text-violet-300 hover:bg-violet-500/20">
                     <Settings className="w-4 h-4" />
-                    Configurer
+                    Configure
                   </Button>
                 </Link>
               </div>
@@ -99,16 +99,16 @@ export default function PersonalizedPage() {
             <div className="rounded-xl border border-violet-500/20 bg-anthracite-900/50 p-8 text-center">
               <Tags className="w-16 h-16 mx-auto mb-4 text-violet-400/50" />
               <h2 className="text-xl font-semibold text-violet-100 mb-2">
-                Configurez vos mots-cles
+                Configure your keywords
               </h2>
               <p className="text-violet-300/60 mb-6 max-w-md mx-auto">
-                Ajoutez des mots-cles pour personnaliser votre feed.
-                Les articles seront tries par pertinence selon vos centres d&apos;interet.
+                Add keywords to personalize your feed.
+                Articles will be sorted by relevance based on your interests.
               </p>
               <Link href="/profile">
                 <Button className="bg-violet-600 hover:bg-violet-500 text-white gap-2">
                   <Tags className="w-4 h-4" />
-                  Configurer mes mots-cles
+                  Configure my keywords
                 </Button>
               </Link>
             </div>
@@ -130,16 +130,16 @@ export default function PersonalizedPage() {
             ) : isError ? (
               <div className="flex flex-col items-center justify-center h-full text-center p-8">
                 <AlertCircle className="w-12 h-12 text-destructive mb-4" />
-                <h2 className="text-lg font-semibold mb-2">Erreur de chargement</h2>
+                <h2 className="text-lg font-semibold mb-2">Loading error</h2>
                 <p className="text-sm text-muted-foreground">
                   {String(error)}
                 </p>
               </div>
             ) : articles.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center p-8">
-                <h2 className="text-lg font-semibold mb-2">Aucun article trouve</h2>
+                <h2 className="text-lg font-semibold mb-2">No articles found</h2>
                 <p className="text-sm text-muted-foreground">
-                  Essayez de modifier vos filtres
+                  Try adjusting your filters
                 </p>
               </div>
             ) : (

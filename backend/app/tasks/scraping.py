@@ -399,11 +399,21 @@ async def scrape_all_sources_async(
     except Exception as e:
         logger.error(f"Fatal error in scraping task {task_id}: {str(e)}", exc_info=True)
 
-        # Update scraping run as failed
-        scraping_run.status = 'failed'
-        scraping_run.error_message = str(e)
-        scraping_run.completed_at = datetime.utcnow()
-        db.commit()
+        # Rollback any failed transaction first
+        try:
+            db.rollback()
+        except Exception:
+            pass
+
+        # Update scraping run as failed in a new transaction
+        try:
+            scraping_run.status = 'failed'
+            scraping_run.error_message = str(e)[:500]  # Limit error message length
+            scraping_run.completed_at = datetime.utcnow()
+            db.commit()
+        except Exception as commit_error:
+            logger.error(f"Failed to update scraping run status: {commit_error}")
+            db.rollback()
 
         raise
 

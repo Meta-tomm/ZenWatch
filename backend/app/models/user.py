@@ -29,6 +29,7 @@ class User(Base):
     article_states = relationship("UserArticleState", back_populates="user", cascade="all, delete-orphan")
     video_states = relationship("UserVideoState", back_populates="user", cascade="all, delete-orphan")
     consents = relationship("UserConsent", back_populates="user", cascade="all, delete-orphan")
+    config = relationship("UserConfig", back_populates="user", uselist=False, cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<User(id={self.id}, email='{self.email}', username='{self.username}')>"

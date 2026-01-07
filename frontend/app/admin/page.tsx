@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
 import {
   ArrowLeft,
   Users,
@@ -135,26 +134,26 @@ function DashboardTab() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="Utilisateurs"
+          title="Users"
           value={users?.total || 0}
           icon={Users}
           color="violet"
         />
         <StatCard
-          title="Runs de scraping"
+          title="Scraping Runs"
           value={scrapingStats?.total_runs || 0}
           icon={Activity}
-          trend={`${scrapingStats?.success_rate || 0}% de reussite`}
+          trend={`${scrapingStats?.success_rate || 0}% success rate`}
           color="blue"
         />
         <StatCard
-          title="Articles scraped"
+          title="Articles Scraped"
           value={scrapingStats?.total_articles_scraped || 0}
           icon={FileText}
           color="green"
         />
         <StatCard
-          title="Articles sauvegardes"
+          title="Articles Saved"
           value={scrapingStats?.total_articles_saved || 0}
           icon={Database}
           color="violet"
@@ -164,10 +163,10 @@ function DashboardTab() {
       {/* Recent Scraping Activity */}
       <div className="rounded-xl border border-violet-500/20 bg-anthracite-900/50 backdrop-blur">
         <div className="p-4 border-b border-violet-500/10 flex items-center justify-between">
-          <h2 className="font-semibold text-violet-100">Activite recente</h2>
+          <h2 className="font-semibold text-violet-100">Recent Activity</h2>
           <Link href="/admin?tab=scraping">
             <Button variant="ghost" size="sm" className="text-violet-300 hover:text-violet-200">
-              Voir tout
+              View all
             </Button>
           </Link>
         </div>
@@ -184,19 +183,19 @@ function DashboardTab() {
                     <div>
                       <p className="text-sm font-medium text-violet-100">{run.source_type}</p>
                       <p className="text-xs text-violet-300/50">
-                        {formatDistanceToNow(new Date(run.started_at), { addSuffix: true, locale: fr })}
+                        {formatDistanceToNow(new Date(run.started_at), { addSuffix: true })}
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-violet-100">{run.articles_saved} / {run.articles_scraped}</p>
-                    <p className="text-xs text-violet-300/50">sauvegardes</p>
+                    <p className="text-xs text-violet-300/50">saved</p>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-center text-violet-300/50 py-8">Aucune activite recente</p>
+            <p className="text-center text-violet-300/50 py-8">No recent activity</p>
           )}
         </div>
       </div>
@@ -230,14 +229,14 @@ function UsersTab() {
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-violet-300/50" />
           <Input
-            placeholder="Rechercher un utilisateur..."
+            placeholder="Search user..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10 bg-anthracite-800/50 border-violet-500/20 text-violet-100"
           />
         </div>
         <p className="text-sm text-violet-300/50">
-          {usersData?.total || 0} utilisateurs
+          {usersData?.total || 0} users
         </p>
       </div>
 
@@ -246,11 +245,11 @@ function UsersTab() {
         <Table>
           <TableHeader>
             <TableRow className="border-violet-500/10 hover:bg-transparent">
-              <TableHead className="text-violet-300">Utilisateur</TableHead>
+              <TableHead className="text-violet-300">User</TableHead>
               <TableHead className="text-violet-300">Email</TableHead>
-              <TableHead className="text-violet-300">Statut</TableHead>
+              <TableHead className="text-violet-300">Status</TableHead>
               <TableHead className="text-violet-300">Admin</TableHead>
-              <TableHead className="text-violet-300">Actif</TableHead>
+              <TableHead className="text-violet-300">Active</TableHead>
               <TableHead className="text-violet-300 text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -284,12 +283,12 @@ function UsersTab() {
                   <div className="flex gap-1">
                     {user.is_verified && (
                       <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                        Verifie
+                        Verified
                       </Badge>
                     )}
                     {!user.is_active && (
                       <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
-                        Desactive
+                        Disabled
                       </Badge>
                     )}
                   </div>
@@ -321,20 +320,20 @@ function UsersTab() {
                     </AlertDialogTrigger>
                     <AlertDialogContent className="bg-anthracite-900 border-violet-500/20">
                       <AlertDialogHeader>
-                        <AlertDialogTitle className="text-violet-100">Supprimer l'utilisateur ?</AlertDialogTitle>
+                        <AlertDialogTitle className="text-violet-100">Delete user?</AlertDialogTitle>
                         <AlertDialogDescription className="text-violet-300/70">
-                          Cette action est irreversible. L'utilisateur {user.username} sera definitivement supprime.
+                          This action is irreversible. User {user.username} will be permanently deleted.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel className="border-violet-500/20 text-violet-300 hover:bg-violet-500/10">
-                          Annuler
+                          Cancel
                         </AlertDialogCancel>
                         <AlertDialogAction
                           onClick={() => handleDelete(user.id)}
                           className="bg-red-600 hover:bg-red-500"
                         >
-                          Supprimer
+                          Delete
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
@@ -366,9 +365,9 @@ function SourcesTab() {
             <TableRow className="border-violet-500/10 hover:bg-transparent">
               <TableHead className="text-violet-300">Source</TableHead>
               <TableHead className="text-violet-300">Type</TableHead>
-              <TableHead className="text-violet-300">Frequence</TableHead>
-              <TableHead className="text-violet-300">Dernier scraping</TableHead>
-              <TableHead className="text-violet-300">Actif</TableHead>
+              <TableHead className="text-violet-300">Frequency</TableHead>
+              <TableHead className="text-violet-300">Last Scrape</TableHead>
+              <TableHead className="text-violet-300">Active</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -391,12 +390,12 @@ function SourcesTab() {
                   </Badge>
                 </TableCell>
                 <TableCell className="text-violet-300/70">
-                  Toutes les {source.scrape_frequency_hours}h
+                  Every {source.scrape_frequency_hours}h
                 </TableCell>
                 <TableCell className="text-violet-300/70">
                   {source.last_scraped_at
-                    ? formatDistanceToNow(new Date(source.last_scraped_at), { addSuffix: true, locale: fr })
-                    : 'Jamais'
+                    ? formatDistanceToNow(new Date(source.last_scraped_at), { addSuffix: true })
+                    : 'Never'
                   }
                 </TableCell>
                 <TableCell>
@@ -445,13 +444,13 @@ function KeywordsTab() {
       {/* Add Keyword Form */}
       <div className="flex items-center gap-4 p-4 rounded-xl border border-violet-500/20 bg-anthracite-900/50 backdrop-blur">
         <Input
-          placeholder="Nouveau mot-cle..."
+          placeholder="New keyword..."
           value={newKeyword}
           onChange={(e) => setNewKeyword(e.target.value)}
           className="flex-1 bg-anthracite-800/50 border-violet-500/20 text-violet-100"
         />
         <Input
-          placeholder="Categorie (optionnel)"
+          placeholder="Category (optional)"
           value={newCategory}
           onChange={(e) => setNewCategory(e.target.value)}
           className="w-48 bg-anthracite-800/50 border-violet-500/20 text-violet-100"
@@ -461,7 +460,7 @@ function KeywordsTab() {
           disabled={!newKeyword.trim() || createKeyword.isPending}
           className="bg-violet-600 hover:bg-violet-500"
         >
-          Ajouter
+          Add
         </Button>
       </div>
 
@@ -470,10 +469,10 @@ function KeywordsTab() {
         <Table>
           <TableHeader>
             <TableRow className="border-violet-500/10 hover:bg-transparent">
-              <TableHead className="text-violet-300">Mot-cle</TableHead>
-              <TableHead className="text-violet-300">Categorie</TableHead>
-              <TableHead className="text-violet-300">Poids</TableHead>
-              <TableHead className="text-violet-300">Statut</TableHead>
+              <TableHead className="text-violet-300">Keyword</TableHead>
+              <TableHead className="text-violet-300">Category</TableHead>
+              <TableHead className="text-violet-300">Weight</TableHead>
+              <TableHead className="text-violet-300">Status</TableHead>
               <TableHead className="text-violet-300 text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -499,9 +498,9 @@ function KeywordsTab() {
                 <TableCell className="text-violet-300/70">{keyword.weight}</TableCell>
                 <TableCell>
                   {keyword.is_active ? (
-                    <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Actif</Badge>
+                    <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Active</Badge>
                   ) : (
-                    <Badge className="bg-red-500/20 text-red-400 border-red-500/30">Inactif</Badge>
+                    <Badge className="bg-red-500/20 text-red-400 border-red-500/30">Inactive</Badge>
                   )}
                 </TableCell>
                 <TableCell className="text-right">
@@ -558,7 +557,7 @@ function ScrapingTab() {
           ) : (
             <Play className="w-4 h-4" />
           )}
-          Lancer le scraping complet
+          Run Full Scraping
         </Button>
         <Button
           onClick={handleTriggerYouTube}
@@ -571,7 +570,7 @@ function ScrapingTab() {
           ) : (
             <Youtube className="w-4 h-4" />
           )}
-          Scraper YouTube
+          Scrape YouTube
         </Button>
         <Button
           onClick={handleRescore}
@@ -584,7 +583,7 @@ function ScrapingTab() {
           ) : (
             <Zap className="w-4 h-4" />
           )}
-          Re-scorer les articles
+          Rescore Articles
         </Button>
         <Button
           onClick={() => refetch()}
@@ -592,7 +591,7 @@ function ScrapingTab() {
           className="text-violet-300 hover:text-violet-200 hover:bg-violet-500/10 gap-2"
         >
           <RefreshCw className="w-4 h-4" />
-          Rafraichir
+          Refresh
         </Button>
       </div>
 
@@ -600,25 +599,25 @@ function ScrapingTab() {
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard
-            title="Runs totaux"
+            title="Total Runs"
             value={stats.total_runs}
             icon={Activity}
             color="violet"
           />
           <StatCard
-            title="Reussites"
+            title="Successes"
             value={stats.successful_runs}
             icon={CheckCircle}
             color="green"
           />
           <StatCard
-            title="Echecs"
+            title="Failures"
             value={stats.failed_runs}
             icon={XCircle}
             color="red"
           />
           <StatCard
-            title="Taux de reussite"
+            title="Success Rate"
             value={`${stats.success_rate}%`}
             icon={TrendingUp}
             color="blue"
@@ -634,10 +633,10 @@ function ScrapingTab() {
               <TableHead className="text-violet-300">Status</TableHead>
               <TableHead className="text-violet-300">Source</TableHead>
               <TableHead className="text-violet-300">Scraped</TableHead>
-              <TableHead className="text-violet-300">Sauvegardes</TableHead>
-              <TableHead className="text-violet-300">Debut</TableHead>
-              <TableHead className="text-violet-300">Fin</TableHead>
-              <TableHead className="text-violet-300">Erreur</TableHead>
+              <TableHead className="text-violet-300">Saved</TableHead>
+              <TableHead className="text-violet-300">Started</TableHead>
+              <TableHead className="text-violet-300">Finished</TableHead>
+              <TableHead className="text-violet-300">Error</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -660,11 +659,11 @@ function ScrapingTab() {
                 <TableCell className="text-violet-300/70">{run.articles_scraped}</TableCell>
                 <TableCell className="text-violet-300/70">{run.articles_saved}</TableCell>
                 <TableCell className="text-violet-300/70 text-sm">
-                  {formatDistanceToNow(new Date(run.started_at), { addSuffix: true, locale: fr })}
+                  {formatDistanceToNow(new Date(run.started_at), { addSuffix: true })}
                 </TableCell>
                 <TableCell className="text-violet-300/70 text-sm">
                   {run.completed_at
-                    ? formatDistanceToNow(new Date(run.completed_at), { addSuffix: true, locale: fr })
+                    ? formatDistanceToNow(new Date(run.completed_at), { addSuffix: true })
                     : '-'
                   }
                 </TableCell>
@@ -692,7 +691,7 @@ export default function AdminPage() {
               <Link href="/">
                 <Button variant="ghost" size="sm" className="gap-2 text-violet-300 hover:text-violet-200 hover:bg-violet-500/20">
                   <ArrowLeft className="w-4 h-4" />
-                  Accueil
+                  Home
                 </Button>
               </Link>
               <div className="flex items-center gap-2">
@@ -704,7 +703,7 @@ export default function AdminPage() {
               <Link href="/config">
                 <Button variant="outline" size="sm" className="gap-2 border-violet-500/30 text-violet-300 hover:bg-violet-500/20">
                   <Settings className="w-4 h-4" />
-                  Configuration avancee
+                  Advanced Configuration
                 </Button>
               </Link>
             </div>
@@ -727,7 +726,7 @@ export default function AdminPage() {
                 className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-100 text-violet-300/70"
               >
                 <Users className="w-4 h-4 mr-2" />
-                Utilisateurs
+                Users
               </TabsTrigger>
               <TabsTrigger
                 value="sources"

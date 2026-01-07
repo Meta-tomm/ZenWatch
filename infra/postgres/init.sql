@@ -160,23 +160,104 @@ SELECT
 FROM trends
 GROUP BY DATE_TRUNC('week', date), keyword, category;
 
--- Données de test pour sources
+-- Données de base pour sources
 INSERT INTO sources (name, type, base_url) VALUES
     ('Reddit', 'reddit', 'https://www.reddit.com'),
     ('HackerNews', 'hackernews', 'https://news.ycombinator.com'),
     ('Dev.to', 'devto', 'https://dev.to'),
     ('GitHub Trending', 'github', 'https://github.com/trending'),
-    ('Medium', 'medium', 'https://medium.com')
+    ('Medium', 'medium', 'https://medium.com'),
+    ('YouTube Trending', 'youtube_trending', 'https://www.youtube.com/feed/trending'),
+    ('YouTube Tech RSS', 'youtube_rss', 'https://www.youtube.com/feeds/videos.xml')
 ON CONFLICT (name) DO NOTHING;
 
--- Données de test pour keywords
+-- Keywords par défaut - Claude & AI Focus
 INSERT INTO keywords (keyword, category, weight) VALUES
-    ('FHIR', 'healthtech', 4.0),
-    ('blockchain', 'web3', 3.5),
+    -- Claude (priorité maximale)
+    ('Claude', 'ai', 5.0),
+    ('Claude Code', 'ai', 5.0),
+    ('Claude Sonnet', 'ai', 5.0),
+    ('Claude Opus', 'ai', 5.0),
+    ('Claude Haiku', 'ai', 5.0),
+    ('Claude 3', 'ai', 5.0),
+    ('Claude 4', 'ai', 5.0),
+    ('Claude MCP', 'ai', 5.0),
+    ('Anthropic', 'ai', 5.0),
+    ('Claude API', 'ai', 4.0),
+    ('Claude Desktop', 'ai', 4.0),
+    ('Claude Pro', 'ai', 4.0),
+    ('Claude artifacts', 'ai', 4.0),
+    -- AI General (haute priorité)
+    ('agentic AI', 'ai', 5.0),
+    ('autonomous agents', 'ai', 5.0),
+    ('AI', 'ai', 4.0),
+    ('LLM', 'ai', 4.0),
+    ('MCP', 'ai', 4.0),
+    ('RAG', 'ai', 4.0),
+    ('GPT', 'ai', 3.0),
+    ('fine-tuning', 'ai', 3.0),
+    ('transformer', 'ai', 3.0),
+    ('machine learning', 'ai', 3.0),
+    -- Dev tools
     ('FastAPI', 'backend', 3.0),
     ('Next.js', 'frontend', 3.0),
     ('Python', 'dev', 2.5),
-    ('TypeScript', 'dev', 2.5),
-    ('AI', 'ai', 4.0),
-    ('machine learning', 'ai', 3.5)
+    ('TypeScript', 'dev', 2.5)
 ON CONFLICT (keyword) DO NOTHING;
+
+-- Table: youtube_channels (pour RSS scraping)
+CREATE TABLE IF NOT EXISTS youtube_channels (
+    id SERIAL PRIMARY KEY,
+    channel_id VARCHAR(255) NOT NULL UNIQUE,
+    channel_name VARCHAR(255) NOT NULL,
+    channel_url TEXT NOT NULL,
+    rss_feed_url TEXT NOT NULL,
+    thumbnail_url TEXT,
+    subscriber_count INTEGER DEFAULT 0,
+    is_active BOOLEAN DEFAULT TRUE,
+    is_suggested BOOLEAN DEFAULT FALSE,
+    suggestion_score FLOAT,
+    suggestion_reason TEXT,
+    last_checked_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_youtube_channels_active ON youtube_channels(is_active);
+
+CREATE TRIGGER update_youtube_channels_updated_at BEFORE UPDATE ON youtube_channels
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- YouTube Channels par défaut - AI & Dev
+INSERT INTO youtube_channels (channel_id, channel_name, channel_url, rss_feed_url, is_active) VALUES
+-- AI Focused
+('UCWN3xxRkmTPmbKwht9FuE5A', 'Siraj Raval', 'https://www.youtube.com/@SirajRaval', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCWN3xxRkmTPmbKwht9FuE5A', true),
+('UCZHmQk67mSJgfCCTn7xBfew', 'Yannic Kilcher', 'https://www.youtube.com/@YannicKilcher', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCZHmQk67mSJgfCCTn7xBfew', true),
+('UCbfYPyITQ-7l4upoX8nvctg', 'Two Minute Papers', 'https://www.youtube.com/@TwoMinutePapers', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCbfYPyITQ-7l4upoX8nvctg', true),
+('UCUzGQrN-lyyc0BWTYoJM_Sg', 'AI Explained', 'https://www.youtube.com/@aiaboratory', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCUzGQrN-lyyc0BWTYoJM_Sg', true),
+('UCMLtBahI5DMrt0NPvDSoIRQ', 'Machine Learning Street Talk', 'https://www.youtube.com/@MachineLearningStreetTalk', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCMLtBahI5DMrt0NPvDSoIRQ', true),
+('UC0RhatS1pyxInC00YKjjBqQ', 'Andrej Karpathy', 'https://www.youtube.com/@AndrejKarpathy', 'https://www.youtube.com/feeds/videos.xml?channel_id=UC0RhatS1pyxInC00YKjjBqQ', true),
+('UCr8O8l5cCX85Oem1d18EezQ', 'The AI Epiphany', 'https://www.youtube.com/@TheAIEpiphany', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCr8O8l5cCX85Oem1d18EezQ', true),
+('UCgBncpylJ1kiVaPyP-PZauQ', 'Lex Fridman', 'https://www.youtube.com/@lexfridman', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCgBncpylJ1kiVaPyP-PZauQ', true),
+('UC9-y-6csu5WGm29I7JiwpnA', 'Computerphile', 'https://www.youtube.com/@Computerphile', 'https://www.youtube.com/feeds/videos.xml?channel_id=UC9-y-6csu5WGm29I7JiwpnA', true),
+('UCvjgXvBlbQiY_fTHQYCwXJQ', 'Arxiv Insights', 'https://www.youtube.com/@ArxivInsights', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCvjgXvBlbQiY_fTHQYCwXJQ', true),
+('UCpVm7bg6pXKo1Pr6k5kxG9A', 'Matthew Berman', 'https://www.youtube.com/@matthew_berman', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCpVm7bg6pXKo1Pr6k5kxG9A', true),
+('UCJIfeSCssxSC_Dhc5s7woww', 'Sam Witteveen', 'https://www.youtube.com/@samwitteveen', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCJIfeSCssxSC_Dhc5s7woww', true),
+('UC6vRUjN6o2CWWQRY_AVQMag', 'AI Jason', 'https://www.youtube.com/@AIJasonZ', 'https://www.youtube.com/feeds/videos.xml?channel_id=UC6vRUjN6o2CWWQRY_AVQMag', true),
+('UCLLw7jmFsvfIVaUFsLs8mlQ', 'Luke Barousse', 'https://www.youtube.com/@LukeBarousse', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCLLw7jmFsvfIVaUFsLs8mlQ', true),
+('UCZsyNx73TNLlIxLU7q8cOGg', 'Nicholas Renotte', 'https://www.youtube.com/@NicholasRenotte', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCZsyNx73TNLlIxLU7q8cOGg', true),
+-- Dev & Programming
+('UCsBjURrPoezykLs9EqgamOA', 'Fireship', 'https://www.youtube.com/@Fireship', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCsBjURrPoezykLs9EqgamOA', true),
+('UCW5YeuERMmlnqo4oq8vwUpg', 'The Net Ninja', 'https://www.youtube.com/@NetNinja', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCW5YeuERMmlnqo4oq8vwUpg', true),
+('UC8butISFwT-Wl7EV0hUK0BQ', 'freeCodeCamp', 'https://www.youtube.com/@freecodecamp', 'https://www.youtube.com/feeds/videos.xml?channel_id=UC8butISFwT-Wl7EV0hUK0BQ', true),
+('UCFbNIlppjAuEX4znoulh0Cw', 'Web Dev Simplified', 'https://www.youtube.com/@WebDevSimplified', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCFbNIlppjAuEX4znoulh0Cw', true),
+('UC29ju8bIPH5as8OGnQzwJyA', 'Traversy Media', 'https://www.youtube.com/@TraversyMedia', 'https://www.youtube.com/feeds/videos.xml?channel_id=UC29ju8bIPH5as8OGnQzwJyA', true),
+('UCnUYZLuoy1rq1aVMwx4aTzw', 'CS Dojo', 'https://www.youtube.com/@CSDojo', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCnUYZLuoy1rq1aVMwx4aTzw', true),
+('UCWX3yGzq9Fnu8Y6g-RRz5LA', 'Theo - t3.gg', 'https://www.youtube.com/@t3dotgg', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCWX3yGzq9Fnu8Y6g-RRz5LA', true),
+('UCmXmlB4-HJytD7wek0Uo97A', 'JavaScript Mastery', 'https://www.youtube.com/@javascriptmastery', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCmXmlB4-HJytD7wek0Uo97A', true),
+('UC-8QAzbLcRglXeN_MY9blyw', 'Ben Holmes', 'https://www.youtube.com/@bholmesdev', 'https://www.youtube.com/feeds/videos.xml?channel_id=UC-8QAzbLcRglXeN_MY9blyw', true),
+-- Famous Tech
+('UCBcRF18a7Qf58cCRy5xuWwQ', 'MKBHD', 'https://www.youtube.com/@mkbhd', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCBcRF18a7Qf58cCRy5xuWwQ', true),
+('UCddiUEpeqJcYeBxX1IVBKvQ', 'The Verge', 'https://www.youtube.com/@TheVerge', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCddiUEpeqJcYeBxX1IVBKvQ', true),
+('UCVYamHliCI9rw1tHR1xbkfw', 'Dave2D', 'https://www.youtube.com/@Dave2D', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCVYamHliCI9rw1tHR1xbkfw', true)
+ON CONFLICT (channel_id) DO NOTHING;

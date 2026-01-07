@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/providers/query-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
+import { AuthProvider } from "@/providers/auth-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { MainLayout } from "@/components/layout/MainLayout";
 
@@ -22,10 +23,12 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className="dark">
       <body className={`${inter.className} bg-charcoal-950 text-gold`}>
         <QueryProvider>
-          <ThemeProvider>
-            <MainLayout>{children}</MainLayout>
-            <Toaster />
-          </ThemeProvider>
+          <AuthProvider>
+            <ThemeProvider>
+              <MainLayout>{children}</MainLayout>
+              <Toaster />
+            </ThemeProvider>
+          </AuthProvider>
         </QueryProvider>
       </body>
     </html>

@@ -23,9 +23,11 @@ RUN poetry install --no-interaction --no-ansi --no-root
 # Copier le code de l'application
 COPY . .
 
-# Télécharger les modèles spaCy
-RUN python -m spacy download en_core_web_lg
-RUN python -m spacy download fr_core_news_lg
+# Télécharger les modèles spaCy (sm = small, plus rapide à télécharger)
+# Pour une meilleure qualité NLP, remplacer par _md ou _lg après le premier build
+RUN pip install --default-timeout=100 --retries=5 \
+    https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl \
+    https://github.com/explosion/spacy-models/releases/download/fr_core_news_sm-3.8.0/fr_core_news_sm-3.8.0-py3-none-any.whl
 
 # Exposition du port
 EXPOSE 8000

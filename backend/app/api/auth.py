@@ -151,6 +151,48 @@ async def login(
     )
 
 
+@router.get("/me", response_model=UserResponse)
+async def get_current_user_info(user: User = Depends(get_current_user)):
+    """
+    Get current authenticated user info.
+    """
+    return UserResponse.model_validate(user)
+
+
+@router.patch("/profile", response_model=UserResponse)
+async def update_profile(
+    updates: dict,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Update current user profile.
+
+    Allowed fields: username, display_name, bio, avatar_url
+    """
+    allowed_fields = {"username", "display_name", "bio", "avatar_url"}
+
+    for field, value in updates.items():
+        if field in allowed_fields:
+            # Check username uniqueness
+            if field == "username" and value:
+                existing = db.query(User).filter(
+                    User.username == value,
+                    User.id != user.id
+                ).first()
+                if existing:
+                    raise HTTPException(
+                        status_code=status.HTTP_409_CONFLICT,
+                        detail="Username already taken"
+                    )
+            setattr(user, field, value)
+
+    db.commit()
+    db.refresh(user)
+    logger.info(f"Profile updated: {user.email}")
+    return UserResponse.model_validate(user)
+
+
 @router.post("/logout")
 async def logout(
     response: Response,

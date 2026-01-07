@@ -2,14 +2,15 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, BarChart3, FileText, User } from 'lucide-react';
+import { Home, BarChart3, FileText, User, Shuffle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/', icon: Home, label: 'Feed' },
   { href: '/articles', icon: FileText, label: 'Articles' },
-  { href: '/analytics', icon: BarChart3, label: 'Analytics' },
-  { href: '/profile', icon: User, label: 'Profil' },
+  { href: '/triage', icon: Shuffle, label: 'Triage' },
+  { href: '/analytics', icon: BarChart3, label: 'Stats' },
+  { href: '/profile', icon: User, label: 'Profile' },
 ];
 
 export const BottomNav = () => {

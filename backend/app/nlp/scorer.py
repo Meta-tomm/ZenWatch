@@ -24,15 +24,23 @@ class ArticleScorer:
             language: Language code ("en" or "fr")
         """
         self.language = language
-        try:
-            if language == "fr":
-                self.nlp = spacy.load("fr_core_news_lg")
-            else:
-                self.nlp = spacy.load("en_core_web_lg")
-            logger.info(f"Loaded spaCy model for language: {language}")
-        except OSError:
-            logger.error(f"spaCy model not found for {language}")
-            raise
+        # Try models in order: lg > md > sm (best quality first)
+        models = {
+            "fr": ["fr_core_news_lg", "fr_core_news_md", "fr_core_news_sm"],
+            "en": ["en_core_web_lg", "en_core_web_md", "en_core_web_sm"]
+        }
+        model_list = models.get(language, models["en"])
+
+        for model_name in model_list:
+            try:
+                self.nlp = spacy.load(model_name)
+                logger.info(f"Loaded spaCy model: {model_name}")
+                break
+            except OSError:
+                continue
+        else:
+            logger.error(f"No spaCy model found for {language}")
+            raise OSError(f"No spaCy model available for {language}")
 
         self.tfidf = TfidfVectorizer(
             max_features=500,

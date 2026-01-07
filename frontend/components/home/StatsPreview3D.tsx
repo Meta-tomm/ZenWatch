@@ -1,17 +1,101 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { BarChart3, TrendingUp, Zap } from 'lucide-react';
+import { BarChart3, TrendingUp, Zap, Clock, Database, RefreshCw } from 'lucide-react';
 import { fadeInFromBottom, staggerContainer } from '@/lib/animations-3d';
+import { useAnalyticsSummary } from '@/hooks/use-analytics';
+
+// Animated counter for smooth number transitions
+function AnimatedValue({ value, suffix = '' }: { value: number; suffix?: string }) {
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    if (value === 0) {
+      setDisplayValue(0);
+      return;
+    }
+
+    const duration = 1500;
+    const startTime = Date.now();
+    const startValue = displayValue;
+    const diff = value - startValue;
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+      const current = Math.round(startValue + diff * easeOutQuart);
+      setDisplayValue(current);
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    requestAnimationFrame(animate);
+  }, [value]);
+
+  // Format large numbers
+  const formatValue = (num: number) => {
+    if (num >= 1000) {
+      return `${(num / 1000).toFixed(1)}K`;
+    }
+    return num.toString();
+  };
+
+  return <>{formatValue(displayValue)}{suffix}</>;
+}
 
 export const StatsPreview3D = () => {
   const { ref, inView } = useInView({ threshold: 0.2, triggerOnce: true });
+  const { data: summary, isLoading, dataUpdatedAt } = useAnalyticsSummary();
+  const [lastUpdate, setLastUpdate] = useState<string>('');
+
+  useEffect(() => {
+    if (dataUpdatedAt) {
+      const updateTime = new Date(dataUpdatedAt);
+      setLastUpdate(updateTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }));
+    }
+  }, [dataUpdatedAt]);
 
   const stats = [
-    { icon: BarChart3, label: 'Articles analyzed', value: '2.5K+', color: 'violet' },
-    { icon: TrendingUp, label: 'Average score', value: '87', color: 'magenta' },
-    { icon: Zap, label: 'Trends detected', value: '24', color: 'violet' },
+    {
+      icon: BarChart3,
+      label: 'Articles analyses',
+      value: summary?.total_articles || 0,
+      suffix: '+',
+      color: 'violet'
+    },
+    {
+      icon: TrendingUp,
+      label: 'Score moyen (7j)',
+      value: Math.round(summary?.avg_score_last_7_days || 0),
+      suffix: '',
+      color: 'magenta'
+    },
+    {
+      icon: Zap,
+      label: 'Tendances detectees',
+      value: summary?.top_trends?.length || 0,
+      suffix: '',
+      color: 'violet'
+    },
+    {
+      icon: Clock,
+      label: "Scraped aujourd'hui",
+      value: summary?.articles_scraped_today || 0,
+      suffix: '',
+      color: 'green'
+    },
+    {
+      icon: Database,
+      label: 'Sources actives',
+      value: summary?.total_sources || 0,
+      suffix: '',
+      color: 'blue'
+    },
   ];
 
   return (
@@ -22,31 +106,58 @@ export const StatsPreview3D = () => {
       animate={inView ? 'visible' : 'hidden'}
       variants={staggerContainer}
     >
-      <motion.h2
-        className="text-3xl font-bold text-center mb-12 text-gradient-violet"
+      {/* Header with live indicator */}
+      <motion.div
+        className="flex flex-col items-center mb-12"
         variants={fadeInFromBottom}
       >
-        Real-time statistics
-      </motion.h2>
+        <h2 className="text-3xl font-bold text-center text-gradient-violet mb-3">
+          Statistiques en temps reel
+        </h2>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-500/20 border border-green-500/30">
+            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+            <span className="text-xs font-medium text-green-400">Live</span>
+          </div>
+          {lastUpdate && (
+            <div className="flex items-center gap-1.5 text-xs text-violet-300/50">
+              <RefreshCw className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} />
+              <span>MAJ: {lastUpdate}</span>
+            </div>
+          )}
+        </div>
+      </motion.div>
 
       {/* Stats grid */}
       <motion.div
-        className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12"
+        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-12"
         variants={staggerContainer}
       >
         {stats.map((stat, index) => {
           const Icon = stat.icon;
+          const colorClasses: Record<string, string> = {
+            violet: 'text-violet-400 border-violet-500/30 from-violet-500/20',
+            magenta: 'text-pink-400 border-pink-500/30 from-pink-500/20',
+            green: 'text-green-400 border-green-500/30 from-green-500/20',
+            blue: 'text-blue-400 border-blue-500/30 from-blue-500/20',
+          };
+          const colors = colorClasses[stat.color] || colorClasses.violet;
+
           return (
             <motion.div
               key={index}
-              className="p-6 rounded-xl bg-anthracite-800/50 border border-violet/20 backdrop-blur-sm"
+              className={`p-5 rounded-xl bg-gradient-to-br ${colors.split(' ')[2]} to-transparent border ${colors.split(' ')[1]} backdrop-blur-sm transition-all hover:scale-[1.02]`}
               variants={fadeInFromBottom}
             >
-              <Icon className={`w-8 h-8 text-${stat.color} mb-4`} />
-              <div className="text-4xl font-bold text-gradient-violet mb-2">
-                {stat.value}
+              <Icon className={`w-7 h-7 ${colors.split(' ')[0]} mb-3`} />
+              <div className="text-3xl font-bold text-violet-100 mb-1">
+                {isLoading ? (
+                  <span className="text-violet-300/50">--</span>
+                ) : (
+                  <AnimatedValue value={stat.value} suffix={stat.suffix} />
+                )}
               </div>
-              <div className="text-sm text-violet-300/70">{stat.label}</div>
+              <div className="text-xs text-violet-300/70">{stat.label}</div>
             </motion.div>
           );
         })}

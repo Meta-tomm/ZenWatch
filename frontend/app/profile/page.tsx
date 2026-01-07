@@ -35,21 +35,21 @@ import type { UserKeyword } from '@/types/auth';
 const profileSchema = z.object({
   username: z
     .string()
-    .min(3, 'Le nom utilisateur doit contenir au moins 3 caracteres')
-    .max(30, 'Le nom utilisateur ne peut pas depasser 30 caracteres')
+    .min(3, 'Username must be at least 3 characters')
+    .max(30, 'Username cannot exceed 30 characters')
     .regex(
       /^[a-zA-Z0-9_-]+$/,
-      'Uniquement lettres, chiffres, tirets et underscores'
+      'Only letters, numbers, dashes and underscores'
     ),
-  bio: z.string().max(500, 'La bio ne peut pas depasser 500 caracteres').optional(),
+  bio: z.string().max(500, 'Bio cannot exceed 500 characters').optional(),
   github_url: z
     .string()
-    .url('URL invalide')
-    .regex(/github\.com/, 'Doit etre une URL GitHub')
+    .url('Invalid URL')
+    .regex(/github\.com/, 'Must be a GitHub URL')
     .optional()
     .or(z.literal('')),
-  portfolio_url: z.string().url('URL invalide').optional().or(z.literal('')),
-  avatar_url: z.string().url('URL invalide').optional().or(z.literal('')),
+  portfolio_url: z.string().url('Invalid URL').optional().or(z.literal('')),
+  avatar_url: z.string().url('Invalid URL').optional().or(z.literal('')),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -85,10 +85,10 @@ function KeywordsTab() {
       setNewKeyword('');
       setNewCategory('');
       setNewWeight(1);
-      toast({ title: 'Mot-cle ajoute', description: 'Le mot-cle a ete ajoute avec succes' });
+      toast({ title: 'Keyword added', description: 'The keyword has been added successfully' });
     },
     onError: (error: Error) => {
-      toast({ title: 'Erreur', description: error.message || 'Impossible d\'ajouter le mot-cle', variant: 'destructive' });
+      toast({ title: 'Error', description: error.message || 'Unable to add keyword', variant: 'destructive' });
     },
   });
 
@@ -115,10 +115,10 @@ function KeywordsTab() {
     mutationFn: userKeywordsApi.rescore,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['personalized-stats'] });
-      toast({ title: 'Rescoring lance', description: 'Les articles vont etre re-scores en arriere-plan' });
+      toast({ title: 'Rescoring started', description: 'Articles will be rescored in the background' });
     },
     onError: (error: Error) => {
-      toast({ title: 'Erreur', description: error.message || 'Impossible de lancer le rescoring', variant: 'destructive' });
+      toast({ title: 'Error', description: error.message || 'Unable to start rescoring', variant: 'destructive' });
     },
   });
 
@@ -154,19 +154,19 @@ function KeywordsTab() {
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="rounded-lg border border-violet-500/20 bg-anthracite-900/50 p-4">
-            <p className="text-xs text-violet-300/60 uppercase tracking-wide">Mots-cles</p>
+            <p className="text-xs text-violet-300/60 uppercase tracking-wide">Keywords</p>
             <p className="text-2xl font-bold text-violet-100 mt-1">{stats.keyword_count}</p>
           </div>
           <div className="rounded-lg border border-violet-500/20 bg-anthracite-900/50 p-4">
-            <p className="text-xs text-violet-300/60 uppercase tracking-wide">Articles scores</p>
+            <p className="text-xs text-violet-300/60 uppercase tracking-wide">Scored Articles</p>
             <p className="text-2xl font-bold text-violet-100 mt-1">{stats.scored_articles}</p>
           </div>
           <div className="rounded-lg border border-violet-500/20 bg-anthracite-900/50 p-4">
-            <p className="text-xs text-violet-300/60 uppercase tracking-wide">Score moyen</p>
+            <p className="text-xs text-violet-300/60 uppercase tracking-wide">Average Score</p>
             <p className="text-2xl font-bold text-violet-100 mt-1">{stats.average_score}</p>
           </div>
           <div className="rounded-lg border border-violet-500/20 bg-anthracite-900/50 p-4">
-            <p className="text-xs text-violet-300/60 uppercase tracking-wide">Haute pertinence</p>
+            <p className="text-xs text-violet-300/60 uppercase tracking-wide">High Relevance</p>
             <p className="text-2xl font-bold text-green-400 mt-1">{stats.high_relevance_count}</p>
           </div>
         </div>
@@ -177,34 +177,34 @@ function KeywordsTab() {
         <div className="p-6 border-b border-violet-500/10">
           <h2 className="text-lg font-semibold text-violet-100 flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-violet-400" />
-            Scoring personalise
+            Personalized Scoring
           </h2>
           <p className="text-sm text-violet-300/60 mt-1">
-            Ajoutez des mots-cles pour personnaliser le score de pertinence des articles
+            Add keywords to personalize the relevance score of articles
           </p>
         </div>
         <form onSubmit={handleAddKeyword} className="p-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
-              <label className="text-sm font-semibold text-white mb-2 block">Mot-cle</label>
+              <label className="text-sm font-semibold text-white mb-2 block">Keyword</label>
               <Input
                 value={newKeyword}
                 onChange={(e) => setNewKeyword(e.target.value)}
-                placeholder="Ex: React, TypeScript, IA..."
+                placeholder="e.g., React, TypeScript, AI..."
                 className={inputClassName}
               />
             </div>
             <div className="w-full md:w-40">
-              <label className="text-sm font-semibold text-white mb-2 block">Categorie (optionnel)</label>
+              <label className="text-sm font-semibold text-white mb-2 block">Category (optional)</label>
               <Input
                 value={newCategory}
                 onChange={(e) => setNewCategory(e.target.value)}
-                placeholder="Ex: Frontend"
+                placeholder="e.g., Frontend"
                 className={inputClassName}
               />
             </div>
             <div className="w-full md:w-32">
-              <label className="text-sm font-semibold text-white mb-2 block">Poids: {newWeight.toFixed(1)}</label>
+              <label className="text-sm font-semibold text-white mb-2 block">Weight: {newWeight.toFixed(1)}</label>
               <Slider
                 value={[newWeight]}
                 onValueChange={(v) => setNewWeight(v[0])}
@@ -221,7 +221,7 @@ function KeywordsTab() {
                 className="bg-violet-600 hover:bg-violet-500 text-white gap-2"
               >
                 <Plus className="w-4 h-4" />
-                Ajouter
+                Add
               </Button>
             </div>
           </div>
@@ -232,9 +232,9 @@ function KeywordsTab() {
       <div className="rounded-xl border border-violet-500/20 bg-anthracite-900/50 backdrop-blur">
         <div className="p-6 border-b border-violet-500/10 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-violet-100">Mes mots-cles</h2>
+            <h2 className="text-lg font-semibold text-violet-100">My Keywords</h2>
             <p className="text-sm text-violet-300/60 mt-1">
-              {keywords.length} mot{keywords.length > 1 ? 's' : ''}-cle{keywords.length > 1 ? 's' : ''} configure{keywords.length > 1 ? 's' : ''}
+              {keywords.length} keyword{keywords.length !== 1 ? 's' : ''} configured
             </p>
           </div>
           <Button
@@ -245,7 +245,7 @@ function KeywordsTab() {
             className="gap-2 border-violet-500/30 text-violet-300 hover:bg-violet-500/20"
           >
             <RefreshCw className={`w-4 h-4 ${rescoreMutation.isPending ? 'animate-spin' : ''}`} />
-            Recalculer les scores
+            Rescore Articles
           </Button>
         </div>
         <div className="p-6">
@@ -258,8 +258,8 @@ function KeywordsTab() {
           ) : keywords.length === 0 ? (
             <div className="text-center py-8 text-violet-300/60">
               <Tags className="w-12 h-12 mx-auto mb-3 opacity-50" />
-              <p>Aucun mot-cle configure</p>
-              <p className="text-sm mt-1">Ajoutez des mots-cles pour personnaliser votre feed</p>
+              <p>No keywords configured</p>
+              <p className="text-sm mt-1">Add keywords to personalize your feed</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -288,7 +288,7 @@ function KeywordsTab() {
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="w-24">
-                      <p className="text-xs font-semibold text-white mb-1">Poids: {keyword.weight.toFixed(1)}</p>
+                      <p className="text-xs font-semibold text-white mb-1">Weight: {keyword.weight.toFixed(1)}</p>
                       <Slider
                         value={[keyword.weight]}
                         onValueChange={(v) => handleWeightChange(keyword, v[0])}
@@ -318,9 +318,9 @@ function KeywordsTab() {
       {/* Help text */}
       <div className="rounded-lg border border-violet-500/10 bg-anthracite-900/30 p-4">
         <p className="text-sm text-violet-300/60">
-          <strong className="text-violet-300">Comment ca marche ?</strong> Les articles sont scores en fonction de vos mots-cles.
-          Plus le poids est eleve, plus les articles contenant ce mot-cle auront un score eleve.
-          Utilisez le flux <strong className="text-violet-300">Personnalise</strong> pour voir les articles tries par pertinence.
+          <strong className="text-violet-300">How does it work?</strong> Articles are scored based on your keywords.
+          The higher the weight, the higher articles containing that keyword will score.
+          Use the <strong className="text-violet-300">For You</strong> feed to see articles sorted by relevance.
         </p>
       </div>
     </TabsContent>
@@ -370,7 +370,7 @@ export default function ProfilePage() {
     onSuccess: (updatedUser) => {
       setUser(updatedUser);
       queryClient.invalidateQueries({ queryKey: ['user'] });
-      setSuccessMessage('Profil mis a jour');
+      setSuccessMessage('Profile updated');
       setTimeout(() => setSuccessMessage(''), 3000);
     },
   });
@@ -396,11 +396,11 @@ export default function ProfilePage() {
                 <Link href="/">
                   <Button variant="ghost" size="sm" className="gap-2 text-violet-300 hover:text-violet-200 hover:bg-violet-500/20">
                     <ArrowLeft className="w-4 h-4" />
-                    Accueil
+                    Home
                   </Button>
                 </Link>
                 <h1 className="text-2xl font-bold text-gradient-violet">
-                  Mon Compte
+                  My Account
                 </h1>
               </div>
               {user && (
@@ -409,7 +409,7 @@ export default function ProfilePage() {
                     <Badge className="bg-violet-500/20 text-violet-300 border-violet-500/30">Admin</Badge>
                   )}
                   {user.is_verified && (
-                    <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Verifie</Badge>
+                    <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Verified</Badge>
                   )}
                 </div>
               )}
@@ -436,21 +436,21 @@ export default function ProfilePage() {
                 className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-100 text-violet-300/70"
               >
                 <User className="w-4 h-4 mr-2" />
-                Profil
+                Profile
               </TabsTrigger>
               <TabsTrigger
                 value="keywords"
                 className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-100 text-violet-300/70"
               >
                 <Tags className="w-4 h-4 mr-2" />
-                Mots-cles
+                Keywords
               </TabsTrigger>
               <TabsTrigger
                 value="account"
                 className="data-[state=active]:bg-violet-500/20 data-[state=active]:text-violet-100 text-violet-300/70"
               >
                 <Shield className="w-4 h-4 mr-2" />
-                Compte
+                Account
               </TabsTrigger>
             </TabsList>
 
@@ -492,7 +492,7 @@ export default function ProfilePage() {
                             name="username"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className={labelClassName}>Nom utilisateur</FormLabel>
+                                <FormLabel className={labelClassName}>Username</FormLabel>
                                 <FormControl>
                                   <Input className={inputClassName} {...field} />
                                 </FormControl>
@@ -506,7 +506,7 @@ export default function ProfilePage() {
                             name="avatar_url"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className={labelClassName}>URL Avatar</FormLabel>
+                                <FormLabel className={labelClassName}>Avatar URL</FormLabel>
                                 <FormControl>
                                   <Input
                                     placeholder="https://example.com/avatar.jpg"
@@ -528,13 +528,13 @@ export default function ProfilePage() {
                               <FormLabel className={labelClassName}>Bio</FormLabel>
                               <FormControl>
                                 <Textarea
-                                  placeholder="Parlez-nous de vous..."
+                                  placeholder="Tell us about yourself..."
                                   className={`${inputClassName} resize-none min-h-[100px]`}
                                   {...field}
                                 />
                               </FormControl>
                               <FormDescription className="text-violet-300/50 text-xs">
-                                {(field.value?.length || 0)}/500 caracteres
+                                {(field.value?.length || 0)}/500 characters
                               </FormDescription>
                               <FormMessage className="text-red-400 text-xs" />
                             </FormItem>
@@ -574,7 +574,7 @@ export default function ProfilePage() {
                                 </FormLabel>
                                 <FormControl>
                                   <Input
-                                    placeholder="https://votresite.com"
+                                    placeholder="https://yoursite.com"
                                     className={inputClassName}
                                     {...field}
                                   />
@@ -587,7 +587,7 @@ export default function ProfilePage() {
 
                         {mutation.error && (
                           <div className="p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 text-sm">
-                            Une erreur est survenue lors de la mise a jour
+                            An error occurred while updating
                           </div>
                         )}
 
@@ -598,7 +598,7 @@ export default function ProfilePage() {
                             className="bg-violet-600 hover:bg-violet-500 text-white gap-2"
                           >
                             <Save className="w-4 h-4" />
-                            {mutation.isPending ? 'Sauvegarde...' : 'Sauvegarder'}
+                            {mutation.isPending ? 'Saving...' : 'Save'}
                           </Button>
                         </div>
                       </form>
@@ -616,8 +616,8 @@ export default function ProfilePage() {
               {/* Account Info */}
               <div className="rounded-xl border border-violet-500/20 bg-anthracite-900/50 backdrop-blur">
                 <div className="p-6 border-b border-violet-500/10">
-                  <h2 className="text-lg font-semibold text-violet-100">Informations du compte</h2>
-                  <p className="text-sm text-violet-300/60 mt-1">Details de votre compte ZenWatch</p>
+                  <h2 className="text-lg font-semibold text-violet-100">Account Information</h2>
+                  <p className="text-sm text-violet-300/60 mt-1">Your ZenWatch account details</p>
                 </div>
                 <div className="p-6 space-y-4">
                   {isLoading ? (
@@ -641,7 +641,7 @@ export default function ProfilePage() {
                           <Shield className="w-5 h-5 text-violet-400" />
                           <div>
                             <p className="text-sm font-medium text-violet-100">Role</p>
-                            <p className="text-sm text-violet-300/60 capitalize">{user.role || 'Utilisateur'}</p>
+                            <p className="text-sm text-violet-300/60 capitalize">{user.role || 'User'}</p>
                           </div>
                         </div>
                         {user.is_admin && (
@@ -658,14 +658,14 @@ export default function ProfilePage() {
                           <div>
                             <p className="text-sm font-medium text-violet-100">Verification</p>
                             <p className="text-sm text-violet-300/60">
-                              {user.is_verified ? 'Compte verifie' : 'Compte non verifie'}
+                              {user.is_verified ? 'Account verified' : 'Account not verified'}
                             </p>
                           </div>
                         </div>
                         {user.is_verified ? (
-                          <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Verifie</Badge>
+                          <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Verified</Badge>
                         ) : (
-                          <Badge variant="outline" className="text-orange-400 border-orange-500/30">En attente</Badge>
+                          <Badge variant="outline" className="text-orange-400 border-orange-500/30">Pending</Badge>
                         )}
                       </div>
                     </>
@@ -676,15 +676,15 @@ export default function ProfilePage() {
               {/* Danger Zone */}
               <div className="rounded-xl border border-red-500/30 bg-anthracite-900/50 backdrop-blur">
                 <div className="p-6 border-b border-red-500/20">
-                  <h2 className="text-lg font-semibold text-red-400">Zone de danger</h2>
-                  <p className="text-sm text-red-400/60 mt-1">Actions irreversibles</p>
+                  <h2 className="text-lg font-semibold text-red-400">Danger Zone</h2>
+                  <p className="text-sm text-red-400/60 mt-1">Irreversible actions</p>
                 </div>
                 <div className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-violet-100">Deconnexion</p>
+                      <p className="font-medium text-violet-100">Log out</p>
                       <p className="text-sm text-violet-300/60">
-                        Se deconnecter de ZenWatch
+                        Sign out from ZenWatch
                       </p>
                     </div>
                     <Button
@@ -694,7 +694,7 @@ export default function ProfilePage() {
                       className="gap-2"
                     >
                       <LogOut className="w-4 h-4" />
-                      {isLoggingOut ? 'Deconnexion...' : 'Deconnexion'}
+                      {isLoggingOut ? 'Logging out...' : 'Log out'}
                     </Button>
                   </div>
                 </div>
