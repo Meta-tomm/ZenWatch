@@ -252,5 +252,22 @@ INSERT INTO youtube_channels (channel_id, channel_name, channel_url, rss_feed_ur
 -- Famous Tech
 ('UCBcRF18a7Qf58cCRy5xuWwQ', 'MKBHD', 'https://www.youtube.com/@mkbhd', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCBcRF18a7Qf58cCRy5xuWwQ', true),
 ('UCddiUEpeqJcYeBxX1IVBKvQ', 'The Verge', 'https://www.youtube.com/@TheVerge', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCddiUEpeqJcYeBxX1IVBKvQ', true),
-('UCVYamHliCI9rw1tHR1xbkfw', 'Dave2D', 'https://www.youtube.com/@Dave2D', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCVYamHliCI9rw1tHR1xbkfw', true)
+('UCVYamHliCI9rw1tHR1xbkfw', 'Dave2D', 'https://www.youtube.com/@Dave2D', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCVYamHliCI9rw1tHR1xbkfw', true),
+-- Data Analysts & Data Science
+('UC7cs8q-gJRlGwj4A8OmCmXg', 'Alex The Analyst', 'https://www.youtube.com/@AlexTheAnalyst', 'https://www.youtube.com/feeds/videos.xml?channel_id=UC7cs8q-gJRlGwj4A8OmCmXg', true),
+('UCiT9RITQ9PW6BhXK0y2jacQ', 'Ken Jee', 'https://www.youtube.com/@KenJee_ds', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCiT9RITQ9PW6BhXK0y2jacQ', true),
+('UCJQJAI7IjbLcpsjWdSzYz0Q', 'Thu Vu data analytics', 'https://www.youtube.com/@Thuvu5', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCJQJAI7IjbLcpsjWdSzYz0Q', true),
+('UCnz-ZXXER4jOvuED5trXfEA', 'techTFQ', 'https://www.youtube.com/@techTFQ', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCnz-ZXXER4jOvuED5trXfEA', true),
+('UCmLGJ3VYBcfRaWbP6JLJcpA', 'Chandoo', 'https://www.youtube.com/@chandaborgan', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCmLGJ3VYBcfRaWbP6JLJcpA', true),
+('UCTuD4bHaQJZX3hIpEfDO37w', 'Stefanovic', 'https://www.youtube.com/@Stefanovic', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCTuD4bHaQJZX3hIpEfDO37w', true),
+('UCNU_lfiiWBdtULKOw6X0Dig', 'Krish Naik', 'https://www.youtube.com/@krishnaik06', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCNU_lfiiWBdtULKOw6X0Dig', true),
+('UCOjD18EJYcsBog4IozkF_7w', 'StatQuest', 'https://www.youtube.com/@statquest', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCOjD18EJYcsBog4IozkF_7w', true),
+('UCYO_jab_esuFRV4b17AJtAw', '3Blue1Brown', 'https://www.youtube.com/@3blue1brown', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCYO_jab_esuFRV4b17AJtAw', true),
+('UC2UXDak6o7rBm23k3Vv5dww', 'Tina Huang', 'https://www.youtube.com/@TinaHuang1', 'https://www.youtube.com/feeds/videos.xml?channel_id=UC2UXDak6o7rBm23k3Vv5dww', true),
+('UCq6XkhO5SZ66N04IcPbqNcw', 'Keith Galli', 'https://www.youtube.com/@KeithGalli', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCq6XkhO5SZ66N04IcPbqNcw', true),
+('UCCezIgC97PvUuR4_gbFUs5g', 'Corey Schafer', 'https://www.youtube.com/@coreyms', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCCezIgC97PvUuR4_gbFUs5g', true),
+('UCeVMnSShP_Iviwkknt83cww', 'Data Professor', 'https://www.youtube.com/@DataProfessor', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCeVMnSShP_Iviwkknt83cww', true),
+('UCKJNzy_GuvX3SAg3ipaGa8A', 'Leila Gharani', 'https://www.youtube.com/@LeilaGharani', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCKJNzy_GuvX3SAg3ipaGa8A', true),
+('UC0RhatS1pyxIVt1BFD5kJ9Q', 'Guy in a Cube', 'https://www.youtube.com/@GuyInACube', 'https://www.youtube.com/feeds/videos.xml?channel_id=UC0RhatS1pyxIVt1BFD5kJ9Q', true),
+('UCO1cgjhGzsSYb1rsB4bFe4Q', 'sentdex', 'https://www.youtube.com/@sentdex', 'https://www.youtube.com/feeds/videos.xml?channel_id=UCO1cgjhGzsSYb1rsB4bFe4Q', true)
 ON CONFLICT (channel_id) DO NOTHING;
