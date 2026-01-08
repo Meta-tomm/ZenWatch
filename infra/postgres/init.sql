@@ -171,38 +171,31 @@ INSERT INTO sources (name, type, base_url) VALUES
     ('YouTube Tech RSS', 'youtube_rss', 'https://www.youtube.com/feeds/videos.xml')
 ON CONFLICT (name) DO NOTHING;
 
--- Keywords par défaut - Claude & AI Focus
+-- Keywords par défaut - Claude + Data Analytics
 INSERT INTO keywords (keyword, category, weight) VALUES
-    -- Claude (priorité maximale)
-    ('Claude', 'ai', 5.0),
-    ('Claude Code', 'ai', 5.0),
-    ('Claude Sonnet', 'ai', 5.0),
-    ('Claude Opus', 'ai', 5.0),
-    ('Claude Haiku', 'ai', 5.0),
-    ('Claude 3', 'ai', 5.0),
-    ('Claude 4', 'ai', 5.0),
-    ('Claude MCP', 'ai', 5.0),
-    ('Anthropic', 'ai', 5.0),
-    ('Claude API', 'ai', 4.0),
-    ('Claude Desktop', 'ai', 4.0),
-    ('Claude Pro', 'ai', 4.0),
-    ('Claude artifacts', 'ai', 4.0),
-    -- AI General (haute priorité)
-    ('agentic AI', 'ai', 5.0),
-    ('autonomous agents', 'ai', 5.0),
-    ('AI', 'ai', 4.0),
-    ('LLM', 'ai', 4.0),
-    ('MCP', 'ai', 4.0),
-    ('RAG', 'ai', 4.0),
-    ('GPT', 'ai', 3.0),
-    ('fine-tuning', 'ai', 3.0),
-    ('transformer', 'ai', 3.0),
-    ('machine learning', 'ai', 3.0),
-    -- Dev tools
-    ('FastAPI', 'backend', 3.0),
-    ('Next.js', 'frontend', 3.0),
-    ('Python', 'dev', 2.5),
-    ('TypeScript', 'dev', 2.5)
+    -- Claude AI (focus principal)
+    ('claude', 'ai-model', 4.0),
+    ('anthropic', 'ai-model', 3.5),
+    ('claude code', 'ai-model', 4.0),
+    ('claude sonnet', 'ai-model', 3.5),
+    ('claude opus', 'ai-model', 3.5),
+    -- Data Analytics Tools
+    ('power bi', 'data-tools', 3.0),
+    ('sql', 'data-tools', 2.5),
+    ('excel', 'data-tools', 2.0),
+    ('python', 'data-tools', 2.5),
+    ('pandas', 'data-tools', 2.5),
+    ('tableau', 'data-tools', 3.0),
+    ('etl', 'data-tools', 2.5),
+    ('bigquery', 'data-tools', 2.5),
+    ('snowflake', 'data-tools', 2.5),
+    ('dbt', 'data-tools', 2.5),
+    ('jupyter', 'data-tools', 2.0),
+    ('numpy', 'data-tools', 2.0),
+    ('matplotlib', 'data-tools', 2.0),
+    -- Data Roles
+    ('data analyst', 'data-role', 3.5),
+    ('data science', 'data-role', 3.0)
 ON CONFLICT (keyword) DO NOTHING;
 
 -- Table: youtube_channels (pour RSS scraping)
