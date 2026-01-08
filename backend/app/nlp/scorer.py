@@ -3,7 +3,7 @@ Article Scorer - NLP-based relevance scoring
 Combine plusieurs approches pour scorer les articles selon les mots-clés
 """
 
-from typing import List, Dict
+from typing import List, Dict, Tuple
 import spacy
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -11,6 +11,16 @@ import numpy as np
 from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
+
+# Keywords that trigger combo bonus (Claude AI)
+CLAUDE_KEYWORDS = ["claude", "anthropic", "claude code", "claude sonnet", "claude opus"]
+
+# Data tools that count toward combo multiplier
+DATA_TOOLS = [
+    "power bi", "sql", "excel", "python", "pandas", "tableau",
+    "data analyst", "data science", "etl", "bigquery",
+    "snowflake", "dbt", "jupyter", "numpy", "matplotlib"
+]
 
 
 class ArticleScorer:
@@ -113,11 +123,18 @@ class ArticleScorer:
                     "weight": kw.get("weight", 1.0)
                 })
 
+        # Apply combo multiplier (Claude + Data tools)
+        combo_multiplier, combo_reason, matched_data_tools = self._calculate_combo_multiplier(text_lower)
+        overall_score = min(100.0, overall_score * combo_multiplier)
+
         return {
-            "overall_score": min(100.0, overall_score),  # Cap à 100
+            "overall_score": overall_score,
             "category": category,
             "matched_keywords": matched_keywords,
-            "scores": scores_detail
+            "scores": scores_detail,
+            "combo_multiplier": combo_multiplier,
+            "combo_reason": combo_reason,
+            "matched_data_tools": matched_data_tools
         }
 
     def _exact_match_score(self, text_lower: str, keywords: List[Dict]) -> float:
@@ -236,3 +253,37 @@ class ArticleScorer:
 
         # Return category with highest score
         return max(category_scores, key=category_scores.get)
+
+    def _calculate_combo_multiplier(self, text_lower: str) -> Tuple[float, str, List[str]]:
+        """
+        Calculate combo multiplier when Claude + data tools are present together.
+
+        Progressive multiplier:
+        - 1 data tool: x1.3
+        - 2 data tools: x1.5
+        - 3+ data tools: x2.0
+
+        Args:
+            text_lower: Lowercased article text
+
+        Returns:
+            Tuple of (multiplier, reason, matched_data_tools)
+        """
+        # Check if any Claude keyword is present
+        has_claude = any(kw in text_lower for kw in CLAUDE_KEYWORDS)
+
+        if not has_claude:
+            return 1.0, "no combo", []
+
+        # Count matched data tools
+        matched_tools = [tool for tool in DATA_TOOLS if tool in text_lower]
+        tool_count = len(matched_tools)
+
+        if tool_count >= 3:
+            return 2.0, f"claude + {tool_count} data tools", matched_tools
+        elif tool_count == 2:
+            return 1.5, f"claude + 2 data tools", matched_tools
+        elif tool_count == 1:
+            return 1.3, f"claude + 1 data tool", matched_tools
+        else:
+            return 1.0, "claude only", []

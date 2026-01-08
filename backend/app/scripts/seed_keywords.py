@@ -18,54 +18,66 @@ from app.utils.logger import get_logger
 logger = get_logger(__name__)
 
 
-# Initial keywords configuration for AI agentic ecosystem
+# Initial keywords configuration for Claude + Data Analytics
 INITIAL_KEYWORDS = [
-    # Frameworks & Tools
-    {"keyword": "langchain", "category": "frameworks", "weight": 2.5},
-    {"keyword": "llamaindex", "category": "frameworks", "weight": 2.5},
-    {"keyword": "autogpt", "category": "agents", "weight": 2.5},
-    {"keyword": "crewai", "category": "agents", "weight": 2.5},
-    {"keyword": "semantic kernel", "category": "frameworks", "weight": 2.0},
+    # Claude AI (focus principal)
+    {"keyword": "claude", "category": "ai-model", "weight": 4.0},
+    {"keyword": "anthropic", "category": "ai-model", "weight": 3.5},
+    {"keyword": "claude code", "category": "ai-model", "weight": 4.0},
+    {"keyword": "claude sonnet", "category": "ai-model", "weight": 3.5},
+    {"keyword": "claude opus", "category": "ai-model", "weight": 3.5},
 
-    # Models & Providers
-    {"keyword": "claude", "category": "models", "weight": 3.0},
-    {"keyword": "gpt-4", "category": "models", "weight": 3.0},
-    {"keyword": "gpt-5", "category": "models", "weight": 3.0},
-    {"keyword": "gemini", "category": "models", "weight": 2.5},
-    {"keyword": "mistral", "category": "models", "weight": 2.5},
-    {"keyword": "llama", "category": "models", "weight": 2.5},
+    # Data Analytics Tools
+    {"keyword": "power bi", "category": "data-tools", "weight": 3.0},
+    {"keyword": "sql", "category": "data-tools", "weight": 2.5},
+    {"keyword": "excel", "category": "data-tools", "weight": 2.0},
+    {"keyword": "python", "category": "data-tools", "weight": 2.5},
+    {"keyword": "pandas", "category": "data-tools", "weight": 2.5},
+    {"keyword": "tableau", "category": "data-tools", "weight": 3.0},
+    {"keyword": "etl", "category": "data-tools", "weight": 2.5},
+    {"keyword": "bigquery", "category": "data-tools", "weight": 2.5},
+    {"keyword": "snowflake", "category": "data-tools", "weight": 2.5},
+    {"keyword": "dbt", "category": "data-tools", "weight": 2.5},
+    {"keyword": "jupyter", "category": "data-tools", "weight": 2.0},
+    {"keyword": "numpy", "category": "data-tools", "weight": 2.0},
+    {"keyword": "matplotlib", "category": "data-tools", "weight": 2.0},
 
-    # Concepts
-    {"keyword": "mcp", "category": "concepts", "weight": 3.0},
-    {"keyword": "function calling", "category": "concepts", "weight": 2.5},
-    {"keyword": "tool use", "category": "concepts", "weight": 2.5},
-    {"keyword": "agentic", "category": "concepts", "weight": 3.0},
-    {"keyword": "rag", "category": "concepts", "weight": 2.5},
-    {"keyword": "fine-tuning", "category": "concepts", "weight": 2.0},
-    {"keyword": "prompt engineering", "category": "concepts", "weight": 2.0},
-
-    # Companies
-    {"keyword": "openai", "category": "companies", "weight": 3.0},
-    {"keyword": "anthropic", "category": "companies", "weight": 3.0},
-    {"keyword": "huggingface", "category": "companies", "weight": 2.5},
-    {"keyword": "ollama", "category": "tools", "weight": 2.0},
-
-    # General
-    {"keyword": "llm", "category": "general", "weight": 2.0},
-    {"keyword": "agents", "category": "general", "weight": 2.5},
+    # Data Roles
+    {"keyword": "data analyst", "category": "data-role", "weight": 3.5},
+    {"keyword": "data science", "category": "data-role", "weight": 3.0},
 ]
 
 
-def seed_keywords(db: Session) -> int:
+def reset_keywords(db: Session) -> int:
     """
-    Seed initial keywords into the database
+    Delete all existing keywords from the database
 
     Args:
         db: Database session
 
     Returns:
+        Number of keywords deleted
+    """
+    deleted_count = db.query(Keyword).delete()
+    db.commit()
+    logger.info(f"Deleted {deleted_count} existing keywords")
+    return deleted_count
+
+
+def seed_keywords(db: Session, reset: bool = False) -> int:
+    """
+    Seed initial keywords into the database
+
+    Args:
+        db: Database session
+        reset: If True, delete all existing keywords first
+
+    Returns:
         Number of keywords created
     """
+    if reset:
+        reset_keywords(db)
+
     created_count = 0
 
     for keyword_data in INITIAL_KEYWORDS:
@@ -92,7 +104,13 @@ def seed_keywords(db: Session) -> int:
 
 def main():
     """Main entry point for the seeding script"""
-    logger.info("Starting keyword seeding...")
+    import sys
+
+    reset = "--reset" in sys.argv
+    if reset:
+        logger.info("Starting keyword seeding with RESET (deleting existing keywords)...")
+    else:
+        logger.info("Starting keyword seeding...")
 
     # Create tables if they don't exist
     Base.metadata.create_all(bind=engine)
@@ -103,7 +121,7 @@ def main():
 
     try:
         # Seed keywords
-        created = seed_keywords(db)
+        created = seed_keywords(db, reset=reset)
 
         # Print summary
         total_keywords = db.query(Keyword).count()
