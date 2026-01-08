@@ -21,30 +21,30 @@ logger = get_logger(__name__)
 # Initial keywords configuration for Claude + Data Analytics
 INITIAL_KEYWORDS = [
     # Claude AI (focus principal)
-    {"keyword": "claude", "category": "ai-model", "weight": 4.0},
-    {"keyword": "anthropic", "category": "ai-model", "weight": 3.5},
-    {"keyword": "claude code", "category": "ai-model", "weight": 4.0},
-    {"keyword": "claude sonnet", "category": "ai-model", "weight": 3.5},
-    {"keyword": "claude opus", "category": "ai-model", "weight": 3.5},
+    {"keyword": "claude", "category": "claude", "weight": 4.0},
+    {"keyword": "anthropic", "category": "claude", "weight": 3.5},
+    {"keyword": "claude code", "category": "claude", "weight": 4.0},
+    {"keyword": "claude sonnet", "category": "claude", "weight": 3.5},
+    {"keyword": "claude opus", "category": "claude", "weight": 3.5},
 
-    # Data Analytics Tools
-    {"keyword": "power bi", "category": "data-tools", "weight": 3.0},
-    {"keyword": "sql", "category": "data-tools", "weight": 2.5},
-    {"keyword": "excel", "category": "data-tools", "weight": 2.0},
-    {"keyword": "python", "category": "data-tools", "weight": 2.5},
-    {"keyword": "pandas", "category": "data-tools", "weight": 2.5},
-    {"keyword": "tableau", "category": "data-tools", "weight": 3.0},
-    {"keyword": "etl", "category": "data-tools", "weight": 2.5},
-    {"keyword": "bigquery", "category": "data-tools", "weight": 2.5},
-    {"keyword": "snowflake", "category": "data-tools", "weight": 2.5},
-    {"keyword": "dbt", "category": "data-tools", "weight": 2.5},
-    {"keyword": "jupyter", "category": "data-tools", "weight": 2.0},
-    {"keyword": "numpy", "category": "data-tools", "weight": 2.0},
-    {"keyword": "matplotlib", "category": "data-tools", "weight": 2.0},
+    # Data Analytics Tools - each with its own category
+    {"keyword": "power bi", "category": "power-bi", "weight": 3.0},
+    {"keyword": "sql", "category": "sql", "weight": 2.5},
+    {"keyword": "excel", "category": "excel", "weight": 2.0},
+    {"keyword": "python", "category": "python", "weight": 2.5},
+    {"keyword": "pandas", "category": "python", "weight": 2.5},
+    {"keyword": "tableau", "category": "tableau", "weight": 3.0},
+    {"keyword": "etl", "category": "etl", "weight": 2.5},
+    {"keyword": "bigquery", "category": "bigquery", "weight": 2.5},
+    {"keyword": "snowflake", "category": "snowflake", "weight": 2.5},
+    {"keyword": "dbt", "category": "dbt", "weight": 2.5},
+    {"keyword": "jupyter", "category": "python", "weight": 2.0},
+    {"keyword": "numpy", "category": "python", "weight": 2.0},
+    {"keyword": "matplotlib", "category": "python", "weight": 2.0},
 
     # Data Roles
-    {"keyword": "data analyst", "category": "data-role", "weight": 3.5},
-    {"keyword": "data science", "category": "data-role", "weight": 3.0},
+    {"keyword": "data analyst", "category": "data-analyst", "weight": 3.5},
+    {"keyword": "data science", "category": "data-science", "weight": 3.0},
 ]
 
 

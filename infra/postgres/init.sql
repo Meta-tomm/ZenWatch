@@ -171,31 +171,31 @@ INSERT INTO sources (name, type, base_url) VALUES
     ('YouTube Tech RSS', 'youtube_rss', 'https://www.youtube.com/feeds/videos.xml')
 ON CONFLICT (name) DO NOTHING;
 
--- Keywords par défaut - Claude + Data Analytics
+-- Keywords par défaut - Claude + Data Analytics (categories precises)
 INSERT INTO keywords (keyword, category, weight) VALUES
-    -- Claude AI (focus principal)
-    ('claude', 'ai-model', 4.0),
-    ('anthropic', 'ai-model', 3.5),
-    ('claude code', 'ai-model', 4.0),
-    ('claude sonnet', 'ai-model', 3.5),
-    ('claude opus', 'ai-model', 3.5),
-    -- Data Analytics Tools
-    ('power bi', 'data-tools', 3.0),
-    ('sql', 'data-tools', 2.5),
-    ('excel', 'data-tools', 2.0),
-    ('python', 'data-tools', 2.5),
-    ('pandas', 'data-tools', 2.5),
-    ('tableau', 'data-tools', 3.0),
-    ('etl', 'data-tools', 2.5),
-    ('bigquery', 'data-tools', 2.5),
-    ('snowflake', 'data-tools', 2.5),
-    ('dbt', 'data-tools', 2.5),
-    ('jupyter', 'data-tools', 2.0),
-    ('numpy', 'data-tools', 2.0),
-    ('matplotlib', 'data-tools', 2.0),
+    -- Claude AI
+    ('claude', 'claude', 4.0),
+    ('anthropic', 'claude', 3.5),
+    ('claude code', 'claude', 4.0),
+    ('claude sonnet', 'claude', 3.5),
+    ('claude opus', 'claude', 3.5),
+    -- Data Analytics Tools - each with its own category
+    ('power bi', 'power-bi', 3.0),
+    ('sql', 'sql', 2.5),
+    ('excel', 'excel', 2.0),
+    ('python', 'python', 2.5),
+    ('pandas', 'python', 2.5),
+    ('tableau', 'tableau', 3.0),
+    ('etl', 'etl', 2.5),
+    ('bigquery', 'bigquery', 2.5),
+    ('snowflake', 'snowflake', 2.5),
+    ('dbt', 'dbt', 2.5),
+    ('jupyter', 'python', 2.0),
+    ('numpy', 'python', 2.0),
+    ('matplotlib', 'python', 2.0),
     -- Data Roles
-    ('data analyst', 'data-role', 3.5),
-    ('data science', 'data-role', 3.0)
+    ('data analyst', 'data-analyst', 3.5),
+    ('data science', 'data-science', 3.0)
 ON CONFLICT (keyword) DO NOTHING;
 
 -- Table: youtube_channels (pour RSS scraping)
