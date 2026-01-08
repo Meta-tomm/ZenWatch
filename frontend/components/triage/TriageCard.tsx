@@ -33,7 +33,7 @@ export const TriageCard = ({
   const leftIndicatorOpacity = useTransform(x, [-100, 0], [1, 0]);
   const rightIndicatorOpacity = useTransform(x, [0, 100], [0, 1]);
 
-  const isVideo = article.source_type === 'youtube' || article.source_type === 'youtube_rss' || article.source_type === 'video';
+  const isVideo = article.source_type === 'youtube' || article.source_type === 'youtube_rss' || article.source_type === 'youtube_trending' || article.source_type === 'video';
 
   const handleDragEnd = (_: any, info: PanInfo) => {
     const threshold = 100;

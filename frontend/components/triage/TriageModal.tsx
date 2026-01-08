@@ -32,7 +32,7 @@ export const TriageModal = ({
 }: TriageModalProps) => {
   if (!article) return null;
 
-  const isVideo = article.source_type === 'youtube' || article.source_type === 'video';
+  const isVideo = article.source_type === 'youtube' || article.source_type === 'youtube_rss' || article.source_type === 'youtube_trending' || article.source_type === 'video';
 
   return (
     <AnimatePresence>

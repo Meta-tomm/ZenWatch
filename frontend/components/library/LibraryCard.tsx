@@ -17,7 +17,7 @@ interface LibraryCardProps {
 }
 
 export const LibraryCard = ({ article, onRemove, onOpen, onLike, onDislike }: LibraryCardProps) => {
-  const isVideo = article.source_type === 'youtube' || article.source_type === 'youtube_rss' || article.source_type === 'video';
+  const isVideo = article.source_type === 'youtube' || article.source_type === 'youtube_rss' || article.source_type === 'youtube_trending' || article.source_type === 'video';
   const isLiked = article.user_reaction === 'like' || article.is_liked;
   const isDisliked = article.user_reaction === 'dislike' || article.is_disliked;
 
