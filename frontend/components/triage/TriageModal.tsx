@@ -47,13 +47,15 @@ export const TriageModal = ({
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
           />
 
-          {/* Modal */}
-          <motion.div
-            initial={{ opacity: 0, y: 100 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 100 }}
-            className="fixed inset-x-4 bottom-0 top-20 md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:top-1/2 md:-translate-y-1/2 md:w-full md:max-w-2xl md:max-h-[80vh] z-50 flex flex-col bg-anthracite-950 border border-violet-500/30 rounded-t-2xl md:rounded-2xl shadow-xl shadow-violet-500/10 overflow-hidden"
-          >
+          {/* Modal Container - centered */}
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="w-full max-w-2xl max-h-[85vh] flex flex-col bg-anthracite-950 border border-violet-500/30 rounded-2xl shadow-xl shadow-violet-500/10 overflow-hidden"
+            >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-violet-500/20">
               <div className="flex items-center gap-2">
@@ -195,7 +197,8 @@ export const TriageModal = ({
                 Save
               </Button>
             </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>
