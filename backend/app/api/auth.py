@@ -2,6 +2,7 @@ import secrets
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
@@ -266,10 +267,10 @@ async def refresh_token(
     )
 
 
-@router.get("/oauth/{provider}", response_model=OAuthRedirectResponse)
+@router.get("/oauth/{provider}")
 async def oauth_redirect(provider: str, request: Request):
     """
-    Get OAuth authorization URL for the specified provider.
+    Redirect to OAuth provider authorization page.
 
     Supported providers: github, google, discord
     """
@@ -289,7 +290,7 @@ async def oauth_redirect(provider: str, request: Request):
 
     authorization_url = oauth.get_authorization_url(redirect_uri, state)
 
-    return OAuthRedirectResponse(authorization_url=authorization_url)
+    return RedirectResponse(url=authorization_url)
 
 
 @router.get("/oauth/{provider}/callback")
