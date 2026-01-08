@@ -47,6 +47,15 @@ async def get_articles(
         or_(Article.score >= minScore, Article.score.is_(None))
     )
 
+    # Exclude video sources (shown in separate video section)
+    video_sources = ['youtube_rss', 'youtube_trending', 'youtube']
+    query = query.join(Article.source, isouter=True).filter(
+        or_(
+            Article.source_id.is_(None),
+            ~Source.type.in_(video_sources)
+        )
+    )
+
     # Time range filter
     if timeRange:
         if timeRange == "24h":
@@ -63,11 +72,11 @@ async def get_articles(
         if category_list:
             query = query.filter(Article.category.in_(category_list))
 
-    # Filter by sources (multiple) - requires join
+    # Filter by sources (multiple) - already joined above
     if sources:
         source_list = [s.strip() for s in sources.split(',') if s.strip()]
         if source_list:
-            query = query.join(Article.source).filter(Source.type.in_(source_list))
+            query = query.filter(Source.type.in_(source_list))
 
     # Search functionality
     if search:
